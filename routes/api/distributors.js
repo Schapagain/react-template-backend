@@ -12,17 +12,31 @@ const {postDistributor,getDistributors} = require('../services/distributors');
 router.post('/', 
     formParser,
     validateNewDistributor,
-    prepareFilesystem,
-    (req, res, next) => {
-        res.status(200).json({
-            message: 'you good'
-        })
+    async (req, res) => {
         
+        const result = await postDistributor(req.body);
+        if (result){
+            res.status(200).json(result)
+        }else{
+            res.status(500).json({error:"Could not add distributor"})
+        }
     });
 
 // @route   GET api/distributors
 // @desc    View all distributors
 // @access  Private
-router.get('/', getDistributors);
+router.get('/', 
+    auth,
+    async (req,res) => {
+        try{
+            const result = await getDistributors();
+            if(!result) throw new Error();
+            res.status(200).json(result);
+        }catch(err){
+            console.log(err);
+            res.status(500).json({error:"Could not fetch distributors"})
+        }
+    }
+);
 
 module.exports = router;
