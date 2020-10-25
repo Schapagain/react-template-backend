@@ -7,7 +7,7 @@ const id = (req,res,next) => {
 
     // Generate unique id and inject into req
     const uniqueId = uuid();
-    req.id = uniqueId;
+    req.body.id = uniqueId;
     console.log(uniqueId);
     // Create a directory for the potential user
     fs.mkdir('./uploads/'.concat(uniqueId),err => {
