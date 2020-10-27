@@ -39,7 +39,6 @@
 ## API Usage
 
 1. Add a distributor
-
     * **Endpoint**: /api/distributors
     * **Method**: POST
     * **Payload**:
