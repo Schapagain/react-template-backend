@@ -34,6 +34,7 @@
     1. App routes to routes/api/distributors
     2. auth checks for validity of jwt in req.headers.authorization
     3. getDistributors service returns all registered distributors along with their non-file fields
+    
     > Note: To access files we'll later implement api/distributors/:id/:documentName route
 
 ## API Usage
