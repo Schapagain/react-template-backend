@@ -5,7 +5,6 @@ const signingKey = process.env.SECRET_KEY;
 // Acess controls based on roles remains to be implemented here
 const auth = (req,res,next) => {
     try{
-        return next(); // No verification for test purposes
         // Get token from the header
         const userToken = req.header('authorization');
         if (!userToken) throw new Error("No token found");
@@ -13,9 +12,11 @@ const auth = (req,res,next) => {
         // Verify token and extract user id
         const token = njwt.verify(userToken,signingKey);
         const tokenId = token.body.sub;
+        const tokenRole = token.body.scope;
 
         // Inject userId into req before proceeding
         req.id = tokenId;
+        req.role = tokenRole;
         next();
     }catch(err){
         console.log(err.message);
