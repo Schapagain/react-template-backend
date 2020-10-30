@@ -1,6 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { getAuthToken } = require('../../utils/auth');
+const { ADMIN } = require('./userRoles');
+const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
 
 // @route   POST api/admin
 // @desc    authenticate admin credentials
@@ -11,8 +14,8 @@ router.post('/',
         if(!email || !password){
             return res.status(400).json({error: 'Please provide email and password'});
         }else{
-            if (email === 'admin@admin.com' && password === 'password77'){
-                const token = getAuthToken('123','admin');
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+                const token = getAuthToken(ADMIN_ID,ADMIN);
                 return res.status(200).json({token});
             }else{
                 return res.status(401).json({error: 'Not authorized'});
