@@ -20,15 +20,16 @@
 
 2. Setup these tables in the database:
 
+    __login__:
+
+    | Id | email | password | role |
+    | ---- | ---- | ---- | ---- |
+    <br/>
+
     __distributors__:
 
     | Id | name | country | language | email | phone | street | state | postal | district | municipality | ward | website |
     | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-    __distributors_login__:
-
-    | Id | email | password |
-    | ---- | ---- | ---- |
     <br/>
 
 ## Serverside control flow
