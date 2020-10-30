@@ -50,8 +50,8 @@
 2. Get all distributors
 
     1. App routes to routes/api/distributors
-    2. auth checks for validity of jwt in req.headers.authorization
-    3. auth verifies that the token belongs to an admin
+    2. auth middleware checks for validity of jwt in req.headers.authorization
+    3. auth middleware verifies that the token belongs to an admin
     3. getDistributors service returns all registered distributors with their ```id```, ```email``` and ```name```
     
     > Note: To access all fields and files we'll later implement api/distributors/:id/:documentName route
@@ -59,8 +59,8 @@
 3. Delete a distributor
 
     1. App routes to routes/api/distributors
-    2. auth checks for validity of jwt in req.headers.authorization
-    3. auth verifies that the token belongs to an admin
+    2. auth middleware checks for validity of jwt in req.headers.authorization
+    3. auth middleware verifies that the token belongs to an admin
     4. deleteDistributor service handles the following:
         1. Remove directory ```uploads/id```
         2. Remove rows from ```login``` and ```distributors``` with the given ```id```
@@ -73,6 +73,14 @@
     3. validateNewPassword middleware checks if the password matches a predefined format
     4. updatePassword service patches the relevant row in the database.
     5. Return { ```id``` }
+
+5. Authenticate user
+
+    1. App routes to routes/api/auth
+    2. check if the user exists using CRUD operations provided by the db service
+    3. check for password match using bcrypt compare
+    4. Create a new jwt with id and role injected into it
+    5. Return {```user```: { ```id```, ```email```, ```role```}, ```token```}
 
 ## API Usage
 
@@ -104,3 +112,10 @@
     * **Method**: PATCH
     * **Access**: Public
     * **Return**: { id }
+
+5. Authenticate user
+    * **Endpoint**: /api/auth
+    * **Method**: POST
+    * **Access**: Public
+    * **Payload**: { email, password }
+    * **Return**: { user {id, email, role}, token }
