@@ -44,28 +44,63 @@
         3. add a new folder named ```id``` as created above to the ```uploads``` directory (See image below for reference)
         4. save profilePicture.xyz as profilePicture.xyz in the ```id``` folder
         5. save documents as document0.xyz, document1.xyz, ... in the ```id``` folder
-        6. return { ```id```, ```name``` }
+        6. return { ```id```, ```email```, ```name``` }
 
     ![alt text1][uploads_directory]
 2. Get all distributors
 
     1. App routes to routes/api/distributors
     2. auth checks for validity of jwt in req.headers.authorization
-    3. getDistributors service returns all registered distributors along with their non-file fields
+    3. auth verifies that the token belongs to an admin
+    3. getDistributors service returns all registered distributors with their ```id```, ```email``` and ```name```
     
-    > Note: To access files we'll later implement api/distributors/:id/:documentName route
+    > Note: To access all fields and files we'll later implement api/distributors/:id/:documentName route
+
+3. Delete a distributor
+
+    1. App routes to routes/api/distributors
+    2. auth checks for validity of jwt in req.headers.authorization
+    3. auth verifies that the token belongs to an admin
+    4. deleteDistributor service handles the following:
+        1. Remove directory ```uploads/id```
+        2. Remove rows from ```login``` and ```distributors``` with the given ```id```
+        3. Return { ```id```, ```email```, ```name```}
+
+4. Set user password
+
+    1. App routes to routes/api/set_password
+    2. validateSetPassword middleware checks if the user password is unset
+    3. validateNewPassword middleware checks if the password matches a predefined format
+    4. updatePassword service patches the relevant row in the database.
+    5. Return { ```id``` }
 
 ## API Usage
 
 1. Add a distributor
     * **Endpoint**: /api/distributors
     * **Method**: POST
+    * **Access**: Public
     * **Payload**:
         * Required: name, country, language, email, phone, street, state, postal, document
         * Optional: district, municipality, ward, website, profilePicture
-    * **Return**: Distributor { id, name }
+    * **Return**: Distributor { id, email, name }
 
 2. View all distributors
     * **Endpoint**: /api/distributors
     * **Method**: GET
+    * **Access**: Admin
+    * **Header**: Authorization: token
     * **Return**: [ Distributor ]
+
+3. Delete a distributor
+    * **Endpoint**: /api/distributors
+    * **Method**: DELETE
+    * **Access**: Admin
+    * **Header**: Authorization: token
+    * **Return**: [ Distributor ]
+
+4. Set user password
+    * **Endpoint**: /api/set_password/:id
+    * **Method**: PATCH
+    * **Access**: Public
+    * **Return**: { id }
