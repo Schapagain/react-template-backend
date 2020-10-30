@@ -2,6 +2,11 @@ const db = require('../../utils/db');
 const { v4 : uuid } = require('uuid');
 const fs = require('fs');
 const util = require('util');
+const path = require('path');
+
+const { getFromTable, deleteFromTable, insertIntoTable } = require('./db');
+const { DISTRIBUTOR } = require('../../utils/roles');
+
 
 const postDistributor = async distributor => {
 
@@ -11,55 +16,39 @@ const postDistributor = async distributor => {
     delete distributor.documents;
     delete distributor.profilePicture;
 
-    // Add unique userId
-    const uniqueId = uuid();
-    distributor.id = uniqueId;
-
-    // Extract information to be saved into the databse
-    const keys = Object.keys(distributor).join(',');
-    const values = Object.values(distributor);
-    const queryPlaceholders = Object.keys(values).map(key => '$'.concat(Number(key)+1)).join(',');
-
-    const queryString = 
-    `INSERT INTO distributors (${keys}) VALUES (${queryPlaceholders}) RETURNING *`
-    const queryValues = values;
-
     try{
-        const result = await db.query(queryString,queryValues);
-        const { id, name, email } = result.rows[0]
-        
+        const result = await insertIntoTable('distributors',distributor);
+        const { id } = result;
+        const email = distributor.email;
+        const name = distributor.name;
+
         // Create a folder to hold user documents
-        const filePath = await prepareFileSystem(id);
+        const filePath = await _prepareFileSystem(id);
         if (!filePath) throw new Error(' Could not setup file system')
-        await saveFiles(filePath, profilePicture, documents);
-        await initLogin(id,email);
-        return { id, name, email };
+        await _saveFiles(filePath, profilePicture, documents);
+        await _initLogin(id,distributor.email);
+        return { id, email, name };
     }catch(err){
         console.log(err);
         return false;
     }
-    
 }
 
-const initLogin = async (id,email) => {
-    const role = 'distributor';
-    const queryString = `INSERT INTO login (id,email,role) VALUES ($1,$2,$3)`;
-    const queryValues = [id,email,role];
-
+const _initLogin = async (id,email) => {
     try{
-        await db.query(queryString,queryValues);
+        await insertIntoTable('login',{id,email,role:DISTRIBUTOR});
     }catch(err){
         console.log(err);
     }
 }
 
-const prepareFileSystem = async id => {
+const _prepareFileSystem = async id => {
 
     const makeDir = util.promisify(fs.mkdir);
     try{
-        const path = './uploads/'.concat(id,'/');
-        await makeDir(path);
-        return path;
+        const dirPath = path.resolve('.','uploads',id);
+        await makeDir(dirPath);
+        return dirPath;
     }catch(err){
         console.log(err);
         return false
@@ -67,7 +56,7 @@ const prepareFileSystem = async id => {
 
 }
 
-const saveFiles = async (rootPath, profilePicture, documents) => {
+const _saveFiles = async (rootPath, profilePicture, documents) => {
         
         // Store received files into the file system
         const writeFile = util.promisify(fs.writeFile);
@@ -75,24 +64,32 @@ const saveFiles = async (rootPath, profilePicture, documents) => {
 
         if (profilePicture) {
             const fileStream = await readFile(profilePicture.path);
-            const profilePicturePath = rootPath.concat('profilePicture.',profilePicture.type.split('/').pop());
+            const fileName = 'profilePicture'.concat(path.extname(profilePicture.name));
+            const profilePicturePath = path.resolve(rootPath,fileName);
             await writeFile(profilePicturePath,fileStream);
         }
 
         documents.forEach( async (document,index) => {
             const fileStream = await readFile(document.path);
-            const documentPath = rootPath.concat('document',index,'.',document.type.split('/').pop());
+            const fileName = 'document'.concat(index,path.extname(document.name));
+            const documentPath = path.resolve(rootPath,fileName);
             await writeFile(documentPath,fileStream);
         })  
 
 }
 
-const getDistributors = async () => {
 
-    const queryString = 'SELECT * FROM distributors';
+
+const getDistributors = async () => {
     try {
-        const result = await db.query(queryString);
-        return result.rows;
+        const result = await getFromTable('distributors');
+
+        const cleanResult = result.map(distributor => {
+            const { id, email, name } = distributor;
+            return { id, email, name }
+        })
+
+        return cleanResult;
     }catch(err){
         console.log(err)
         return false;
@@ -100,4 +97,25 @@ const getDistributors = async () => {
 
 }
 
-module.exports = {postDistributor, getDistributors};
+const deleteDistributor = async id => {
+    deleteFiles(id);
+    deleteFromTable('login',id);
+    const result = await deleteFromTable('distributors',id);
+    if (!result) return false;
+    const { email, name } = result;
+    return { id, email, name }
+}
+
+const deleteFiles = id => {
+
+    const dirPath = path.resolve('.','uploads',id);
+    fs.rmdir(dirPath,{recursive:true}, err=> {
+        if (err){
+            console.log(err)
+        }
+    });
+
+    
+}
+
+module.exports = { postDistributor, getDistributors, deleteDistributor };
