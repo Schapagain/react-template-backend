@@ -21,6 +21,7 @@ app.use((req,res,next) => {
 
 
 // Route to API
+app.use('/api/auth',require('./routes/api/auth'));
 app.use('/api/distributors',require('./routes/api/distributors'));
 app.use('/api/admin',require('./routes/api/admin'));
 app.use('/api/set_password',require('./routes/api/setPassword'));

@@ -2,13 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { getAuthToken } = require('../../utils/authorization');
-const auth = require('../../middlewares/auth');
-
-// Import the user model
-const User = require('../../models/user');
-const { getCleanUsers } = require('../../utils/users');
-
+const { getAuthToken } = require('../../utils/auth');
+const { getFromTableByEmail } = require('../services/db');
 
 // @route   POST api/auth
 // @desc    Authenticate user
@@ -19,46 +14,38 @@ router.post('/', async (req,res) => {
     // Check if all fields are given
     if (!email || !password){
         return res.status(400).json({
-            success: false,
-            error: "Please provide all required user properties"
+            error: "Please provide all required fields"
         })
     }
 
     try{
         // Check if the user already exists
-        let user = await User.findOne({ email })
-        if (!user) {
+        let result = await getFromTableByEmail('login',email);
+        if (!result || !result[0]) {
             return res.status(400).json({
-                error: "User doesn't exist"
+                error: "Not authorized"
             })
         } 
 
+        const { id, password:passwordHash, role } = result[0];
+
         // Compare username/password combination
-        const credentialsMatch = await bcrypt.compare(password,user.password);
+        const credentialsMatch = await bcrypt.compare(password,passwordHash);
         if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
 
         // Clean up User and assign token before sending the user back
-        const token = getAuthToken(user.id);
-        user = getCleanUsers(user).pop();
+        const token = getAuthToken(id, role);
         res.status(200).json({
-            user,
+            user: { id, email, role },
             token,
         })
     }
     catch(err){
         console.log(err);
         return res.status(500).json({
-            error: 'Could not add a new user. Try again later.'
+            error: 'Server error. Try again later.'
         })
     }
-})
-
-// @route   GET api/auth/user
-// @desc    Get user data
-// @access  Private
-router.get('/user', auth, async (req,res) => {
-    const {name,email} = await User.findById(req.id);
-    res.status(200).json({name,email});
 })
 
 module.exports = router;

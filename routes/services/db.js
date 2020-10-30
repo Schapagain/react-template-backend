@@ -28,12 +28,28 @@ const insertIntoTable = async (table,data) => {
     
 }
 
+// I can refactor getFromTableByEmail and getFromTable 
+// instead of accepting email/id I can accpet config object 
+// with whatever configurations. I'll do that later
+const getFromTableByEmail = async (table,email) => {
 
+    const queryPrefix = `SELECT * FROM ${table}`;
+    const queryString = email? queryPrefix.concat(' WHERE email=$1'):queryPrefix;
+    const queryValues = email? [email]:[];
+    try {
+        const result = await db.query(queryString,queryValues);
+        return result.rows;
+    }catch(err){
+        console.log(err)
+        return false;
+    }
+
+}
 
 const getFromTable = async (table,id) => {
 
     const queryPrefix = `SELECT * FROM ${table}`;
-    const queryString = id? queryPrefix.concat('WHERE id=$1'):queryPrefix;
+    const queryString = id? queryPrefix.concat(' WHERE id=$1'):queryPrefix;
     const queryValues = id? [id]:[];
     try {
         const result = await db.query(queryString,queryValues);
@@ -98,4 +114,4 @@ const updateTable = async (table,data) => {
     };
 }
 
-module.exports = { getFromTable, updateTable, deleteFromTable, insertIntoTable };
+module.exports = { getFromTable, updateTable, deleteFromTable, insertIntoTable, getFromTableByEmail };
