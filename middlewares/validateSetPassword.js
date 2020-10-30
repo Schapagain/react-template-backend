@@ -29,7 +29,6 @@ const checkUserPending = async id => {
         if (!userFound) return false;
 
         const currentPassword = result.rows[0].password;
-        console.log('current password is',currentPassword);
         const userIsPending =  !currentPassword;
         return userIsPending;
     }
