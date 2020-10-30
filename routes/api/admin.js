@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { getAuthToken } = require('../../utils/auth');
-const { ADMIN } = require('./userRoles');
+const { ADMIN } = require('../../utils/roles');
 const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
 
 // @route   POST api/admin
