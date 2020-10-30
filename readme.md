@@ -16,6 +16,17 @@
     SECRET_KEY
     ```
 
+2. Setup these tables in the database:<br/>
+
+    ```distributors```:
+    | Id      | name | country | language | email | phone | street | state | postal | district | municipality | ward | website |
+    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+    <br>
+
+    ```distributors_login```:
+    | Id | email | password |
+    | ---- | ---- | ---- |
+    <br>
 ## Serverside control flow
 1. Add a distributor
 
