@@ -26,18 +26,31 @@ const postDistributor = async distributor => {
 
     try{
         const result = await db.query(queryString,queryValues);
-        const { id, name } = result.rows[0]
+        const { id, name, email } = result.rows[0]
         
         // Create a folder to hold user documents
         const filePath = await prepareFileSystem(id);
         if (!filePath) throw new Error(' Could not setup file system')
         await saveFiles(filePath, profilePicture, documents);
-        return { id, name };
+        await initLogin(id,email);
+        return { id, name, email };
     }catch(err){
         console.log(err);
         return false;
     }
     
+}
+
+const initLogin = async (id,email) => {
+    const role = 'distributor';
+    const queryString = `INSERT INTO login (id,email,role) VALUES ($1,$2,$3)`;
+    const queryValues = [id,email,role];
+
+    try{
+        await db.query(queryString,queryValues);
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const prepareFileSystem = async id => {
