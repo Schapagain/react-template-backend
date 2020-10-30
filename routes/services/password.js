@@ -1,18 +1,17 @@
 const db = require('../../utils/db');
 const bcrypt =  require('bcrypt');
+const { updateTable } = require('./db');
 
 const updatePassword = async (id,password) => {
 
     try{
         const passwordHash = await generatePasswordHash(password);
-        const queryString = "update login set password=$2 WHERE id=$1 RETURNING email";
-        const queryValues = [id,passwordHash];
 
-        const result = await db.query(queryString,queryValues);
-        if (!result || !result.rowCount){
+        const result = await updateTable('login',{id,password:passwordHash})
+        if (!result){
             return false;
         }else{
-            return result.rows[0];
+            return result
         }
     }catch(err){
         console.log(err);
