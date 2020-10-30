@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const validateNewDistributor = require('../../middlewares/validateNewDistributor');
-const prepareFilesystem = require('../../middlewares/fileSystem');
 const formParser = require('../../middlewares/formParser');
 const {postDistributor,getDistributors} = require('../services/distributors');
 
