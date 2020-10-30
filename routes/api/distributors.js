@@ -5,6 +5,7 @@ const validateNewDistributor = require('../../middlewares/validateNewDistributor
 const formParser = require('../../middlewares/formParser');
 const {postDistributor,getDistributors} = require('../services/distributors');
 
+
 // @route   POST api/distributors
 // @desc    Add a new distributor
 // @access  Public
@@ -28,6 +29,9 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
+            if (req.role !== 'admin'){
+                return res.status(401).json({error: "Not authorized"})
+            }
             const result = await getDistributors();
             if(!result) throw new Error();
             res.status(200).json(result);
