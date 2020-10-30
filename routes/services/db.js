@@ -83,7 +83,7 @@ const updateTable = async (table,data) => {
         }
         const propsString = propsToUpdate.join(', ');
 
-        const queryString = "update users set ".concat(propsString,' WHERE id=$1 RETURNING *');
+        const queryString = "update ".concat(table,' set ',propsString,' WHERE id=$1 RETURNING *');
         const queryValues = [id,...valuesToUpdate];
         const result = await db.query(queryString,queryValues);
         if (!result || !result.rowCount){
