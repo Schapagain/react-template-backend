@@ -7,7 +7,7 @@ const { ADMIN } = require('../utils/roles');
 const auth = (req,res,next) => {
     try{
         // Get token from the header
-        const userToken = req.header('authorization');
+        const userToken = req.header('authorization') || req.params.token;
         if (!userToken) throw new Error("No token found");
 
         // Verify token and extract user id
@@ -16,25 +16,21 @@ const auth = (req,res,next) => {
         const tokenRole = token.body.scope;
 
         // Inject userId into req before proceeding
-        req.id = tokenId;
-        req.role = tokenRole;
+        req.body.id = tokenId;
+        req.body.role = tokenRole;
 
         if (tokenRole !== ADMIN) {
 
-            if (req.params.id === tokenId){
+            if (!req.params.id || req.params.id === tokenId){
                 return next();
             }else{
                 return res.status(401).json({error:'Not authorized'})
             }
             
         }
-
         next();
     }catch(err){
-        console.log(err.message);
-        return res.status(401).json({
-            error: err.message
-        })
+        throw err;
     }
 }
 
