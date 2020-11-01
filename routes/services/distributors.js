@@ -80,16 +80,17 @@ const _saveFiles = async (rootPath, profilePicture, documents) => {
 
 
 
-const getDistributors = async () => {
+const getDistributors = async (distId,getAll) => {
     try {
-        const result = await getFromTable('distributors');
+        // console.log('geeting distributor')
+        const result = distId? await getFromTable('distributors',distId) : await getFromTable('distributors');
 
         const cleanResult = result.map(distributor => {
             const { id, email, name } = distributor;
             return { id, email, name }
         })
 
-        return cleanResult;
+        return distId? getAll? result[0]:cleanResult[0]:cleanResult;
     }catch(err){
         console.log(err)
         return false;
