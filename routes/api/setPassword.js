@@ -2,19 +2,18 @@
 const express = require('express');
 const router = express.Router();
 const { updatePassword } = require('../services/password');
-const validateSetPassword = require('../../middlewares/validateSetPassword');
+const auth = require('../../middlewares/auth');
 const validateNewPassword = require('../../middlewares/validateNewPassword');
 
 
-// @route   POST api/distributors/:id
-// @desc    set distributor password
+// @route   POST api/set_password/:token
+// @desc    Change user password
 // @access  Public
-router.patch('/:id', 
-    validateSetPassword,
+router.patch('/:token',
+    auth,
     validateNewPassword,
     async (req, res) => {
-        const { id } = req.params;
-        const { password } = req.body;
+        const { id, password } = req.body;
         const result = await updatePassword(id,password);
         if (result){
             res.status(200).json(result)
