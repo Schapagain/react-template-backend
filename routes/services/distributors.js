@@ -1,12 +1,11 @@
 const db = require('../../utils/db');
-const { v4 : uuid } = require('uuid');
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
 
 const { getFromTable, deleteFromTable, insertIntoTable } = require('./db');
 const { DISTRIBUTOR } = require('../../utils/roles');
-
+const { getAuthToken } = require('../../utils/auth');
 
 const postDistributor = async distributor => {
 
@@ -25,8 +24,7 @@ const postDistributor = async distributor => {
         // Create a folder to hold user documents
         const filePath = await _prepareFileSystem(id);
         if (!filePath) throw new Error(' Could not setup file system')
-        await _saveFiles(filePath, profilePicture, documents);
-        await _initLogin(id,distributor.email);
+        await Promise.all([_saveFiles(filePath, profilePicture, documents),_initLogin(id,distributor.email)]);
         return { id, email, name };
     }catch(err){
         console.log(err);
@@ -36,7 +34,14 @@ const postDistributor = async distributor => {
 
 const _initLogin = async (id,email) => {
     try{
-        await insertIntoTable('login',{id,email,role:DISTRIBUTOR});
+
+        // Save initial password as a token that'll let the distributor
+        // set a password later
+        const role = DISTRIBUTOR
+        const token = getAuthToken(id,role);
+        token => console.log('New password reset token:',token)();
+
+        await insertIntoTable('login',{id,email,role});
     }catch(err){
         console.log(err);
     }
