@@ -3,6 +3,8 @@ require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
 const { ADMIN } = require('../utils/roles');
 
+const Distributor = require('../models/Distributor');
+
 // Acess controls based on roles remains to be implemented here
 const auth = (req,res,next) => {
     try{
@@ -19,14 +21,11 @@ const auth = (req,res,next) => {
         req.body.id = tokenId;
         req.body.role = tokenRole;
 
-        if (tokenRole !== ADMIN) {
-
-            if (!req.params.id || req.params.id === tokenId){
-                return next();
-            }else{
+        if (req.params.id){
+            const result = Distributor.findOne({where:{parent:tokenId,id:req.params.id}})
+            if (!result && req.params.id !== tokenId) {
                 return res.status(401).json({error:'Not authorized'})
             }
-            
         }
         next();
     }catch(err){

@@ -1,5 +1,8 @@
 const { emailFormat } = require('../utils');
-const validateNewDistributor = (req, res, next) => {
+
+const Login = require('../models/Login');
+
+const validateNewDistributor = async (req, res, next) => {
     
     const {
         name,
@@ -36,6 +39,11 @@ const validateNewDistributor = (req, res, next) => {
 
     if(!email.match(emailFormat)){
         return sendError(res,'Invalid email');
+    }
+
+    const emailExists = await Login.findOne({where:{email}});
+    if (emailExists){
+        return sendError(res,'Email already exists!')
     }
 
     next();

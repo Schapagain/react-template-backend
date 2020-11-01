@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../../middlewares/auth');
 const validateNewDistributor = require('../../middlewares/validateNewDistributor');
 const formParser = require('../../middlewares/formParser');
-const { postDistributor,getDistributors, deleteDistributor } = require('../services/distributors');
+const { postDistributor, getDistributor, getDistributors, deleteDistributor } = require('../services/distributors');
 const { getFiles } = require('../services/db');
 const path = require('path');
 
@@ -14,11 +14,11 @@ router.post('/',
     formParser,
     validateNewDistributor,
     async (req, res) => {
-        
-        const result = await postDistributor(req.body);
-        if (result){
-            res.status(200).json(result)
-        }else{
+        try{
+            const result = await postDistributor(req.body);
+            if (result) return res.status(200).json(result);
+            throw new Error();
+        }catch(err){
             res.status(500).json({error:"Could not add distributor"})
         }
     });
@@ -30,11 +30,12 @@ router.get('/:id',
     auth,
     async (req,res) => {
         try{
+            const parentId = req.body.id;
             const id = req.params.id;
             if(!id) return res.json({error:'No id found'})
 
             // Get info from database
-            const result = await getDistributors(id,getAll=true);
+            const result = await getDistributor(parentId,id);
             if(!result) return res.json({error:'No distributor found'})
 
             // Get files from filesystem
@@ -59,8 +60,15 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const result = await getDistributors();
+            const parentId = req.body.id;
+            let result = await getDistributors(parentId);
             if(!result) throw new Error();
+
+            result = result.map(distributor => ({
+                ...distributor,
+                'more info:': path.join(req.get('host'),'api','distributors',distributor.id)
+            }))
+
             res.status(200).json(result);
         }catch(err){
             console.log(err);
@@ -76,8 +84,9 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
+            const parentId = req.body.id;
             const id = req.params.id;
-            const result = await deleteDistributor(id);
+            const result = await deleteDistributor(parentId,id);
             if(!result) {
                 return res.status(400).json({
                     error: "Distributor not found"

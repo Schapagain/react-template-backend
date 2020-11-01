@@ -1,11 +1,18 @@
 require('dotenv').config();
-const {Pool} = require('pg');
-const pool = new Pool();
+const Sequelize = require('sequelize');
 
-const newPool = {
-    query: (text,params,callback) => {
-        return pool.query(text,params,callback);
-    },
-}
+const { PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+const options = {
+    host: 'localhost',
+    dialect: 'postgres',
+    port: 5432,
+    logging: false,
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+    }
+};
 
-module.exports = newPool;
+module.exports  = new Sequelize(PGDATABASE, PGUSER, PGPASSWORD, options);

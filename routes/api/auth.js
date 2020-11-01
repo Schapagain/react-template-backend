@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const { getFromTableByEmail } = require('../services/db');
 
+const Login = require('../../models/Login');
+
 // @route   POST api/auth
 // @desc    Authenticate user
 // @access  Public
@@ -19,15 +21,14 @@ router.post('/', async (req,res) => {
     }
 
     try{
-        // Check if the user already exists
-        let result = await getFromTableByEmail('login',email);
-        if (!result || !result[0]) {
+        // Check if the user exists
+        let result = await Login.findOne({where:{email}})
+        if (!result) {
             return res.status(400).json({
                 error: "Not authorized"
             })
         } 
-
-        const { id, password:passwordHash, role } = result[0];
+        const { id, password:passwordHash, role } = result;
 
         // Compare username/password combination
         const credentialsMatch = await bcrypt.compare(password,passwordHash);

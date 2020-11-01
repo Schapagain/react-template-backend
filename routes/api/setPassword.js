@@ -16,7 +16,7 @@ router.patch('/:token',
         const { id, password } = req.body;
         const result = await updatePassword(id,password);
         if (result){
-            res.status(200).json(result)
+            res.status(200).json({msg: "Password updated successfully"})
         }else{
             res.status(500).json({error:"Could not upadte password"})
         }
