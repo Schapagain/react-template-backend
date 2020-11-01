@@ -20,7 +20,13 @@ const auth = (req,res,next) => {
         req.role = tokenRole;
 
         if (tokenRole !== ADMIN) {
-            return res.status(401).json({error:'Not authorized'});
+
+            if (req.params.id === tokenId){
+                return next();
+            }else{
+                return res.status(401).json({error:'Not authorized'})
+            }
+            
         }
 
         next();
