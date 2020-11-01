@@ -5,6 +5,7 @@ const validateNewDistributor = require('../../middlewares/validateNewDistributor
 const formParser = require('../../middlewares/formParser');
 const { postDistributor,getDistributors, deleteDistributor } = require('../services/distributors');
 const { getFiles } = require('../services/db');
+const path = require('path');
 
 // @route   POST api/distributors
 // @desc    Add a new distributor
@@ -37,9 +38,12 @@ router.get('/:id',
             if(!result) return res.json({error:'No distributor found'})
 
             // Get files from filesystem
-            const files = await getFiles(id);
+            let files = await getFiles(id);
             
-            const resultWithFiles = {...result,...files};
+            // Add api route to files as a prefix 
+            files = files.map(fileName => path.join(req.get('host'),'api','files',id,fileName));
+             
+            const resultWithFiles = {...result,files};
             res.status(200).json(resultWithFiles);
         }catch(err){
             console.log(err);
