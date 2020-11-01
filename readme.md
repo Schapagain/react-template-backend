@@ -82,6 +82,14 @@
     4. Create a new jwt with id and role injected into it
     5. Return {```user```: { ```id```, ```email```, ```role```}, ```token```}
 
+6. Get distributor info
+
+    1. App routes to routes/api/distributors
+    2. auth middleware checks for validity of jwt in req.headers.authorization
+    3. auth middleware checks if the user is admin or is accessing their own information
+    4. getFiles in the db service reads all files inside ```uploads/id``` and returns file buffers
+    5. Return { ```Distributor``` , ```profilePicture```, ```[ documents ]```}
+
 ## API Usage
 
 1. Add a distributor
@@ -119,3 +127,10 @@
     * **Access**: Public
     * **Payload**: { email, password }
     * **Return**: { user {id, email, role}, token }
+
+6. Get distributor info
+    * **Endpoint**: /api/distributors/:id
+    * **Method**: GET
+    * **Access**: Private
+    * **Header**: Authorization: token
+    * **Return**: [ { Distributor, documents, profilePicture } ]
