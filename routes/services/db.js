@@ -1,7 +1,6 @@
 const db = require('../../utils/db');
 const { v4 : uuid } = require('uuid');
 const fs = require('fs');
-const util = require('util');
 const path = require('path');
 
 const insertIntoTable = async (table,data) => {
@@ -50,23 +49,14 @@ const getFromTableByEmail = async (table,email) => {
 const getFiles = async id => {
 
      try {
-        const files = {
-            documents: []
-        };
+        const files = [];
         const dirPath = path.resolve('.','uploads',id);
         const dir = await fs.promises.opendir(dirPath);
         let fileName;
-        let filePath;
-        let fileStream;
         for await (const dirent of dir) {
-            filePath = path.resolve(dirPath,dirent.name);
+            fullFileName = path.basename(dirent.name);
             fileName = path.basename(dirent.name,path.extname(dirent.name));
-            fileStream = await fs.promises.readFile(filePath);
-            if (fileName === 'profilePicture'){
-                files[fileName] = fileStream;
-            }else{
-                files['documents'] = [...files['documents'], fileStream];
-            }
+            files.push(fullFileName);
         }
         return files;
     
