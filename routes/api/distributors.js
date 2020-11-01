@@ -4,6 +4,7 @@ const auth = require('../../middlewares/auth');
 const validateNewDistributor = require('../../middlewares/validateNewDistributor');
 const formParser = require('../../middlewares/formParser');
 const { postDistributor,getDistributors, deleteDistributor } = require('../services/distributors');
+const { getFiles } = require('../services/db');
 
 // @route   POST api/distributors
 // @desc    Add a new distributor
@@ -21,19 +22,28 @@ router.post('/',
         }
     });
 
-// @route   GET api/distributors
-// @desc    View all distributors
+// @route   GET api/distributors/:id
+// @desc    Get distributor info
 // @access  Private
 router.get('/:id', 
     auth,
     async (req,res) => {
         try{
-            const result = await getDistributors();
-            if(!result) throw new Error();
-            res.status(200).json(result);
+            const id = req.params.id;
+            if(!id) return res.json({error:'No id found'})
+
+            // Get info from database
+            const result = await getDistributors(id,getAll=true);
+            if(!result) return res.json({error:'No distributor found'})
+
+            // Get files from filesystem
+            const files = await getFiles(id);
+            
+            const resultWithFiles = {...result,...files};
+            res.status(200).json(resultWithFiles);
         }catch(err){
             console.log(err);
-            res.status(500).json({error:"Could not fetch distributors"})
+            res.status(500).json({error:"Could not fetch distributor"})
         }
     }
 );
