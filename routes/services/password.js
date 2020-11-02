@@ -1,7 +1,4 @@
-const db = require('../../utils/db');
 const bcrypt =  require('bcrypt');
-const { updateTable } = require('./db');
-
 const Login = require('../../models/Login');
 
 const updatePassword = async (id,password) => {

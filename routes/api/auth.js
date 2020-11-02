@@ -3,8 +3,6 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
-const { getFromTableByEmail } = require('../services/db');
-
 const Login = require('../../models/Login');
 
 // @route   POST api/auth
