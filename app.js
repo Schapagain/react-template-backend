@@ -2,6 +2,10 @@
 const express = require('express');
 const app = express();
 
+// Log HTTP requests
+const morgan = require('morgan');
+app.use(morgan('dev'));
+
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -25,7 +29,7 @@ app.use('/api/auth',require('./routes/api/auth'));
 app.use('/api/distributors',require('./routes/api/distributors'));
 app.use('/api/admin',require('./routes/api/admin'));
 app.use('/api/set_password',require('./routes/api/setPassword'));
-app.use('/api/files',require('./routes/api/files'));
+app.use('/api/drivers',require('./routes/api/drivers'));
 
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
