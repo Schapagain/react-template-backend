@@ -22,15 +22,22 @@
 
     __login__:
 
-    | Id | email | password | role |
-    | ---- | ---- | ---- | ---- |
+    | Id | email | password | role | phone |
+    | ---- | ---- | ---- | ---- | ---- |
     <br/>
 
     __distributors__:
 
-    | Id | name | country | language | email | phone | street | state | postal | district | municipality | ward | website |
-    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+    | Id | admin_id | name | country | language | email | phone | street | state | postal | district | municipality | ward | website | license_document | registration_document | profile_picture |
+    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
     <br/>
+    
+    __drivers__:
+
+    | Id | distributor_id | phone | email | password | role | dob | name | license_document |
+    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+    <br/>
+
 
 ## Serverside control flow
 1. Add a distributor
@@ -41,12 +48,10 @@
     4. postDistributor service handles everything below:
         1. create a unique ```id``` for the distributor using uuid()
         2. add all non file fields to distributors table
-        3. add a new folder named ```id``` as created above to the ```uploads``` directory (See image below for reference)
-        4. save profilePicture.xyz as profilePicture.xyz in the ```id``` folder
-        5. save documents as document0.xyz, document1.xyz, ... in the ```id``` folder
-        6. return { ```id```, ```email```, ```name``` }
+        3. save all files with random names into the ```uploads``` folder
+        4. add filenames to their respective fields in the database
+        5. return { ```id```, ```email```, ```name``` }
 
-    ![alt text1][uploads_directory]
 2. Get all distributors
 
     1. App routes to routes/api/distributors
@@ -62,7 +67,7 @@
     2. auth middleware checks for validity of jwt in req.headers.authorization
     3. auth middleware verifies that the token belongs to an admin
     4. deleteDistributor service handles the following:
-        1. Remove directory ```uploads/id```
+        1. Remove all distributor files from the ```uploads``` folder
         2. Remove rows from ```login``` and ```distributors``` with the given ```id```
         3. Return { ```id```, ```email```, ```name```}
 
@@ -134,3 +139,19 @@
     * **Access**: Private
     * **Header**: Authorization: token
     * **Return**: [ { Distributor, documents, profilePicture } ]
+
+7. Add a driver
+    * **Endpoint**: /api/drivers
+    * **Method**: POST
+    * **Access**: Distributor
+    * **Payload**:
+        * Required: name, phone, distributorId, licenseDocument
+        * Optional: dob, address, profile_picture
+    * **Return**: Driver { id, phone, name }
+
+8. View all drivers
+    * **Endpoint**: /api/drivers
+    * **Method**: GET
+    * **Access**: Distributor
+    * **Header**: Authorization: token
+    * **Return**: [ Driver ]
