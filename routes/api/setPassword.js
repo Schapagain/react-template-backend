@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { updatePassword } = require('../services/password');
+const { updatePassword } = require('../../services/password');
 const auth = require('../../middlewares/auth');
 const validateNewPassword = require('../../middlewares/validateNewPassword');
 
