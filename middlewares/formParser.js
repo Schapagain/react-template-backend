@@ -11,17 +11,14 @@ const formParser = (req,res,next) => {
                 error: "Couldn't parse the form. Try again later"
             })
         }
-        
-        if (files.documents) {
-            if (!Array.isArray(files.documents)){
-                files.documents = [files.documents];
+
+        Object.keys(files).forEach(fileName => {
+            file = files[fileName]
+            if (!acceptedFormats.has(file.type)) {
+                return next(new Error('Unacceptable file format'))
             }
-            files.documents.forEach(file => {
-                if (!acceptedFormats.has(file.type)) {
-                    return next(new Error('Unacceptable file format'))
-                }
-            })
-        }
+        })
+
         req.body = {...files,...fields};
         next();
     })
