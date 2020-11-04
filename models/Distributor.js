@@ -1,10 +1,18 @@
+const { Sequelize } = require('sequelize');
 const Sequelise = require('sequelize');
 const db = require('../utils/db');
 
-const Distributor = db.define('distributor', {
-    parent: {
+const Schema = {
+    adminId: {
         type: Sequelise.STRING,
         allowNull: false,
+        field: 'admin_id',
+        foreignKey: true,
+    },
+    id: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        primaryKey: true,
     },
     name: {
         type: Sequelise.STRING,
@@ -38,21 +46,34 @@ const Distributor = db.define('distributor', {
         type: Sequelise.STRING,
         allowNull: false
     },
-    district: {
+    licenseDocument: {
         type: Sequelise.STRING,
+        allowNull: false,
+        field: 'license_document'
     },
-    municipality: {
+    registrationDocument: {
         type: Sequelise.STRING,
+        allowNull: false,
+        field: 'registration_document'
     },
-    ward: {
+    createdAt: {
+        type: Sequelize.DATE,
+        field: 'created_at'
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        field: 'updated_at'
+    },
+    profilePicture: {
         type: Sequelise.STRING,
+        field: 'profile_picture',
     },
-    website: {
-        type: Sequelise.STRING,
-    },
-},{
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
-})
+    district: Sequelise.STRING,
+    municipality: Sequelise.STRING,
+    ward: Sequelise.STRING,
+    website: Sequelise.STRING,
+};
+
+const Distributor = db.define('distributor', Schema);
 
 module.exports = Distributor;
