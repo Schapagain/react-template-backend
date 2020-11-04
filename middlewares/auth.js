@@ -10,7 +10,7 @@ const auth = (req,res,next) => {
     try{
         // Get token from the header
         const userToken = req.header('authorization') || req.params.token;
-        if (!userToken) throw new Error("No token found");
+        if (!userToken) return res.status(400).json({error:"No token found"})
 
         // Verify token and extract user id
         const token = njwt.verify(userToken,signingKey);
@@ -22,7 +22,7 @@ const auth = (req,res,next) => {
         req.body.role = tokenRole;
 
         if (req.params.id){
-            const result = Distributor.findOne({where:{parent:tokenId,id:req.params.id}})
+            const result = Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
             if (!result && req.params.id !== tokenId) {
                 return res.status(401).json({error:'Not authorized'})
             }
