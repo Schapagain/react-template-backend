@@ -3,10 +3,10 @@ const router = express.Router();
 const auth = require('../../middlewares/auth');
 const validateNewDistributor = require('../../middlewares/validateNewDistributor');
 const formParser = require('../../middlewares/formParser');
-const { postDistributor, getDistributor, getDistributors, deleteDistributor } = require('../services/distributors');
-const { getFiles } = require('../services/db');
+const { postDistributor, getDistributor, getDistributors, deleteDistributor } = require('../../services/distributors');
 const path = require('path');
-
+const { expectedFiles } = require('../../utils');
+const fs = require('fs');
 // @route   POST api/distributors
 // @desc    Add a new distributor
 // @access  Public
@@ -16,7 +16,7 @@ router.post('/',
     async (req, res) => {
         try{
             const result = await postDistributor(req.body);
-            if (result) return res.status(200).json(result);
+            if (result) return res.status(201).json(result);
             throw new Error();
         }catch(err){
             res.status(500).json({error:"Could not add distributor"})
@@ -30,22 +30,20 @@ router.get('/:id',
     auth,
     async (req,res) => {
         try{
-            const parentId = req.body.id;
+            const adminId = req.body.id;
             const id = req.params.id;
             if(!id) return res.json({error:'No id found'})
 
             // Get info from database
-            const result = await getDistributor(parentId,id);
+            const result = await getDistributor(adminId,id);
             if(!result) return res.json({error:'No distributor found'})
 
-            // Get files from filesystem
-            let files = await getFiles(id);
-            
-            // Add api route to files as a prefix 
-            files = files.map(fileName => path.join(req.get('host'),'api','files',id,fileName));
-             
-            const resultWithFiles = {...result,files};
-            res.status(200).json(resultWithFiles);
+            // Convert filenames to API endpoints
+            expectedFiles.forEach(fieldName => {
+                const fileName = result[fieldName];
+                result[fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
+            })
+            res.status(200).json(result);
         }catch(err){
             console.log(err);
             res.status(500).json({error:"Could not fetch distributor"})
@@ -60,8 +58,8 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const parentId = req.body.id;
-            let result = await getDistributors(parentId);
+            const adminId = req.body.id;
+            let result = await getDistributors(adminId);
             if(!result) throw new Error();
 
             result = result.map(distributor => ({
@@ -84,9 +82,9 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const parentId = req.body.id;
+            const adminId = req.body.id;
             const id = req.params.id;
-            const result = await deleteDistributor(parentId,id);
+            const result = await deleteDistributor(adminId,id);
             if(!result) {
                 return res.status(400).json({
                     error: "Distributor not found"
@@ -99,5 +97,27 @@ router.delete('/:id',
         }
     }
 );
+
+router.get('/:id/files/:fileName', auth, async (req,res)=>{
+
+    const rootPath = path.join('.','uploads');
+    const { fileName } = req.params;
+    try{
+        await fs.promises.access(path.join(rootPath,fileName))
+        res.sendFile(fileName,{root: rootPath});
+    }catch(err){
+
+        if (err.code === 'ENOENT'){
+            res.status(404).json({
+                error: "File not found"
+            })
+        }else{
+            res.status(500).json({
+                error: "Server error. Try again later."
+            })
+            throw err;
+        }
+    }
+});
 
 module.exports = router;
