@@ -1,3 +1,4 @@
+const { Sequelize } = require('sequelize');
 const Sequelise = require('sequelize');
 const db = require('../utils/db');
 
@@ -7,10 +8,8 @@ const Login = db.define('Login', {
         allowNull: false,
         primaryKey: true,
     },
-    email: {
-        type: Sequelise.STRING,
-        allowNull: false
-    },
+    email: Sequelise.STRING,
+    phone: Sequelise.STRING,
     password: {
         type: Sequelise.STRING,
     },
@@ -18,10 +17,16 @@ const Login = db.define('Login', {
         type: Sequelise.STRING,
         allowNull: false
     },
+    createdAt: {
+        type: Sequelize.DATE,
+        field: 'created_at'
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        field: 'updated_at'
+    }
 },{
     tableName: 'login',
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 }
 )
 
