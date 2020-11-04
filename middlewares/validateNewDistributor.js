@@ -18,14 +18,15 @@ const validateNewDistributor = async (req, res, next) => {
         mobile,
         email,
         website,
-        documents,
+        registrationDocument,
+        licenseDocument,
         profilePicture
     } = req.body;
 
     const allowedCountries = new Set(['nepal','usa','united states','ghana','india','norway','indonesia','china','mauritius']);
     const allowedLanguages = new Set(['nepali','english','chinese','hindi','swahili','russian']);
     
-    if (!name || !country || !language ||!email || !documents || !(phone || mobile) || !street || !state || !postal) {
+    if (!name || !country || !language ||!email || !registrationDocument || !licenseDocument || !(phone || mobile) || !street || !state || !postal) {
         return sendError(res,'Please provide all required details');
     }
 
