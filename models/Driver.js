@@ -14,6 +14,11 @@ const Driver = db.define('Driver', {
         allowNull: false,
         primaryKey: true,
     },
+    licenseDocument: {
+        type: Sequelise.STRING,
+        allowNull: false,
+        field: 'license_document'
+    },
     phone: {
         type: Sequelise.STRING,
         allowNull: false
