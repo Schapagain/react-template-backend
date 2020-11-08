@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 const Sequelise = require('sequelize');
 const db = require('../utils/db');
 
-const Login = db.define('Login', {
+const Schema = {
     id: {
         type: Sequelise.STRING,
         allowNull: false,
@@ -25,9 +25,14 @@ const Login = db.define('Login', {
         type: Sequelize.DATE,
         field: 'updated_at'
     }
-},{
-    tableName: 'login',
 }
-)
+
+const options = {
+    tableName: 'login',
+    paranoid: true,
+    deletedAt: 'deleted_at'
+}
+
+const Login = db.define('Login', Schema, options)
 
 module.exports = Login;
