@@ -4,7 +4,7 @@ const formidable = require('formidable');
 
 const formParser = (req,res,next) => {
     const form = formidable({multiples:true})
-    const acceptedFormats = new Set(['image/jpeg','image/jpg','image/png']);
+    const acceptedFormats = new Set(['image/jpeg','image/jpg','image/png','application/pdf']);
     form.parse(req, (err,fields,files) => {
         if (err){
             return res.status(500).json({
@@ -19,7 +19,7 @@ const formParser = (req,res,next) => {
             }
         })
 
-        req.body = {...files,...fields};
+        req.body = {...files,...fields,...req.body};
         next();
     })
 }
