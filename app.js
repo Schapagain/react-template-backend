@@ -30,6 +30,7 @@ app.use('/api/distributors',require('./routes/api/distributors'));
 app.use('/api/admin',require('./routes/api/admin'));
 app.use('/api/set_password',require('./routes/api/setPassword'));
 app.use('/api/drivers',require('./routes/api/drivers'));
+app.use('/api/vehicles',require('./routes/api/vehicles'));
 
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
