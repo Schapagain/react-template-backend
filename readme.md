@@ -28,8 +28,11 @@
 
     __distributors__:
 
-    | Id | admin_id | name | country | language | email | phone | street | state | postal | district | municipality | ward | website | license_document | registration_document | profile_picture |
-    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+    | Id | admin_id | name | country | language | email | phone | street | state | postal | district 
+    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- 
+
+    | municipality | ward | website | license_document | registration_document | profile_picture |
+    | ---- | ---- | ---- | ---- | ---- | ---- |
     <br/>
     
     __drivers__:
@@ -38,120 +41,190 @@
     | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
     <br/>
 
+    __vehicles__:
 
-## Serverside control flow
-1. Add a distributor
-
-    1. App routes to routes/api/distributors
-    2. formParser adds ```[ documents ]``` and ```profilePicture``` fields to req.body
-    3. validateNewDistributor checks for required fields mentioned in API Usage #1
-    4. postDistributor service handles everything below:
-        1. create a unique ```id``` for the distributor using uuid()
-        2. add all non file fields to distributors table
-        3. save all files with random names into the ```uploads``` folder
-        4. add filenames to their respective fields in the database
-        5. return { ```id```, ```email```, ```name``` }
-
-2. Get all distributors
-
-    1. App routes to routes/api/distributors
-    2. auth middleware checks for validity of jwt in req.headers.authorization
-    3. auth middleware verifies that the token belongs to an admin
-    3. getDistributors service returns all registered distributors with their ```id```, ```email``` and ```name```
+    | Id | distributor_id | driver_id | registration_document | model | license_plate 
+    | ---- | ---- | ---- | ---- | ---- | ---- 
     
-    > Note: To access all fields and files we'll later implement api/distributors/:id/:documentName route
+    | model_year | company | chassis_number | seats | doors | color | created_at | updated_at |
+    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+    <br/>
 
-3. Delete a distributor
+    __contacts__:
 
-    1. App routes to routes/api/distributors
-    2. auth middleware checks for validity of jwt in req.headers.authorization
-    3. auth middleware verifies that the token belongs to an admin
-    4. deleteDistributor service handles the following:
-        1. Remove all distributor files from the ```uploads``` folder
-        2. Remove rows from ```login``` and ```distributors``` with the given ```id```
-        3. Return { ```id```, ```email```, ```name```}
+    | Id | distributor_id | name | job_position | title | email 
+    | ---- | ---- | ---- | ---- | ---- | ---- 
 
-4. Set user password
+    | phone | mobile | created_at | updated_at | deleted_at |
+    | ---- | ---- | ---- | ---- | ---- |
+    <br/>
 
-    1. App routes to routes/api/set_password
-    2. validateSetPassword middleware checks if the user password is unset
-    3. validateNewPassword middleware checks if the password matches a predefined format
-    4. updatePassword service patches the relevant row in the database.
-    5. Return { ```id``` }
+    
 
-5. Authenticate user
-
-    1. App routes to routes/api/auth
-    2. check if the user exists using CRUD operations provided by the db service
-    3. check for password match using bcrypt compare
-    4. Create a new jwt with id and role injected into it
-    5. Return {```user```: { ```id```, ```email```, ```role```}, ```token```}
-
-6. Get distributor info
-
-    1. App routes to routes/api/distributors
-    2. auth middleware checks for validity of jwt in req.headers.authorization
-    3. auth middleware checks if the user is admin or is accessing their own information
-    4. getFiles in the db service reads all files inside ```uploads/id``` and returns file buffers
-    5. Return { ```Distributor``` , ```profilePicture```, ```[ documents ]```}
 
 ## API Usage
+
+### Distributor handling
 
 1. Add a distributor
     * **Endpoint**: /api/distributors
     * **Method**: POST
     * **Access**: Public
     * **Payload**:
-        * Required: name, country, language, email, phone, street, state, postal, document
+        * Required: name, country, language, email, phone, street, state, postal, licenseDocument
         * Optional: district, municipality, ward, website, profilePicture
-    * **Return**: Distributor { id, email, name }
+    * **Return**: { message, id, email, name, moreInfo }
 
-2. View all distributors
+2. Set distributor password
+    * **Endpoint**: /api/set_password/:token
+    * **Method**: PATCh
+    * **Access**: Public
+    * **Return**: { message }
+
+3. View all distributors
     * **Endpoint**: /api/distributors
     * **Method**: GET
-    * **Access**: Admin
+    * **Access**: Admin/distributor
     * **Header**: Authorization: token
     * **Return**: [ Distributor ]
 
-3. Delete a distributor
-    * **Endpoint**: /api/distributors
-    * **Method**: DELETE
-    * **Access**: Admin
-    * **Header**: Authorization: token
-    * **Return**: [ Distributor ]
-
-4. Set user password
-    * **Endpoint**: /api/set_password/:id
-    * **Method**: PATCH
-    * **Access**: Public
-    * **Return**: { id }
-
-5. Authenticate user
-    * **Endpoint**: /api/auth
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**: { email, password }
-    * **Return**: { user {id, email, role}, token }
-
-6. Get distributor info
+4. Get distributor info
     * **Endpoint**: /api/distributors/:id
     * **Method**: GET
     * **Access**: Private
     * **Header**: Authorization: token
     * **Return**: [ { Distributor, documents, profilePicture } ]
 
-7. Add a driver
-    * **Endpoint**: /api/drivers
-    * **Method**: POST
-    * **Access**: Distributor
-    * **Payload**:
-        * Required: name, phone, distributorId, licenseDocument
-        * Optional: dob, address, profile_picture
-    * **Return**: Driver { id, phone, name }
+5. Update distributor info
+    * **Endpoint**: /api/distributors/:id
+    * **Method**: PATCH
+    * **Access**: Private
+    * **Header**: Authorization: token
+    * **Return**: { message, id, email, name, moreInfo }
 
-8. View all drivers
+6. Delete a distributor
+    * **Endpoint**: /api/distributors/:id
+    * **Method**: DELETE
+    * **Access**: Admin/distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, email, name }
+
+### Driver handling
+
+1. Add a driver
+    * **Endpoint**: /api/drivers/
+    * **Method**: POST
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Payload**: 
+        * required: { phone, licenseDocument, name }
+        * optional: { dob, address, profilePicture }
+    * **Return**: { message, id, name, moreInfo }
+
+2. View all drivers
     * **Endpoint**: /api/drivers
     * **Method**: GET
     * **Access**: Distributor
     * **Header**: Authorization: token
     * **Return**: [ Driver ]
+
+3. Get driver info
+    * **Endpoint**: /api/drivers/:id
+    * **Method**: GET
+    * **Access**: Private
+    * **Header**: Authorization: token
+    * **Return**:  { Driver }
+
+4. Update driver info
+    * **Endpoint**: /api/drivers/:id
+    * **Method**: PATCH
+    * **Access**: Private
+    * **Header**: Authorization: token
+    * **Return**: { message, id, name, phone, moreInfo }
+
+5. Delete a driver
+    * **Endpoint**: /api/drivers/:id
+    * **Method**: DELETE
+    * **Access**: Admin/distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, email, name }
+
+### Vehicle handling
+
+1. Add a vehicle
+    * **Endpoint**: /api/vehicles/
+    * **Method**: POST
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Payload**: 
+        * required: { company, registrationDocument, model, modelYear, licensePlate }
+        * optional: { chassisNumber, seats, doors, color }
+    * **Return**: { message, id, model, driverInfo, moreInfo }
+
+2. View all vehicles
+    * **Endpoint**: /api/vehicles
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: [ { id, model, licensePlate, driverInfo, moreInfo } ]
+
+3. Get vehicle info
+    * **Endpoint**: /api/vehicles/:id
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**:  { Vehicle }
+
+4. Update vehicle info
+    * **Endpoint**: /api/vehicles/:id
+    * **Method**: PATCH
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, model, licensePlate, driver, driverInfo, moreInfo }
+
+5. Delete a vehicle
+    * **Endpoint**: /api/vehicles/:id
+    * **Method**: DELETE
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id }
+
+### Contacts handling
+
+1. Add a contact
+    * **Endpoint**: /api/contacts
+    * **Method**: POST
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Payload**: 
+        * required: { name, email | phone | mobile }
+        * optional: { jobPosition, title }
+    * **Return**: { message, id, name, moreInfo }
+
+2. View all contacts
+    * **Endpoint**: /api/contacts
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: [ { Contact } ]
+
+3. Get contact info
+    * **Endpoint**: /api/contacts/:id
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**:  { Contact }
+
+4. Update contact info
+    * **Endpoint**: /api/contacts/:id
+    * **Method**: PATCH
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, name, moreInfo }
+
+5. Delete a contact
+    * **Endpoint**: /api/contacts/:id
+    * **Method**: DELETE
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, title, name }
