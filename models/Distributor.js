@@ -51,11 +51,6 @@ const Schema = {
         allowNull: false,
         field: 'license_document'
     },
-    registrationDocument: {
-        type: Sequelise.STRING,
-        allowNull: false,
-        field: 'registration_document'
-    },
     createdAt: {
         type: Sequelize.DATE,
         field: 'created_at'
@@ -74,6 +69,11 @@ const Schema = {
     website: Sequelise.STRING,
 };
 
-const Distributor = db.define('distributor', Schema);
+const options = {
+    paranoid: true,
+    deletedAt: 'deleted_at'
+}
+
+const Distributor = db.define('distributor', Schema, options);
 
 module.exports = Distributor;
