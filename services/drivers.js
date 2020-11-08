@@ -1,7 +1,7 @@
 
 const auth = require('../middlewares/auth');
 const path = require('path');
-const { v4: uuid} = require('uuid');
+const { getRandomId } = require('../utils');
 const fs = require('fs');
 const Driver = require('../models/Driver');
 const Login  =  require('../models/Login');
@@ -27,14 +27,15 @@ async function postDriver(driver) {
     // Replace files with filenames
     Object.keys(driver).forEach(key => {
         if (typeof driver[key] === 'object'){
-            const fileName = uuid().slice(0,4).concat(path.extname(file.name));
+            const file = driver[key];
+            const fileName = getRandomId().concat(path.extname(file.name));
             _saveFile(driver[key],fileName);
             driver[key] = fileName;
         }
     })
 
     // Create a unique id for the new driver
-    driver.id = uuid().slice(0,4);
+    driver.id = getRandomId();
     try{
         await Promise.all([ 
             Driver.create(driver),
@@ -70,4 +71,66 @@ async function getDrivers(distributorId) {
     }
 }
 
-module.exports = { postDriver, getDrivers };
+async function getDriver(distributorId,id) {
+    try {
+        const result = await Driver.findOne({where:{distributorId,id}});
+        return result? result.dataValues : result;
+    }catch(err){
+        console.log(err);
+    }
+}
+
+
+async function deleteDriver(distributorId,id) {
+
+    const result = await Driver.findOne({where:{distributorId,id}});
+    if (!result) return false;
+
+    deleteFiles(result.dataValues);
+    Driver.destroy({where:{distributorId,id},force:true})
+    Login.destroy({where:{id},force:true});
+
+    const { email, name } = result;
+    return { id, email, name }
+}
+
+async function disableDriver(distributorId,id) {
+
+    const result = await Driver.findOne({where:{distributorId,id}});
+    if (!result) return false;
+
+    Driver.destroy({where:{distributorId,id}})
+    Login.destroy({where:{id}});
+
+    const { email, name } = result;
+    return { id, email, name }
+}
+
+function deleteFiles(user) {
+    expectedFiles.forEach(fileName => {
+        if (user[fileName]){
+            const filePath = path.join('.','uploads',user[fileName]);
+            fs.unlink(filePath,err=>console.log(err));
+        }
+    })
+}
+
+async function updateDriver(driver) {
+    try{
+        const { id, distributorId } = driver;
+        if (!id || !distributorId) return false;
+
+        let result = await Driver.findOne({where:{distributorId,id}});
+        if (!result) return false;
+
+        result = await Driver.update(driver,{where:{id},returning:true,plain:true});
+        const { phone, name } = result[1].dataValues;
+        return {id, name, phone}
+    }catch(err){
+        console.log(err);
+        return false;
+    }
+    
+}
+
+module.exports = { postDriver, getDrivers, getDriver, updateDriver, disableDriver, deleteDriver };
