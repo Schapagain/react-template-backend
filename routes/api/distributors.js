@@ -3,10 +3,11 @@ const router = express.Router();
 const auth = require('../../middlewares/auth');
 const validateNewDistributor = require('../../middlewares/validateNewDistributor');
 const formParser = require('../../middlewares/formParser');
-const { postDistributor, getDistributor, getDistributors, deleteDistributor } = require('../../services/distributors');
+const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor } = require('../../services/distributors');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
+
 // @route   POST api/distributors
 // @desc    Add a new distributor
 // @access  Public
@@ -15,9 +16,16 @@ router.post('/',
     validateNewDistributor,
     async (req, res) => {
         try{
-            const result = await postDistributor(req.body);
-            if (result) return res.status(201).json(result);
-            throw new Error();
+            const distributor = req.body;
+            let result = await postDistributor(distributor);
+            if (!result) throw new Error();
+
+            result = {
+                'message':'Distributor created successfully',
+                ...result,
+                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id)
+            }
+            res.status(201).json(result);
         }catch(err){
             res.status(500).json({error:"Could not add distributor"})
         }
@@ -51,6 +59,34 @@ router.get('/:id',
     }
 );
 
+// @route   PATCH api/distributors/:id
+// @desc    Update distributor info
+// @access  Private
+router.patch('/:id', 
+    auth,
+    formParser,
+    async (req,res) => {
+        try{
+            const adminId = req.body.id;
+            const id = req.params.id;
+            if(!id) return res.json({error:'No id found'})
+
+            // Get info from database
+            let result = await updateDistributor({adminId,...req.body,id});
+            if(!result) return res.json({error:'No distributor found'})
+            result = {
+                'message' : 'Distributor updated successfully',
+                ...result,
+                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id)
+            }
+            res.status(201).json(result);
+        }catch(err){
+            console.log(err);
+            res.status(500).json({error:"Could not update distributor"})
+        }
+    }
+);
+
 // @route   GET api/distributors
 // @desc    View all distributors
 // @access  admin
@@ -64,7 +100,7 @@ router.get('/',
 
             result = result.map(distributor => ({
                 ...distributor,
-                'more info:': path.join(req.get('host'),'api','distributors',distributor.id)
+                'moreInfo:': path.join(req.get('host'),'api','distributors',distributor.id)
             }))
 
             res.status(200).json(result);
@@ -84,12 +120,16 @@ router.delete('/:id',
         try{
             const adminId = req.body.id;
             const id = req.params.id;
-            const result = await deleteDistributor(adminId,id);
+            let result = await disableDistributor(adminId,id);
             if(!result) {
                 return res.status(400).json({
                     error: "Distributor not found"
                 })
             };
+            result = {
+                message: 'Distributor deleted successfully',
+                ...result,
+            }
             res.status(200).json(result);
         }catch(err){
             console.log(err);
