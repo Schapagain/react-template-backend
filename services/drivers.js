@@ -21,8 +21,6 @@ async function _saveFile(file, fileName) {
 
 async function postDriver(driver) {
 
-    // [TODO] validation here
-
     // Save files to filesystem
     // Replace files with filenames
     Object.keys(driver).forEach(key => {
