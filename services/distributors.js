@@ -3,7 +3,7 @@ const path = require('path');
 const { getRandomId } = require('../utils');
 const { DISTRIBUTOR, DRIVER } = require('../utils/roles');
 const { getAuthToken } = require('../utils/auth');
-
+const { getError } = require('../utils/errors');
 
 const Distributor = require('../models/Distributor');
 const Login = require('../models/Login');
@@ -12,8 +12,6 @@ const Driver = require('../models/Driver');
 const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
-
-    // [TODO] validation here
 
     // Extract files
     allFiles = expectedFiles.map(fieldName => distributor[fieldName]);
@@ -31,18 +29,19 @@ async function postDistributor(distributor) {
     distributor.id = getRandomId();
     try{
         const filePath = path.resolve('.','uploads');
-        await Promise.all([ 
-            Distributor.create(distributor),
-            _saveFiles(filePath,allFiles,allFileNames),
-            _initLogin(distributor),
-            _initDriver(distributor),
-        ]);
+
+        // [TO ASK] Promise.all doesn't seem to work with rollback
+        // How can we make this better?
+        await Distributor.create(distributor);
+        await _initDriver(distributor);
+        await _initLogin(distributor);
+        await _saveFiles(filePath,allFiles,allFileNames);
         const { id, name, email } = distributor;
         return { id, email, name };
     }catch(err){
-        // [TODO] Roll back changes
-        console.error(err);
-        return false;
+        // Roll back changes
+        deleteDistributor(distributor.adminId,distributor.id);
+        throw await getError(err);
     }
 }
 
@@ -82,6 +81,15 @@ async function _saveFiles(filePath, files, fileNames) {
         })
 }
 
+function _deleteFiles(user) {
+    expectedFiles.forEach(fileName => {
+        if (user[fileName]){
+            const filePath = path.join('.','uploads',user[fileName]);
+            fs.unlink(filePath,err=>console.log(err));
+        }
+    })
+}
+
 async function getDistributor(adminId,id) {
     try {
         const result = await Distributor.findOne({where:{adminId,id}});
@@ -109,10 +117,11 @@ async function deleteDistributor(adminId,id) {
         const result = await Distributor.findOne({where:{adminId,id}});
         if (!result) return false;
     
-        deleteFiles(result.dataValues);
+        _deleteFiles(result.dataValues);
         Distributor.destroy({where:{adminId,id},force: true})
         Login.destroy({where:{id},force:true});
-    
+        Driver.destroy({where:{id},force:true});
+
         const { email, name } = result;
         return { id, email, name }
     }catch(err){
@@ -129,22 +138,14 @@ async function disableDistributor(adminId,id) {
 
         Distributor.destroy({where:{adminId,id}})
         Login.destroy({where:{id}});
-    
+        Driver.destroy({where:{id}})
+
         const { email, name } = result;
         return { id, email, name }
     }catch(err){
         console.log(err)
     }
 
-}
-
-function deleteFiles(user) {
-    expectedFiles.forEach(fileName => {
-        if (user[fileName]){
-            const filePath = path.join('.','uploads',user[fileName]);
-            fs.unlink(filePath,err=>console.log(err));
-        }
-    })
 }
 
 async function updateDistributor(distributor) {
