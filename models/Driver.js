@@ -21,7 +21,8 @@ const Driver = db.define('Driver', {
     },
     phone: {
         type: Sequelise.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
     },
     name: {
         type: Sequelise.STRING,

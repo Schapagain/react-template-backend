@@ -1,5 +1,6 @@
 const { Sequelize } = require('sequelize');
 const Sequelise = require('sequelize');
+const { allowedLanguages, allowedCountries } = require('../utils');
 const db = require('../utils/db');
 
 const Schema = {
@@ -20,15 +21,25 @@ const Schema = {
     },
     country: {
         type: Sequelise.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            isIn: [allowedCountries]
+        }
     },
     language: {
         type: Sequelise.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            isIn: [allowedLanguages]
+        }
     },
     email: {
         type: Sequelise.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
+        validate:{
+            isEmail: true,
+        }
     },
     phone: {
         type: Sequelise.STRING,
@@ -51,14 +62,6 @@ const Schema = {
         allowNull: false,
         field: 'license_document'
     },
-    createdAt: {
-        type: Sequelize.DATE,
-        field: 'created_at'
-    },
-    updatedAt: {
-        type: Sequelize.DATE,
-        field: 'updated_at'
-    },
     profilePicture: {
         type: Sequelise.STRING,
         field: 'profile_picture',
@@ -71,7 +74,9 @@ const Schema = {
 
 const options = {
     paranoid: true,
-    deletedAt: 'deleted_at'
+    deletedAt: 'deleted_at',
+    updatedAt: 'updated_at',
+    createdAt: 'created_at',
 }
 
 const Distributor = db.define('distributor', Schema, options);
