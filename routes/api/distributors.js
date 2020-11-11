@@ -1,25 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
-const validateNewDistributor = require('../../middlewares/validateNewDistributor');
 const formParser = require('../../middlewares/formParser');
 const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor } = require('../../services/distributors');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
 
-// @route   POST api/distributors
-// @desc    Add a new distributor
-// @access  Public
+/**
+ * Route to add a new distributor
+ * @name    api/distributors
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Form Parser  
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.post('/', 
     formParser,
-    validateNewDistributor,
     async (req, res) => {
         try{
             const distributor = req.body;
             let result = await postDistributor(distributor);
-            if (!result) throw new Error();
-
             result = {
                 'message':'Distributor created successfully',
                 ...result,
@@ -27,7 +30,7 @@ router.post('/',
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(500).json({error:"Could not add distributor"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     });
 
