@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const Login = require('../../models/Login');
 
-const { DRIVER } = require('../../utils/roles');
+const { DRIVER, USER } = require('../../utils/roles');
 const { passwordFormat } = require('../../utils');
 
 // @route   POST api/auth
@@ -37,6 +37,17 @@ router.post('/', async (req,res) => {
         // [ TODO ] send token via text message
         if (role === DRIVER){
             const token = getAuthToken(id,DRIVER);
+            return res.status(200).json({
+                message: "Login successful",
+                role,
+                token
+            })
+        }
+
+        // Skip password verification in case of a driver
+        // [ TODO ] send token via text message
+        if (role === USER){
+            const token = getAuthToken(id,USER);
             return res.status(200).json({
                 message: "Login successful",
                 role,
