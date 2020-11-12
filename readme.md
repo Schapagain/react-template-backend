@@ -228,3 +228,42 @@
     * **Access**: distributor
     * **Header**: Authorization: token
     * **Return**: { message, title, name }
+
+### User handling
+
+1. Add a user
+    * **Endpoint**: /api/users
+    * **Method**: POST
+    * **Access**: Public
+    * **Payload**: 
+        * required: { name, phone, password, distributorId }
+        * optional: { email, profilePicture,  }
+    * **Return**: { message, id, name, phone, moreInfo }
+
+2. View all users
+    * **Endpoint**: /api/users
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: [ { User } ]
+
+3. Get user info
+    * **Endpoint**: /api/users/:id
+    * **Method**: GET
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**:  { User }
+
+4. Update user info
+    * **Endpoint**: /api/users/:id
+    * **Method**: PATCH
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, name, phone, moreInfo }
+
+5. Delete a user
+    * **Endpoint**: /api/users/:id
+    * **Method**: DELETE
+    * **Access**: distributor
+    * **Header**: Authorization: token
+    * **Return**: { message, id, name, phone }
