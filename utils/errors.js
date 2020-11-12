@@ -1,6 +1,7 @@
 class ValidationError extends Error {
     constructor(field){
         super(`Invalid ${field}`);
+        this.field = field;
         this.name = this.constructor.name;
         this.httpCode = 400;
     }
@@ -17,6 +18,7 @@ class NotUniqueError extends Error {
 class NotFoundError extends Error {
     constructor(resource){
         super(`${resource} not found`);
+        this.resource = resource;
         this.name = this.constructor.name;
         this.httpCode = 404;
     }
@@ -31,16 +33,26 @@ class ServerError extends Error {
 }
 
 async function getError(err){
-    if (err.name && err.name === 'SequelizeValidationError'){
-        return new ValidationError(err.errors[0].path)
-    }
 
-    if (err.name && err.name === 'SequelizeUniqueConstraintError'){
-        return new NotUniqueError(err.errors[0].path)
+    if (err.name){
+        switch (err.name) {
+            case 'ValidationError':
+                return new ValidationError(err.field);
+            case 'NotFoundError':
+                return new NotFoundError(err.resource);
+            case 'SequelizeValidationError':
+                return new ValidationError(err.errors[0].path);
+            case 'SequelizeUniqueConstraintError':
+                return new NotUniqueError(err.errors[0].path)
+            default:
+                return new ServerError();
+        }
     }
     return new ServerError();
 }
 
 module.exports = {
+    ValidationError,
+    NotFoundError,
     getError
 }
