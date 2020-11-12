@@ -6,44 +6,40 @@ const { getError } = require('../utils/errors');
 
 const User = require('../models/User');
 const Login = require('../models/Login');
-
+const Distributor = require('../models/Distributor');
 const { expectedFiles } = require('../utils');
-
-async function _saveFile(file, fileName) {
-
-    const filePath = path.join('.','uploads');
-    const writeFile = fs.promises.writeFile;
-    const readFile = fs.promises.readFile;
-    if (file) {
-        const fileStream = await readFile(file.path).catch(err => { throw err });
-        const fullPath = path.join(filePath,fileName);
-        writeFile(fullPath,fileStream).catch(err=>{throw err});
-    }
-}
+const { ValidationError, NotFoundError } = require('../utils/errors');
 
 async function postUser(user) {
 
-    // Save files to filesystem
-    // Replace files with filenames
-    Object.keys(user).forEach(key => {
-        if (typeof user[key] === 'object'){
-            const file = user[key];
-            const fileName = getRandomId().concat(path.extname(file.name));
-            _saveFile(user[key],fileName);
-            user[key] = fileName;
-        }
-    })
-
-    // Create a unique id for the new user
-    user.id = getRandomId();
     try{
-        const filePath = path.resolve('.','uploads');
+        // Check if the distributor is registered
+        const distributorId = user.distributorId;
+        if (!distributorId) throw new ValidationError('distribuftorId');
+        
+        const result = await Distributor.findOne({where:{id:distributorId}});
+        if (!result) throw new ValidationError('distributorId');
+
+        // extract all files and 
+        // Replace files with filenames
+        let allFiles = [];
+        Object.keys(user).forEach(key => {
+            if (typeof user[key] === 'object'){
+                const file = user[key];
+                const fileName = getRandomId().concat(path.extname(file.name));
+                allFiles.push({fileName,file});
+                user[key] = fileName;
+            }
+        })
+
+        // Create a unique id for the new user
+        user.id = getRandomId();
 
         // [TO ASK] Promise.all doesn't seem to work with rollback
         // How can we make this better?
         await User.create(user);
         await _initLogin(user);
-        await _saveFiles(filePath,allFiles,allFileNames);
+        await _saveFiles(allFiles);
         const { id, name, phone } = user;
         return { id, name, phone };
     }catch(err){
@@ -62,16 +58,17 @@ async function _initLogin(user) {
     }
 }
 
-async function _saveFiles(filePath, files, fileNames) {
-        const writeFile = fs.promises.writeFile;
-        const readFile = fs.promises.readFile;
-        files.forEach( async (file,index) => {
-            if (file) {
-                const fileStream = await readFile(file.path).catch(err => { throw err });
-                const fullPath = path.join(filePath,fileNames[index]);
-                writeFile(fullPath,fileStream).catch(err=>{throw err});
-            }
-        })
+async function _saveFiles(files) {
+    const filePath = path.resolve('.','uploads');
+    const writeFile = fs.promises.writeFile;
+    const readFile = fs.promises.readFile;
+    files.forEach( async ({fileName, file}) => {
+        if (file) {
+            const fileStream = await readFile(file.path).catch(err => { throw err });
+            const fullPath = path.join(filePath,fileName);
+            writeFile(fullPath,fileStream).catch(err=>{throw err});
+        }
+    })
 }
 
 function _deleteFiles(user) {
@@ -83,36 +80,39 @@ function _deleteFiles(user) {
     })
 }
 
-async function getDistributor(adminId,id) {
+async function getUser(distributorId,id) {
     try {
-        const result = await Distributor.findOne({where:{adminId,id}});
-        return result? result.dataValues : result;
+        const result = await User.findOne({where:{distributorId,id}});
+        if (!result || !result.dataValues) throw new NotFoundError('user');
+        return result.dataValues;
     }catch(err){
-        console.log(err);
+        throw await getError(err);
     }
 }
 
-async function getDistributors(adminId) {
+async function getUsers(distributorId) {
     try {
-        const result = await Distributor.findAll({where:{adminId}})
-        return result.map(distributor => {
-            const {id, email, name} = distributor
-            return {id, email, name}
+        const result = await User.findAll({where:{distributorId}})
+        return result.map(user => {
+            const {id, name, phone} = user
+            return {id, name, phone}
         });
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 }
 
 async function deleteUser(distributorId,id) {
 
     try{
+        if (!id) throw new ValidationError('id');
+        if (!distributorId) throw new ValidationError('distributorId');
+
         const result = await User.findOne({where:{distributorId,id}});
-        if (!result) return false;
+        if (!result) throw new NotFoundError('user');
     
         _deleteFiles(result.dataValues);
         User.destroy({where:{distributorId,id},force: true})
-        User.destroy({where:{id},force:true});
 
         const { phone, name } = result;
         return { id, name, phone }
@@ -122,40 +122,48 @@ async function deleteUser(distributorId,id) {
 
 }
 
-async function disableDistributor(adminId,id) {
+async function disableUser(distributorId,id) {
 
     try{
-        const result = await Distributor.findOne({where:{adminId,id}});
-        if (!result) return false;
+        if (!id) throw new ValidationError('id');
+        if (!distributorId) throw new ValidationError('distributorId');
 
-        Distributor.destroy({where:{adminId,id}})
+        const result = await User.findOne({where:{distributorId,id}});
+        if (!result) throw new NotFoundError('user');
+
+        User.destroy({where:{distributorId,id}})
         Login.destroy({where:{id}});
-        Driver.destroy({where:{id}})
 
-        const { email, name } = result;
-        return { id, email, name }
+        const { phone, name } = result;
+        return { id, name, phone }
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 
 }
 
-async function updateDistributor(distributor) {
+async function updateUser(user) {
     try{
-        const { id, adminId } = distributor;
-        if (!id || !adminId) return false;
+        const { id, distributorId } = user;
+        if (!id) throw new ValidationError('id');
+        if (!distributorId) throw new ValidationError('distributorId');
 
-        let result = await Distributor.findOne({where:{adminId,id}});
-        if (!result) return false;
+        let result = await User.findOne({where:{distributorId,id}});
+        if (!result) throw new NotFoundError('user');
 
-        result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
-        const { email, name } = result[1].dataValues;
-        return {id, email, name}
+        result = await User.update(user,{where:{id},returning:true,plain:true});
+        
+        if (user.phone){
+            Login.update({phone: user.phone},{where:{id}})
+        }
+
+        const { phone, name } = result[1].dataValues;
+        return {id, name, phone }
     }catch(err){
-        console.log(err);
-        return false;
+        console.log(err)
+        throw await getError(err);
     }
     
 } 
 
-module.exports = { postUser };
+module.exports = { postUser, getUsers, getUser, updateUser, disableUser, deleteUser };
