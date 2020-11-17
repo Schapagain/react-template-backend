@@ -41,6 +41,10 @@
     ```
     SECRET_KEY
     ```
+* Used for admin auth:
+    ADMIN_EMAIL
+    ADMIN_PASSWORD
+    ADMIN_ID
 
 ## API Usage
 
