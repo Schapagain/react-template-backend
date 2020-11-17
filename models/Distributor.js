@@ -1,11 +1,11 @@
 const { Sequelize } = require('sequelize');
-const Sequelise = require('sequelize');
+const Sequelize = require('sequelize');
 const { allowedLanguages, allowedCountries } = require('../utils');
 const db = require('../utils/db');
 
 const Schema = {
     adminId: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'admin_id',
         foreignKey: true,
@@ -15,26 +15,36 @@ const Schema = {
         allowNull: false,
         primaryKey: true,
     },
+    uses_pan: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        field: 'uses_pan_or_vat'
+    },
+    panOrVat: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        field: 'pan_or_vat'
+    },
     name: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     country: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         validate: {
             isIn: [allowedCountries]
         }
     },
     language: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         validate: {
             isIn: [allowedLanguages]
         }
     },
     email: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true,
         validate:{
@@ -42,41 +52,53 @@ const Schema = {
         }
     },
     phone: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     street: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     state: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     postal: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     licenseDocument: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'license_document'
     },
     profilePicture: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         field: 'profile_picture',
     },
-    district: Sequelise.STRING,
-    municipality: Sequelise.STRING,
-    ward: Sequelise.STRING,
-    website: Sequelise.STRING,
+    deletedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        field: 'deleted_at'
+    },
+    updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        field: 'updated_at'
+    },
+    createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        field: 'created_at'
+    },
+    district: Sequelize.STRING,
+    municipality: Sequelize.STRING,
+    ward: Sequelize.STRING,
+    website: Sequelize.STRING,
 };
 
 const options = {
     paranoid: true,
-    deletedAt: 'deleted_at',
-    updatedAt: 'updated_at',
-    createdAt: 'created_at',
 }
 
 const Distributor = db.define('distributor', Schema, options);
