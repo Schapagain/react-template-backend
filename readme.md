@@ -1,4 +1,8 @@
-[uploads_directory]: ./doc_images/uploads.png "Uploads directory structure"
+
+## Clone project and install dependencies
+* Run ```git clone http://repos.greatbear.tech/gbt/backend/hello-taxi-backend.git``` to clone project to the local machine
+* Change working directory to project root: ```cd hello-taxi-backed```
+* Run ```npm install``` to install all dependencies
 
 ## Setup PostgreSQL
 
@@ -28,6 +32,8 @@
 
 ## Setup environment variables
 
+> Note: You can create a .env file at project root and setup the following variables in that file as an alternative to setting up the environment
+
 * Used by Postgress:
     ```
     PGHOST
@@ -42,9 +48,11 @@
     SECRET_KEY
     ```
 * Used for admin auth:
+    ```
     ADMIN_EMAIL
     ADMIN_PASSWORD
     ADMIN_ID
+    ```
 
 ## API Usage
 
