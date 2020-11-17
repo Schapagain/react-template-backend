@@ -1,7 +1,7 @@
 
 ## Clone project and install dependencies
 * Run ```git clone http://repos.greatbear.tech/gbt/backend/hello-taxi-backend.git``` to clone project to the local machine
-* Change working directory to project root: ```cd hello-taxi-backed```
+* Change working directory to project root: ```cd hello-taxi-backend```
 * Run ```npm install``` to install all dependencies
 
 ## Setup PostgreSQL
