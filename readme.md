@@ -20,6 +20,12 @@
     * Verify that the databse ``hello_taxi`` exists and has ``hellotaxi`` as its owner
     * ``\q`` to quit
 
+## Setup database tables
+
+* All migrations are located at ```/migrations``` at project root
+* To install sequelize-cli as a dev dependency, run: ```npm i -D sequelize-cli```
+* Then to create all required tables, run: ```npx sequelize db:migrate```
+
 ## Setup environment variables
 
 * Used by Postgress:
