@@ -1,10 +1,28 @@
 [uploads_directory]: ./doc_images/uploads.png "Uploads directory structure"
 
-## Configuration
+## Setup PostgreSQL
 
-1. Setup these environment variables:
+* Install PostgreSQL locally
+* Create ROLE/USER ``sudo -u postgres createuser -P hellotaxi``
+    * Enter and confirm password ``hello_taxi_123`` for the new role
+* To verify that the new role has been created, run the following cli commands:
+    * ``sudo -u postgres psql`` to login as superuser
+    * ``\du`` to list all roles for the database
+    * Verify ``hellotaxi`` is one of the roles displayed
+    * ``\q`` to quit
 
-    Used by Postgress:
+* To create a database for our application, and assign ownership to the newly created role ``hellotaxi``, run the following cli commands:
+    * ``sudo -u postgres createdb -O hellotaxi hello_taxi``
+    
+* To verify that the new database, with hellotaxi as its owner, has been created, run these cli commands:
+    * ``sudo -u postgres psql`` to login as superuser
+    * ``\l`` to list all database with their ownership information
+    * Verify that the databse ``hello_taxi`` exists and has ``hellotaxi`` as its owner
+    * ``\q`` to quit
+
+## Setup environment variables
+
+* Used by Postgress:
     ```
     PGHOST
     PGUSER
@@ -13,54 +31,10 @@
     PGPORT
     ```
 
-    Used by njwt:
+* Used by njwt:
     ```
     SECRET_KEY
     ```
-
-2. Setup these tables in the database:
-
-    __login__:
-
-    | Id | email | password | role | phone |
-    | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-
-    __distributors__:
-
-    | Id | admin_id | name | country | language | email | phone | street | state | postal | district 
-    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- 
-
-    | municipality | ward | website | license_document | registration_document | profile_picture |
-    | ---- | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-    
-    __drivers__:
-
-    | Id | distributor_id | phone | email | password | role | dob | name | license_document |
-    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-
-    __vehicles__:
-
-    | Id | distributor_id | driver_id | registration_document | model | license_plate 
-    | ---- | ---- | ---- | ---- | ---- | ---- 
-    
-    | model_year | company | chassis_number | seats | doors | color | created_at | updated_at |
-    | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-
-    __contacts__:
-
-    | Id | distributor_id | name | job_position | title | email 
-    | ---- | ---- | ---- | ---- | ---- | ---- 
-
-    | phone | mobile | created_at | updated_at | deleted_at |
-    | ---- | ---- | ---- | ---- | ---- |
-    <br/>
-
-    
-
 
 ## API Usage
 
