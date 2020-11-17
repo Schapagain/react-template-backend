@@ -1,55 +1,55 @@
 const { Sequelize } = require('sequelize');
-const Sequelise = require('sequelize');
+const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
 const Vehicle = db.define('Vehicle', {
     distributorId: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'distributor_id',
         foreignKey: true,
     },
     driverId: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'driver_id',
         foreignKey: true,
     },
     id: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
     },
     registrationDocument: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'registration_document'
     },
     model: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     licensePlate: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'license_plate',
     },
     modelYear: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'model_year',
     },
     company: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
     },
     chassisNumber: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         field: 'chassis_number',
     },
-    seats: Sequelise.NUMBER,
-    doors: Sequelise.NUMBER,
-    color: Sequelise.STRING,
+    seats: Sequelize.INTEGER,
+    doors: Sequelize.INTEGER,
+    color: Sequelize.STRING,
     createdAt: {
         type: Sequelize.DATE,
         field: 'created_at'
@@ -57,9 +57,14 @@ const Vehicle = db.define('Vehicle', {
     updatedAt: {
         type: Sequelize.DATE,
         field: 'updated_at'
+    },
+    deletedAt: {
+        type: Sequelize.DATE,
+        field: 'deleted_at'
     }
 },{
     tableName: 'vehicles',
+    paranoid: true,
 }
 )
 

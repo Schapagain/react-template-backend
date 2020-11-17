@@ -1,20 +1,20 @@
 const { Sequelize } = require('sequelize');
-const Sequelise = require('sequelize');
+const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
 const Schema = {
     id: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
     },
-    email: Sequelise.STRING,
-    phone: Sequelise.STRING,
+    email: Sequelize.STRING,
+    phone: Sequelize.STRING,
     password: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
     },
     role: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false
     },
     createdAt: {
@@ -24,13 +24,16 @@ const Schema = {
     updatedAt: {
         type: Sequelize.DATE,
         field: 'updated_at'
+    },
+    deletedAt: {
+        type: Sequelize.DATE,
+        field: 'deleted_at'
     }
 }
 
 const options = {
     tableName: 'login',
     paranoid: true,
-    deletedAt: 'deleted_at'
 }
 
 const Login = db.define('Login', Schema, options)

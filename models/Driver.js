@@ -1,37 +1,37 @@
 const { Sequelize } = require('sequelize');
-const Sequelise = require('sequelize');
+const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
 const Driver = db.define('Driver', {
     distributorId: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'distributor_id',
         foreignKey: true,
     },
     id: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
     },
     licenseDocument: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'license_document'
     },
     phone: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true,
     },
     name: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
     },
-    dob: Sequelise.DATE,
-    address : Sequelise.STRING,
+    dob: Sequelize.DATE,
+    address : Sequelize.STRING,
     profilePicture: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         field: 'profile_picture',
     },
     createdAt: {
@@ -41,9 +41,14 @@ const Driver = db.define('Driver', {
     updatedAt: {
         type: Sequelize.DATE,
         field: 'updated_at'
+    },
+    deleteAt: {
+        type: Sequelize.DATE,
+        field: 'deleted_at'
     }
 },{
     tableName: 'drivers',
+    paranoid: true,
 }
 )
 

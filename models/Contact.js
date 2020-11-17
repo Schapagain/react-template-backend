@@ -1,31 +1,31 @@
 const { Sequelize } = require('sequelize');
-const Sequelise = require('sequelize');
+const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
 const Contact = db.define('Contact', {
     distributorId: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'distributor_id',
         foreignKey: true,
     },
     id: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
     },
     name: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
     },
     jobPosition: {
-        type: Sequelise.STRING,
+        type: Sequelize.STRING,
         field: 'job_position',
     },
-    title: Sequelise.STRING,
-    email: Sequelise.STRING,
-    phone: Sequelise.STRING,
-    mobile: Sequelise.STRING,
+    title: Sequelize.STRING,
+    email: Sequelize.STRING,
+    phone: Sequelize.STRING,
+    mobile: Sequelize.STRING,
     createdAt: {
         type: Sequelize.DATE,
         field: 'created_at'
@@ -33,6 +33,10 @@ const Contact = db.define('Contact', {
     updatedAt: {
         type: Sequelize.DATE,
         field: 'updated_at'
+    },
+    deletedAt: {
+        type: Sequelize.DATE,
+        field: 'deleted_at'
     }
 },{
     tableName: 'contacts',
