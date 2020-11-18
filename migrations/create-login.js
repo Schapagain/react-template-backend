@@ -17,6 +17,7 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false
       },
+      code: Sequelize.INTEGER,
       createdAt: {
           type: Sequelize.DATE,
           field: 'created_at'
