@@ -4,6 +4,30 @@
 * Change working directory to project root: ```cd hello-taxi-backend```
 * Run ```npm install``` to install all dependencies
 
+## Setup environment variables
+
+> Note: You can create a .env file at project root and setup the following variables in that file as an alternative to setting up the environment
+
+* Used by Postgress:
+    ```
+    PGHOST='localhost'
+    PGUSER='hellotaxi'
+    PGDATABASE='hello_taxi'
+    PGPASSWORD='hello_taxi_123'
+    PGPORT='5432'
+    ```
+
+* Used by njwt:
+    ```
+    SECRET_KEY
+    ```
+* Used for admin auth:
+    ```
+    ADMIN_EMAIL='admin@admin.com'
+    ADMIN_PASSWORD='password77'
+    ADMIN_ID='123'
+    ```
+
 ## Setup PostgreSQL
 
 * Install PostgreSQL locally
@@ -29,30 +53,6 @@
 * All migrations are located at ```/migrations``` at project root
 * To create all required tables, simply run : ```npx sequelize db:migrate```
 
-## Setup environment variables
-
-> Note: You can create a .env file at project root and setup the following variables in that file as an alternative to setting up the environment
-
-* Used by Postgress:
-    ```
-    PGHOST
-    PGUSER
-    PGDATABASE
-    PGPASSWORD
-    PGPORT
-    ```
-
-* Used by njwt:
-    ```
-    SECRET_KEY
-    ```
-* Used for admin auth:
-    ```
-    ADMIN_EMAIL
-    ADMIN_PASSWORD
-    ADMIN_ID
-    ```
-
 ## Start development server
 * In the command line, run : ```npm run dev```
 
@@ -60,7 +60,45 @@
 <br/>
 <br/>
 
-## API Usage
+## Guide to the API Endpoints
+<br/>
+
+### Responses and Error Codes
+All responses are JSON objects. In cases of failure, an 'error' shall always exist with an appropriate error message. The following are all possible http response types:
+
+|Code|Title|Description|
+|-----|-----|-----|
+|200|OK|Everything went smoothly!|
+|201|Created|Content was posted successfully|
+|400|Bad request|At least one required field, or a JWT, was not provided, or a wrong data type was sent|
+|401|Unauthorized|Login credentials mismatch, or JWT invalid|
+|404|Not Found|Page, or resource (user, file) not found on the server|
+|409|Conflict|A resource with the provided unique identifier (email, phone) already exists|
+|500|Internal Server Error|Something unexpected happened! Please report an issue asap|
+
+<br/>
+
+### Authentication
+1. Admin authentication
+    * **Endpoint**: /api/admin
+    * **Method**: POST
+    * **Access**: Public
+    * **Payload**: { email, password }
+    * **Return**: { token }
+
+2. User authentication
+    * **Endpoint**: /api/auth
+    * **Method**: POST
+    * **Access**: Public
+    * **Payload**: { email, password } || { phone, code } **for code see 3. below**
+    * **Return**: { { id, email, role }, token }
+
+3. Get a OTP code
+    * **Endpoint**: /api/auth/get_code
+    * **Method**: POST
+    * **Access**: Public
+    * **Payload**: { phone }
+    * **Return**: { message, code }
 
 ### Distributor handling
 
