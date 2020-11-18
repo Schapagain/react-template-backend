@@ -5,65 +5,101 @@ const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const Login = require('../../models/Login');
 
-const { DRIVER, USER } = require('../../utils/roles');
-const { passwordFormat } = require('../../utils');
+/**
+ * Route to get login code using phone number
+ * @name    api/auth/get_code
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/get_code', async (req,res) => {
 
-// @route   POST api/auth
-// @desc    Authenticate user
-// @access  Public
-router.post('/', async (req,res) => {
-
-    let { email, password, phone } = req.body;
-    // Check if all fields are given
-    if (!((email  && password) || phone)){
+    let { phone } = req.body;
+    // Check if phone number is given
+    if (!phone){
         return res.status(400).json({
-            error: "Please provide all required fields"
+            error: "Please provide phone number"
         })
     }
 
     try{
         // Check if the user exists
-        const queryOptions = {where:email?{email}:{phone}}
+        let result = await Login.findOne({where:{phone}});
+        if (!result) {
+            return res.status(400).json({
+                error: "Phone number is not registered"
+            })
+        } 
+        
+        // Generate a random 6 digit code
+        const code = Math.floor(Math.random() * (1000000 - 100000) + 100000);
+
+        // store code to the databse
+        Login.update({...result.dataValues,code},{where:{phone}})
+
+        // send code through the API
+        return res.status(200).json({
+            message: "Use this code to login",
+            code,
+        })
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({
+            error: 'Server error. Try again later.'
+        })
+    }
+})
+
+/**
+ * Route to authenticate a suer
+ * @name    api/auth
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/', async (req,res) => {
+
+    let { email, password, phone, code } = req.body;
+    // Check if all fields are given
+    if (!((email  && password) || (phone && code))){
+        return res.status(400).json({
+            error: "Please provide email/password or phone/code"
+        })
+    }
+
+    try{
+        // Check if the user exists
+        const queryOptions = {where:email?{email}:{phone,code}}
         let result = await Login.findOne(queryOptions);
         if (!result) {
             return res.status(400).json({
                 error: "Not authorized"
             })
         } 
-        
-        const { id, password:passwordHash, role } = result;
-        
-        // Skip password verification in case of a driver
-        // [ TODO ] send token via text message
-        if (role === DRIVER){
-            const token = getAuthToken(id,DRIVER);
-            return res.status(200).json({
-                message: "Login successful",
-                role,
-                token
-            })
-        }
 
-        // Skip password verification in case of a driver
-        // [ TODO ] send token via text message
-        if (role === USER){
-            const token = getAuthToken(id,USER);
-            return res.status(200).json({
-                message: "Login successful",
-                role,
-                token
-            })
-        }
+        // Match password if logging in through email
+        if (!phone){
+            var { id, password:passwordHash, role } = result;
 
-        if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
-        // Compare username/password combination
-        const credentialsMatch = await bcrypt.compare(password,passwordHash);
-        if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
+            if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
+            // Compare username/password combination
+            const credentialsMatch = await bcrypt.compare(password,passwordHash);
+            if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
+        } else{
+            // Expire code if logged in using OTP code and phone number
+            Login.update({...result,code:null},{where:{phone}})
+        }
 
         // Clean up User and assign token before sending the user back
+        const user = phone? { id, phone, role } : { id, email, role }
         const token = getAuthToken(id, role);
         res.status(200).json({
-            user: { id, email, role },
+            user,
             token,
         })
     }
