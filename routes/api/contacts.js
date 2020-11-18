@@ -5,9 +5,17 @@ const formParser = require('../../middlewares/formParser');
 const { postContact, disableContact, getContact, updateContact, getContacts } = require('../../services/contacts');
 const path = require('path');
 
-// @route   POST api/contacts
-// @desc    Add a new contact
-// @access  distributor
+/**
+ * Route to add a new contact
+ * @name    api/contacts
+ * @method  POST
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.post('/', 
     auth,
     formParser,
@@ -29,9 +37,16 @@ router.post('/',
         }
     });
 
-// @route   GET api/contacts/:id
-// @desc    Get contact info
-// @access  Private
+/**
+ * Route to get contact info
+ * @name    api/contacts/:id
+ * @method  GET
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/:id', 
 auth,
 async (req,res) => {
@@ -51,9 +66,16 @@ async (req,res) => {
 }
 );
 
-// @route   GET api/contacts
-// @desc    View all contacts
-// @access  distributor
+/**
+ * Route to get all contacts
+ * @name    api/contacts
+ * @method  GET
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/', 
     auth,
     async (req,res) => {
@@ -69,9 +91,16 @@ router.get('/',
     }
 );
 
-// @route   DELETE api/contact/:id
-// @desc    delete a contact
-// @access  Private
+/**
+ * Route to delete a contact
+ * @name    api/contacts/:id
+ * @method  DELETE
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.delete('/:id', 
     auth,
     async (req,res) => {
@@ -97,9 +126,16 @@ router.delete('/:id',
     }
 );
 
-// @route   PATCH api/contacts/:id
-// @desc    Update contact info
-// @access  Private
+/**
+ * Route to update a contact
+ * @name    api/contacts/:id
+ * @method  PATCh
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.patch('/:id', 
     auth,
     formParser,
