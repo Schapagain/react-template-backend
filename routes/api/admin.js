@@ -5,9 +5,15 @@ const { getAuthToken } = require('../../utils/auth');
 const { ADMIN } = require('../../utils/roles');
 const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
 
-// @route   POST api/admin
-// @desc    authenticate admin credentials
-// @access  Public
+/**
+ * Route to authenticate admin
+ * @name    api/admin
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.post('/', 
     async (req, res) => {
         const { email, password } = req.body;
