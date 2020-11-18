@@ -33,7 +33,6 @@ class ServerError extends Error {
 }
 
 async function getError(err){
-
     if (err.name){
         switch (err.name) {
             case 'ValidationError':
@@ -43,7 +42,9 @@ async function getError(err){
             case 'SequelizeValidationError':
                 return new ValidationError(err.errors[0].path);
             case 'SequelizeUniqueConstraintError':
-                return new NotUniqueError(err.errors[0].path)
+                return new NotUniqueError(err.errors[0].path);
+            case 'SequelizeDatabaseError':
+                return new ServerError(err.message);
             default:
                 return new ServerError();
         }
