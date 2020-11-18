@@ -2,10 +2,10 @@
 
 const formidable = require('formidable');
 
-const formParser = (req,res,next) => {
+const formParser = async (req,res,next) => {
     const form = formidable({multiples:true})
     const acceptedFormats = new Set(['image/jpeg','image/jpg','image/png','application/pdf']);
-    form.parse(req, (err,fields,files) => {
+    await form.parse(req, (err,fields,files) => {
         if (err){
             return res.status(500).json({
                 error: "Couldn't parse the form. Try again later"
@@ -20,8 +20,8 @@ const formParser = (req,res,next) => {
         })
 
         req.body = {...files,...fields,...req.body};
-        next();
     })
+    next();
 }
 
 module.exports = formParser;
