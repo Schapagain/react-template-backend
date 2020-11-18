@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+
 const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
@@ -42,7 +42,7 @@ const Driver = db.define('Driver', {
         type: Sequelize.DATE,
         field: 'updated_at'
     },
-    deleteAt: {
+    deletedAt: {
         type: Sequelize.DATE,
         field: 'deleted_at'
     }
