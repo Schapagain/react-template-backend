@@ -15,44 +15,47 @@ const formParser = require('../../middlewares/formParser');
  * @param   {string} path
  * @param   {callback} middleware - Handle HTTP response
 */
-router.post('/get_code', async (req,res) => {
+router.post('/get_code', 
+    formParser,
+    async (req,res) => {
 
-    let { phone } = req.body;
-    // Check if phone number is given
-    if (!phone){
-        return res.status(400).json({
-            error: "Please provide phone number"
-        })
-    }
-
-    try{
-        // Check if the user exists
-        let result = await Login.findOne({where:{phone}});
-        if (!result) {
+        let { phone } = req.body;
+        // Check if phone number is given
+        if (!phone){
             return res.status(400).json({
-                error: "Phone number is not registered"
+                error: "Please provide phone number"
             })
-        } 
-        
-        // Generate a random 6 digit code
-        const code = Math.floor(Math.random() * (1000000 - 100000) + 100000);
+        }
 
-        // store code to the databse
-        Login.update({...result.dataValues,code},{where:{phone}})
+        try{
+            // Check if the user exists
+            let result = await Login.findOne({where:{phone}});
+            if (!result) {
+                return res.status(400).json({
+                    error: "Phone number is not registered"
+                })
+            } 
+            
+            // Generate a random 6 digit code
+            const code = Math.floor(Math.random() * (1000000 - 100000) + 100000);
 
-        // send code through the API
-        return res.status(200).json({
-            message: "Use this code to login",
-            code,
-        })
+            // store code to the databse
+            Login.update({...result.dataValues,code},{where:{phone}})
+
+            // send code through the API
+            return res.status(200).json({
+                message: "Use this code to login",
+                code,
+            })
+        }
+        catch(err){
+            console.log(err);
+            return res.status(500).json({
+                error: 'Server error. Try again later.'
+            })
+        }
     }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({
-            error: 'Server error. Try again later.'
-        })
-    }
-})
+)
 
 /**
  * Route to authenticate a suer
@@ -65,7 +68,7 @@ router.post('/get_code', async (req,res) => {
  * @param   {callback} middleware - Handle HTTP response
 */
 router.post('/', 
-    formParser,    
+    formParser,
     async (req,res) => {
 
         let { email, password, phone, code } = req.body;
