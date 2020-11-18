@@ -70,7 +70,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |-----|-----|-----|
 |200|OK|Everything went smoothly!|
 |201|Created|Content was posted successfully|
-|400|Bad request|At least one required field, or a JWT, was not provided, or a wrong data type was sent|
+|400|Bad request|At least one required field, or a JWT, was not provided|
 |401|Unauthorized|Login credentials mismatch, or JWT invalid|
 |404|Not Found|Page, or resource (user, file) not found on the server|
 |409|Conflict|A resource with the provided unique identifier (email, phone) already exists|
@@ -93,7 +93,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
     * **Payload**: { email, password } || { phone, code } **for code see 3. below**
     * **Return**: { { id, email, role }, token }
 
-3. Get a OTP code
+3. Get an OTP code
     * **Endpoint**: /api/auth/get_code
     * **Method**: POST
     * **Access**: Public
