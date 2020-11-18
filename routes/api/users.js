@@ -160,4 +160,37 @@ router.patch('/:id',
     }
 );
 
+/**
+ * Route to get user files
+ * @name    api/users/:id/files/:fileName
+ * @method  GET
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/:id/files/:fileName', 
+    auth, 
+    async (req,res)=>{
+        const rootPath = path.join('.','uploads');
+        const { fileName } = req.params;
+        try{
+            await fs.promises.access(path.join(rootPath,fileName))
+            res.sendFile(fileName,{root: rootPath});
+        }catch(err){
+
+            if (err.code === 'ENOENT'){
+                res.status(404).json({
+                    error: "File not found"
+                })
+            }else{
+                res.status(500).json({
+                    error: "Server error. Try again later."
+                })
+                throw err;
+            }
+        }
+});
+
 module.exports = router;
