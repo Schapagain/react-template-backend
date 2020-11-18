@@ -6,9 +6,17 @@ const { postVehicle, getVehicle, getVehicles, updateVehicle, deleteVehicle, disa
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 
-// @route   POST api/drivers
-// @desc    Add a new driver
-// @access  distributor
+/**
+ * Route to add a new vehicle
+ * @name    api/vehicles
+ * @method  POST
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.post('/', 
     auth,
     formParser,
@@ -30,9 +38,16 @@ router.post('/',
         }
     });
 
-// @route   GET api/vehicles/:id
-// @desc    Get vehicle info
-// @access  Private
+/**
+ * Route to get vehicle info
+ * @name    api/vehicles/:id
+ * @method  GET
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/:id', 
 auth,
 async (req,res) => {
@@ -57,9 +72,16 @@ async (req,res) => {
 }
 );
 
-// @route   GET api/drivers
-// @desc    View all drivers
-// @access  distributor
+/**
+ * Route to get all vehicles
+ * @name    api/vehicles
+ * @method  DELETE
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/', 
     auth,
     async (req,res) => {
@@ -81,9 +103,16 @@ router.get('/',
     }
 );
 
-// @route   DELETE api/distributors
-// @desc    delete a distributor
-// @access  Private
+/**
+ * Route to delete a vehicle
+ * @name    api/vehicles/:id
+ * @method  DELETE
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.delete('/:id', 
     auth,
     async (req,res) => {
@@ -108,9 +137,17 @@ router.delete('/:id',
 );
 
 
-// @route   PATCH api/distributors/:id
-// @desc    Update distributor info
-// @access  Private
+/**
+ * Route to udpate vehicle info
+ * @name    api/vehicles/:id
+ * @method  PATCH
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.patch('/:id', 
     auth,
     formParser,
@@ -137,5 +174,37 @@ router.patch('/:id',
     }
 );
 
+/**
+ * Route to get vehicle files
+ * @name    api/vehicles/:id/files/:fileName
+ * @method  GET
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/:id/files/:fileName',
+    auth, 
+    async (req,res)=>{
+        const rootPath = path.join('.','uploads');
+        const { fileName } = req.params;
+        try{
+            await fs.promises.access(path.join(rootPath,fileName))
+            res.sendFile(fileName,{root: rootPath});
+        }catch(err){
+
+            if (err.code === 'ENOENT'){
+                res.status(404).json({
+                    error: "File not found"
+                })
+            }else{
+                res.status(500).json({
+                    error: "Server error. Try again later."
+                })
+                throw err;
+            }
+        }
+});
 
 module.exports = router;
