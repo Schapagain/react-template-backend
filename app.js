@@ -36,17 +36,14 @@ app.use('/api/users',require('./routes/api/users'));
 
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
-    const error = new Error('Not found');
+    const error = new Error('Page Not found');
     error.status = 404;
     next(error);
 })
 
 // Handle all errors thrown
-app.use((error,req,res,next) => {
-    res.status(error.status || 500);
-    res.json({
-        error: error.message,
-    });
+app.use((err,req,res,next) => {
+    res.status(err.httpCode || 500 ).json({ error: err.message || 'Server error' })
 });
 
 module.exports = app;
