@@ -13,6 +13,9 @@ const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
 
+    //Booleanify the value for usesPan field
+    distributor.usesPan = distributor.pan? true : false
+    distributor.panOrVat = distributor.pan? distributor.pan : distributor.vat;
     // Extract files
     allFiles = expectedFiles.map(fieldName => distributor[fieldName]);
 
@@ -61,9 +64,8 @@ async function _initLogin(distributor) {
         const token = getAuthToken(id,DISTRIBUTOR);
         console.log('New password reset token:',token);
 
-        // Initialize login as both driver and distributor
-        await Login.create({id, email, role:DISTRIBUTOR});
-        await Login.create({id, phone, role:DRIVER})
+        // Initialize login for the new distributor
+        await Login.create({id, email, phone, role:DISTRIBUTOR});
     }catch(err){
         console.log(err);
     }
