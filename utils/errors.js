@@ -7,6 +7,14 @@ class ValidationError extends Error {
     }
 }
 
+class NotAuthorizedError extends Error {
+    constructor(message){
+        super(message? 'Not Authorized: '+message : 'Not Authorized');
+        this.name = this.constructor.name;
+        this.httpCode = 401;
+    }
+}
+
 class NotUniqueError extends Error {
     constructor(field){
         super(`${field} already exists`);
@@ -45,6 +53,8 @@ async function getError(err){
                 return new NotUniqueError(err.errors[0].path);
             case 'SequelizeDatabaseError':
                 return new ServerError(err.message);
+            case 'JwtParseError':
+                return new NotAuthorizedError('Invalid token')
             default:
                 return new ServerError();
         }
@@ -55,5 +65,6 @@ async function getError(err){
 module.exports = {
     ValidationError,
     NotFoundError,
+    NotAuthorizedError,
     getError
 }
