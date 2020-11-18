@@ -54,6 +54,13 @@
     ADMIN_ID
     ```
 
+## Start development server
+* In the command line, run : ```npm run dev```
+
+
+<br/>
+<br/>
+
 ## API Usage
 
 ### Distributor handling
@@ -63,7 +70,7 @@
     * **Method**: POST
     * **Access**: Public
     * **Payload**:
-        * Required: adminId, usesPan, panOrVat, name, country, language, email, phone, street, state, postal, licenseDocument
+        * Required: adminId, (pan || vat), name, country, language, email, phone, street, state, postal, licenseDocument
         * Optional: district, municipality, ward, website, profilePicture
     * **Return**: { message, id, email, name, moreInfo }
 
