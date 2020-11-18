@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+
 const Sequelize = require('sequelize');
 const db = require('../utils/db');
 
@@ -8,8 +8,14 @@ const Schema = {
         allowNull: false,
         primaryKey: true,
     },
-    email: Sequelize.STRING,
-    phone: Sequelize.STRING,
+    email: {
+        type: Sequelize.STRING,
+        unique: true,
+    },
+    phone: {
+        type: Sequelize.STRING,
+        unique: true,
+    },
     password: {
         type: Sequelize.STRING,
     },
@@ -17,6 +23,7 @@ const Schema = {
         type: Sequelize.STRING,
         allowNull: false
     },
+    code: Sequelize.INTEGER,
     createdAt: {
         type: Sequelize.DATE,
         field: 'created_at'
