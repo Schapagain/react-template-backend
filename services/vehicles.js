@@ -39,7 +39,6 @@ function validateNewVehicle(vehicle) {
 
 async function postVehicle(vehicle) {
 
-    // [TODO] validation here
     if (!validateNewVehicle(vehicle)) throw new Error('Please provide all fields');
 
     // Save files to filesystem
