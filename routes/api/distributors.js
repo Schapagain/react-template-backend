@@ -34,9 +34,15 @@ router.post('/',
         }
     });
 
-// @route   GET api/distributors/:id
-// @desc    Get distributor info
-// @access  Private
+/**
+ * Route to get distributor info
+ * @name    api/distributors/:id
+ * @method  GET
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/:id', 
     auth,
     async (req,res) => {
@@ -62,9 +68,17 @@ router.get('/:id',
     }
 );
 
-// @route   PATCH api/distributors/:id
-// @desc    Update distributor info
-// @access  Private
+/**
+ * Route to update distributor info
+ * @name    api/distributors/:id
+ * @method  PATCH
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Form Parser  
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.patch('/:id', 
     auth,
     formParser,
@@ -90,9 +104,16 @@ router.patch('/:id',
     }
 );
 
-// @route   GET api/distributors
-// @desc    View all distributors
-// @access  admin
+/**
+ * Route to get all distributors
+ * @name    api/distributors/:id
+ * @method  GET
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/', 
     auth,
     async (req,res) => {
@@ -114,9 +135,16 @@ router.get('/',
     }
 );
 
-// @route   DELETE api/distributors
-// @desc    delete a distributor
-// @access  Private
+/**
+ * Route to delete a distributor
+ * @name    api/distributors/:id
+ * @method  DELETE
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.delete('/:id', 
     auth,
     async (req,res) => {
@@ -141,6 +169,16 @@ router.delete('/:id',
     }
 );
 
+/**
+ * Route to get distributor files
+ * @name    api/distributors/:id/files/:fileName
+ * @method  GET
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
 router.get('/:id/files/:fileName', auth, async (req,res)=>{
 
     const rootPath = path.join('.','uploads');
