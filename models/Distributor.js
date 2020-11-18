@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+
 const Sequelize = require('sequelize');
 const { allowedLanguages, allowedCountries } = require('../utils');
 const db = require('../utils/db');
@@ -15,7 +15,7 @@ const Schema = {
         allowNull: false,
         primaryKey: true,
     },
-    uses_pan: {
+    usesPan: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         field: 'uses_pan_or_vat'
@@ -78,7 +78,6 @@ const Schema = {
     },
     deletedAt: {
         type: Sequelize.DATE,
-        allowNull: false,
         field: 'deleted_at'
     },
     updatedAt: {
@@ -88,7 +87,6 @@ const Schema = {
     },
     createdAt: {
         type: Sequelize.DATE,
-        allowNull: false,
         field: 'created_at'
     },
     district: Sequelize.STRING,
