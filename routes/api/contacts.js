@@ -33,7 +33,7 @@ router.post('/',
             }
             res.status(201).json(result)
         }catch(err){
-            res.status(500).json({error:err.message})
+            res.status(err.httpCode).json({ error: err.message })
         }
     });
 
@@ -60,8 +60,7 @@ async (req,res) => {
 
         res.status(200).json(result);
     }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Could not fetch contact"})
+        res.status(err.httpCode).json({ error: err.message })
     }
 }
 );
@@ -85,8 +84,7 @@ router.get('/',
             if(!result) throw new Error();
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not fetch contacts"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -120,8 +118,7 @@ router.delete('/:id',
             const { message, title, name, } = result;
             res.status(200).json({ message, title, name });
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not delete contact. Try again later"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -155,8 +152,7 @@ router.patch('/:id',
             }
             res.status(201).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not update contact"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );

@@ -35,8 +35,7 @@ router.post('/',
             }
             res.status(201).json(result)
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:'Could not add new driver'})
+            res.status(err.httpCode).json({ error: err.message })
         }
     });
 
@@ -70,8 +69,7 @@ async (req,res) => {
 
         res.status(200).json(result);
     }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Could not fetch driver"})
+        res.status(err.httpCode).json({ error: err.message })
     }
 }
 );
@@ -101,8 +99,7 @@ router.get('/',
 
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not fetch drivers"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -135,8 +132,7 @@ router.delete('/:id',
             }
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not delete driver. Try again later"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -171,8 +167,7 @@ router.patch('/:id',
             }
             res.status(201).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not update driver"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );

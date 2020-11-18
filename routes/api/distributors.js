@@ -62,8 +62,7 @@ router.get('/:id',
             })
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not fetch distributor"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -98,8 +97,7 @@ router.patch('/:id',
             }
             res.status(201).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not update distributor"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -129,8 +127,7 @@ router.get('/',
 
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not fetch distributors"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -163,8 +160,7 @@ router.delete('/:id',
             }
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not delete distributor. Try again later"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );

@@ -1,12 +1,12 @@
 const njwt = require('njwt');
 require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
-const { ADMIN } = require('../utils/roles');
+const { getError } = require('../utils/errors');
 
 const Distributor = require('../models/Distributor');
 
 // Acess controls based on roles remains to be implemented here
-const auth = (req,res,next) => {
+const auth = async (req,res,next) => {
     try{
         // Get token from the header
         const userToken = req.header('authorization') || req.params.token;
@@ -29,7 +29,7 @@ const auth = (req,res,next) => {
         }
         next();
     }catch(err){
-        throw err;
+        next(await getError(err))
     }
 }
 

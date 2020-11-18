@@ -34,7 +34,7 @@ router.post('/',
             }
             return res.status(201).json(result);
         }catch(err){
-            res.status(500).json({error: err.message})
+            res.status(err.httpCode).json({ error: err.message })
         }
     });
 
@@ -66,8 +66,7 @@ async (req,res) => {
         result['registrationDocument'] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null;
         res.status(200).json(result);
     }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Could not fetch vehicle"})
+        res.status(err.httpCode).json({ error: err.message })
     }
 }
 );
@@ -97,8 +96,7 @@ router.get('/',
 
             res.status(200).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not fetch vehicles"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
@@ -168,8 +166,7 @@ router.patch('/:id',
             }
             res.status(201).json(result);
         }catch(err){
-            console.log(err);
-            res.status(500).json({error:"Could not update vehicle"})
+            res.status(err.httpCode).json({ error: err.message })
         }
     }
 );
