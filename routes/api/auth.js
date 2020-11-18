@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const Login = require('../../models/Login');
+const formParser = require('../../middlewares/formParser');
 
 /**
  * Route to get login code using phone number
@@ -60,55 +61,59 @@ router.post('/get_code', async (req,res) => {
  * @access  Public
  * @inner
  * @param   {string} path
+ * @param   {callback} middleware - Form Parser
  * @param   {callback} middleware - Handle HTTP response
 */
-router.post('/', async (req,res) => {
+router.post('/', 
+    formParser,    
+    async (req,res) => {
 
-    let { email, password, phone, code } = req.body;
-    // Check if all fields are given
-    if (!((email  && password) || (phone && code))){
-        return res.status(400).json({
-            error: "Please provide email/password or phone/code"
-        })
-    }
-
-    try{
-        // Check if the user exists
-        const queryOptions = {where:email?{email}:{phone,code}}
-        let result = await Login.findOne(queryOptions);
-        if (!result) {
+        let { email, password, phone, code } = req.body;
+        // Check if all fields are given
+        if (!((email  && password) || (phone && code))){
             return res.status(400).json({
-                error: "Not authorized"
+                error: "Please provide email/password or phone/code"
             })
-        } 
-
-        // Match password if logging in through email
-        if (!phone){
-            var { id, password:passwordHash, role } = result;
-
-            if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
-            // Compare username/password combination
-            const credentialsMatch = await bcrypt.compare(password,passwordHash);
-            if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
-        } else{
-            // Expire code if logged in using OTP code and phone number
-            Login.update({...result,code:null},{where:{phone}})
         }
 
-        // Clean up User and assign token before sending the user back
-        const user = phone? { id, phone, role } : { id, email, role }
-        const token = getAuthToken(id, role);
-        res.status(200).json({
-            user,
-            token,
-        })
+        try{
+            // Check if the user exists
+            const queryOptions = {where:email?{email}:{phone,code}}
+            let result = await Login.findOne(queryOptions);
+            if (!result) {
+                return res.status(400).json({
+                    error: "Not authorized"
+                })
+            } 
+
+            // Match password if logging in through email
+            if (!phone){
+                var { id, password:passwordHash, role } = result;
+
+                if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
+                // Compare username/password combination
+                const credentialsMatch = await bcrypt.compare(password,passwordHash);
+                if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
+            } else{
+                // Expire code if logged in using OTP code and phone number
+                Login.update({...result,code:null},{where:{phone}})
+            }
+
+            // Clean up User and assign token before sending the user back
+            const user = phone? { id, phone, role } : { id, email, role }
+            const token = getAuthToken(id, role);
+            res.status(200).json({
+                user,
+                token,
+            })
+        }
+        catch(err){
+            console.log(err);
+            return res.status(500).json({
+                error: 'Server error. Try again later.'
+            })
+        }
     }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({
-            error: 'Server error. Try again later.'
-        })
-    }
-})
+)
 
 module.exports = router;

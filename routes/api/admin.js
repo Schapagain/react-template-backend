@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const formParser = require('../../middlewares/formParser');
 const router = express.Router();
 const { getAuthToken } = require('../../utils/auth');
 const { ADMIN } = require('../../utils/roles');
@@ -12,9 +13,11 @@ const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
  * @access  Public
  * @inner
  * @param   {string} path
+ * @param   {callback} middleware - Form Parser
  * @param   {callback} middleware - Handle HTTP response
 */
 router.post('/', 
+    formParser,
     async (req, res) => {
         const { email, password } = req.body;
         if(!email || !password){
