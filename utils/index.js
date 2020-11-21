@@ -8,4 +8,6 @@ const allowedLanguages = ['nepali','english','chinese','hindi','swahili','russia
 
 const getRandomId = () => uuid().slice(0,5);
 
-module.exports = { allowedCountries, allowedLanguages, expectedFiles, getRandomId };
+const getRandomCode = length => Math.floor(Math.random() * (10**length - 10**(length-1)) + 10**(length-1));
+
+module.exports = { allowedCountries, allowedLanguages, expectedFiles, getRandomId, getRandomCode };
