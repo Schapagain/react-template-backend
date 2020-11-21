@@ -7,7 +7,6 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false,
           field: 'admin_id',
-          foreignKey: true,
       },
       id: {
         type: Sequelize.INTEGER,
