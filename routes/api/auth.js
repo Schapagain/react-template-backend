@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
+const { getRandomCode } = require('../../utils');
 const Login = require('../../models/Login');
 const formParser = require('../../middlewares/formParser');
 
@@ -36,16 +37,18 @@ router.post('/get_code',
                 })
             } 
             
-            // Generate a random 6 digit code
-            const code = Math.floor(Math.random() * (1000000 - 100000) + 100000);
+            // Generate random six-digit code
+            const otpCode = getRandomCode(6);
 
             // store code to the databse
-            Login.update({...result.dataValues,code},{where:{phone}})
+            Login.update({...result.dataValues,otpCode},{where:{phone}})
+            
+            //[TODO] send code via text
+            console.log('OTP code for user: ', otpCode);
 
             // send code through the API
             return res.status(200).json({
-                message: "Use this code to login",
-                code,
+                message: "OTP code has been sent!",
             })
         }
         catch(err){
