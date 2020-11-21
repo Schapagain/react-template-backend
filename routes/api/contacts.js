@@ -29,11 +29,11 @@ router.post('/',
             result = {
                 message: 'Contact added successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','contacts',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','contacts',result.id.toString())
             }
             res.status(201).json(result)
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     });
 
