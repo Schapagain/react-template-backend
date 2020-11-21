@@ -79,152 +79,59 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 <br/>
 
 ### Authentication
-1. Admin authentication
-    * **Endpoint**: /api/admin
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**: { email, password }
-    * **Return**: { token }
 
-2. User authentication
-    * **Endpoint**: /api/auth
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**: { email, password } || { phone, code } **for code see 3. below**
-    * **Return**: { { id, email, role }, token }
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /api/admin | Admin authentication | POST | Public | email, password | { token } | ----- |
+| /api/auth/get_code | Get an OPT code via text | POST | Public | phone | { message } | ----- |
+| /api/auth | User authentication | POST | Public | <ins>Either</ins>: email, password <br/> <ins>OR</ins>: phone, code | {{ id, email, role }}, token | ----- |
 
-3. Get an OTP code
-    * **Endpoint**: /api/auth/get_code
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**: { phone }
-    * **Return**: { message, code }
 
 ### Distributor handling
 
-1. Add a distributor
-    * **Endpoint**: /api/distributors
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**:
-        * Required: adminId, (pan || vat), name, country, language, email, phone, street, state, postal, licenseDocument
-        * Optional: district, municipality, ward, website, profilePicture
-    * **Return**: { message, id, email, name, moreInfo }
-
-2. Set distributor password
-    * **Endpoint**: /api/set_password/:token
-    * **Method**: PATCh
-    * **Access**: Public
-    * **Return**: { message }
-
-3. View all distributors
-    * **Endpoint**: /api/distributors
-    * **Method**: GET
-    * **Access**: Admin/distributor
-    * **Header**: Authorization: token
-    * **Return**: [ Distributor ]
-
-4. Get distributor info
-    * **Endpoint**: /api/distributors/:id
-    * **Method**: GET
-    * **Access**: Private
-    * **Header**: Authorization: token
-    * **Return**: [ { Distributor, documents, profilePicture } ]
-
-5. Update distributor info
-    * **Endpoint**: /api/distributors/:id
-    * **Method**: PATCH
-    * **Access**: Private
-    * **Header**: Authorization: token
-    * **Return**: { message, id, email, name, moreInfo }
-
-6. Delete a distributor
-    * **Endpoint**: /api/distributors/:id
-    * **Method**: DELETE
-    * **Access**: Admin/distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, email, name }
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /api/distributors| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
+| /api/distributors | Add a distributor | POST | Public | <ins>Required</ins>: adminId, (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name, moreInfo } | A link is sent via email to set a new password |
+| /api/distributors/:id | View distributor info | GET | Private | ----- | Distributor | ----- |
+| /api/distributors/:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name, moreInfo } | ----- |
+| /api/distributors/:id | Delete a distributor | DELETE | Private | ----- | { message, id, email, name } | ----- |
+| /api/distributors/forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
+| /api/distributors/set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
 
 ### Driver handling
 
-1. Add a driver
-    * **Endpoint**: /api/drivers/
-    * **Method**: POST
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Payload**: 
-        * required: { phone, licenseDocument, name }
-        * optional: { dob, address, profilePicture }
-    * **Return**: { message, id, name, moreInfo }
-
-2. View all drivers
-    * **Endpoint**: /api/drivers
-    * **Method**: GET
-    * **Access**: Distributor
-    * **Header**: Authorization: token
-    * **Return**: [ Driver ]
-
-3. Get driver info
-    * **Endpoint**: /api/drivers/:id
-    * **Method**: GET
-    * **Access**: Private
-    * **Header**: Authorization: token
-    * **Return**:  { Driver }
-
-4. Update driver info
-    * **Endpoint**: /api/drivers/:id
-    * **Method**: PATCH
-    * **Access**: Private
-    * **Header**: Authorization: token
-    * **Return**: { message, id, name, phone, moreInfo }
-
-5. Delete a driver
-    * **Endpoint**: /api/drivers/:id
-    * **Method**: DELETE
-    * **Access**: Admin/distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, email, name }
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /api/drivers| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
+| /api/drivers | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name, moreInfo } | ----- |
+| /api/drivers/:id | View driver info | GET | Private | ----- | Driver | ----- |
+| /api/drivers/:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone, moreInfo } | ----- |
+| /api/drivers/:id | Delete a driver | DELETE | Private | ----- | { message, id, phone, name } | ----- |
 
 ### Vehicle handling
 
-1. Add a vehicle
-    * **Endpoint**: /api/vehicles/
-    * **Method**: POST
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Payload**: 
-        * required: { company, registrationDocument, model, modelYear, licensePlate }
-        * optional: { chassisNumber, seats, doors, color }
-    * **Return**: { message, id, model, driverInfo, moreInfo }
 
-2. View all vehicles
-    * **Endpoint**: /api/vehicles
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: [ { id, model, licensePlate, driverInfo, moreInfo } ]
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /api/vehicles| View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
+| /api/vehicles | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo, moreInfo } | ----- |
+| /api/vehicles/:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
+| /api/vehicles/:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo, moreInfo } | ----- |
+| /api/vehicles/:id | Delete a vehicle | DELETE | Distributor | ----- | { message, id } | ----- |
 
-3. Get vehicle info
-    * **Endpoint**: /api/vehicles/:id
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**:  { Vehicle }
+### User handling
 
-4. Update vehicle info
-    * **Endpoint**: /api/vehicles/:id
-    * **Method**: PATCH
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, model, licensePlate, driver, driverInfo, moreInfo }
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /api/users| View all users | GET | Distributor | ----- | [ User ]| ----- |
+| /api/users | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone , moreInfo } | Account activation link is sent via text |
+| /api/users/:id | View user info | GET | Private | ----- | User | ----- |
+| /api/users/:id | Update user info | PATCH | Private | ----- | { message, id, name, phone , moreInfo } | ----- |
+| /api/users/:id | Delete a user | DELETE | Private | ----- | { message, id, name, phone } | ----- |
 
-5. Delete a vehicle
-    * **Endpoint**: /api/vehicles/:id
-    * **Method**: DELETE
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id }
 
+> Contacts route is not up to date yet. Working on it.
 ### Contacts handling
 
 1. Add a contact
@@ -265,41 +172,3 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
     * **Header**: Authorization: token
     * **Return**: { message, title, name }
 
-### User handling
-
-1. Add a user
-    * **Endpoint**: /api/users
-    * **Method**: POST
-    * **Access**: Public
-    * **Payload**: 
-        * required: { name, phone, password, distributorId }
-        * optional: { email, profilePicture,  }
-    * **Return**: { message, id, name, phone, moreInfo }
-
-2. View all users
-    * **Endpoint**: /api/users
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: [ { User } ]
-
-3. Get user info
-    * **Endpoint**: /api/users/:id
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**:  { User }
-
-4. Update user info
-    * **Endpoint**: /api/users/:id
-    * **Method**: PATCH
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, name, phone, moreInfo }
-
-5. Delete a user
-    * **Endpoint**: /api/users/:id
-    * **Method**: DELETE
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, name, phone }
