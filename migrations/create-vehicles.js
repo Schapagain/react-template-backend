@@ -16,10 +16,10 @@ module.exports = {
           foreignKey: true,
       },
       id: {
-          type: Sequelize.STRING,
-          allowNull: false,
-          primaryKey: true,
-      },
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        },
       registrationDocument: {
           type: Sequelize.STRING,
           allowNull: false,

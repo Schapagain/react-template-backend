@@ -10,8 +10,8 @@ const Driver = db.define('Driver', {
         foreignKey: true,
     },
     id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     licenseDocument: {

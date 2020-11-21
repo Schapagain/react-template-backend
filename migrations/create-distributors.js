@@ -10,10 +10,10 @@ module.exports = {
           foreignKey: true,
       },
       id: {
-          type: Sequelize.STRING,
-          allowNull: false,
-          primaryKey: true,
-      },
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        },
       uses_pan: {
           type: Sequelize.BOOLEAN,
           allowNull: false,
@@ -43,7 +43,8 @@ module.exports = {
       },
       phone: {
           type: Sequelize.STRING,
-          allowNull: false
+          allowNull: false,
+          unique: true,
       },
       street: {
           type: Sequelize.STRING,

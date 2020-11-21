@@ -10,9 +10,9 @@ module.exports = {
           foreignKey: true,
       },
       id: {
-          type: Sequelize.STRING,
-          allowNull: false,
-          primaryKey: true,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
       },
       licenseDocument: {
           type: Sequelize.STRING,

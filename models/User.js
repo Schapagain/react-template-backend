@@ -10,8 +10,8 @@ const User = db.define('User', {
         foreignKey: true,
     },
     id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     name: {
@@ -37,7 +37,6 @@ const User = db.define('User', {
     },
     deletedAt: {
         type: Sequelize.DATE,
-        allowNull: false,
         field: 'deleted_at'
     },
     updatedAt: {

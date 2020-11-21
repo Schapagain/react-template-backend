@@ -11,8 +11,8 @@ const Schema = {
         foreignKey: true,
     },
     id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     usesPan: {
@@ -53,7 +53,8 @@ const Schema = {
     },
     phone: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
     },
     street: {
         type: Sequelize.STRING,

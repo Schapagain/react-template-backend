@@ -10,8 +10,8 @@ const Contact = db.define('Contact', {
         foreignKey: true,
     },
     id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     name: {

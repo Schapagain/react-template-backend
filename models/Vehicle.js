@@ -16,8 +16,8 @@ const Vehicle = db.define('Vehicle', {
         foreignKey: true,
     },
     id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     registrationDocument: {
