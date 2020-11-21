@@ -31,11 +31,11 @@ router.post('/',
             result = {
                 message: 'Driver added successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id.toString())
             }
             res.status(201).json(result)
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     });
 
@@ -69,7 +69,7 @@ async (req,res) => {
 
         res.status(200).json(result);
     }catch(err){
-        res.status(err.httpCode).json({ error: err.message })
+        res.status(err.httpCode || 500).json({ error: err.message })
     }
 }
 );
@@ -94,12 +94,12 @@ router.get('/',
 
             result = result.map(driver => ({
                 ...driver,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',driver.id)
+                'moreInfo:': path.join(req.get('host'),'api','drivers',driver.id.toString())
             }))
 
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -132,7 +132,7 @@ router.delete('/:id',
             }
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -163,11 +163,11 @@ router.patch('/:id',
             result = {
                 'message' : 'Driver updated successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -192,14 +192,10 @@ router.get('/:id/files/:fileName', auth, async (req,res)=>{
     }catch(err){
 
         if (err.code === 'ENOENT'){
-            res.status(404).json({
-                error: "File not found"
-            })
+            res.status(404).json({ error: "File not found" })
         }else{
-            res.status(500).json({
-                error: "Server error. Try again later."
-            })
-            throw err;
+            err = getError(err);
+            res.status(err.httpCode || 500).json({error: err.message})
         }
     }
 });
