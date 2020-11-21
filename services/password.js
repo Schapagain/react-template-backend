@@ -1,20 +1,24 @@
 const bcrypt =  require('bcrypt');
 const Login = require('../models/Login');
+const { getError, NotAuthorizedError } = require('../utils/errors');
+const { getRandomCode } = require('../utils');
 
-const updatePassword = async (id,password) => {
+const updatePassword = async (id,setPasswordCode,password) => {
 
     try{
-        password = await generatePasswordHash(password);
 
-        const result = await Login.update({password},{where:{id}})
-        if (!result){
-            return false;
-        }else{
-            return result
+        const user = await Login.findOne({where:{id,setPasswordCode}});
+        if (!user)
+            throw new NotAuthorizedError('Code has expired')
+
+        password = await generatePasswordHash(password);
+        console.log(setPasswordCode,id)
+        const updated = await Login.update({password,setPasswordCode:null},{where:{id}})
+        if (!updated){
+            throw new Error();
         }
     }catch(err){
-        console.log(err);
-        return false;
+        throw await getError(err);
     }
     
 }
@@ -30,4 +34,20 @@ const generatePasswordHash = async passwordPlain => {
     }
 }
 
-module.exports = { updatePassword };
+const sendPasswordResetCode = async email => {
+    // Check if the user exists
+    let result = await Login.findOne({where:{email}});
+        
+    if (result){
+        // Generate random six-digit code
+        const setPasswordCode = getRandomCode(6);
+
+        // store code to the databse
+        Login.update({...result.dataValues,setPasswordCode},{where:{email}})
+        
+        const { id } = result;
+        return { id, setPasswordCode}
+    }
+}
+
+module.exports = { updatePassword, sendPasswordResetCode };
