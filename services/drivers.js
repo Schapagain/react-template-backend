@@ -32,13 +32,10 @@ async function postDriver(driver) {
         }
     })
 
-    // Create a unique id for the new driver
-    driver.id = getRandomId();
     try{
-        await Promise.all([ 
-            Driver.create(driver),
-            _initLogin(driver.id,driver.phone),
-        ]);
+        driver = await Driver.create(driver);
+        await _initLogin(driver.id,driver.phone);
+
         const { id, name, email } = driver;
         return { id, email, name };
     }catch(err){
