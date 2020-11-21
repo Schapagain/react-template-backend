@@ -17,7 +17,14 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false
       },
-      code: Sequelize.INTEGER,
+      otpCode: {
+        type: Sequelize.INTEGER,
+        field: 'otp_code'
+      },
+      setPasswordCode: {
+          type: Sequelize.INTEGER,
+          field: 'set_password_code'
+      },
       createdAt: {
           type: Sequelize.DATE,
           field: 'created_at'
