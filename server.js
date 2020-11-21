@@ -1,8 +1,8 @@
 const app = require('./app');
-const db = require('./utils/db');
+const { sequelize } = require('./models/index');
 
 // Test database connection
-db
+sequelize
 .authenticate()
 .then(() => console.log('Connected to database...'))
 .catch(err => console.error('Database connection failed: ', err.message));

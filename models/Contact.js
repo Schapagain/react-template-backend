@@ -1,48 +1,48 @@
 
-const Sequelize = require('sequelize');
-const db = require('../utils/db');
 
-const Contact = db.define('Contact', {
-    distributorId: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        field: 'distributor_id',
-        foreignKey: true,
-    },
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    jobPosition: {
-        type: Sequelize.STRING,
-        field: 'job_position',
-    },
-    title: Sequelize.STRING,
-    email: Sequelize.STRING,
-    phone: Sequelize.STRING,
-    mobile: Sequelize.STRING,
-    createdAt: {
-        type: Sequelize.DATE,
-        field: 'created_at'
-    },
-    updatedAt: {
-        type: Sequelize.DATE,
-        field: 'updated_at'
-    },
-    deletedAt: {
-        type: Sequelize.DATE,
-        field: 'deleted_at'
+module.exports = function(sequelize, DataTypes) {
+    const Contact = sequelize.define('Contact', {
+        distributorId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            field: 'distributor_id',
+            foreignKey: true,
+        },
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        jobPosition: {
+            type: DataTypes.STRING,
+            field: 'job_position',
+        },
+        title: DataTypes.STRING,
+        email: DataTypes.STRING,
+        phone: DataTypes.STRING,
+        mobile: DataTypes.STRING,
+        createdAt: {
+            type: DataTypes.DATE,
+            field: 'created_at'
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at'
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at'
+        }
+    },{
+        tableName: 'contacts',
+        paranoid:true,
+        deletedAt:'deleted_at',
     }
-},{
-    tableName: 'contacts',
-    paranoid:true,
-    deletedAt:'deleted_at',
-}
-)
+    )
 
-module.exports = Contact;
+    return Contact;
+}
