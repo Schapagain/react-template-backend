@@ -88,47 +88,50 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 
 ### Distributor handling
+> url prefix: /api/distributors
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/distributors| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
-| /api/distributors | Add a distributor | POST | Public | <ins>Required</ins>: adminId, (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name, moreInfo } | A link is sent via email to set a new password |
-| /api/distributors/:id | View distributor info | GET | Private | ----- | Distributor | ----- |
-| /api/distributors/:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name, moreInfo } | ----- |
-| /api/distributors/:id | Delete a distributor | DELETE | Private | ----- | { message, id, email, name } | ----- |
-| /api/distributors/forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
-| /api/distributors/set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
+| /| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
+| / | Add a distributor | POST | Public | <ins>Required</ins>: adminId, (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name, moreInfo } | A link is sent via email to set a new password |
+| /:id | View distributor info | GET | Private | ----- | Distributor | ----- |
+| /:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name, moreInfo } | ----- |
+| /:id | Delete a distributor | DELETE | Private | ----- | { message, id, email, name } | ----- |
+| /forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
+| /set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
 
 ### Driver handling
+> url prefix: /api/drivers
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/drivers| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
-| /api/drivers | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name, moreInfo } | ----- |
-| /api/drivers/:id | View driver info | GET | Private | ----- | Driver | ----- |
-| /api/drivers/:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone, moreInfo } | ----- |
-| /api/drivers/:id | Delete a driver | DELETE | Private | ----- | { message, id, phone, name } | ----- |
+| /| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
+| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name, moreInfo } | ----- |
+| /:id | View driver info | GET | Private | ----- | Driver | ----- |
+| /:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone, moreInfo } | ----- |
+| /:id | Delete a driver | DELETE | Private | ----- | { message, id, phone, name } | ----- |
 
 ### Vehicle handling
-
+> url prefix: /api/vehicles
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/vehicles| View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
-| /api/vehicles | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo, moreInfo } | ----- |
-| /api/vehicles/:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
-| /api/vehicles/:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo, moreInfo } | ----- |
-| /api/vehicles/:id | Delete a vehicle | DELETE | Distributor | ----- | { message, id } | ----- |
+| / | View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
+| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo, moreInfo } | ----- |
+| /:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
+| /:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo, moreInfo } | ----- |
+| /:id | Delete a vehicle | DELETE | Distributor | ----- | { message, id } | ----- |
 
 ### User handling
+> url prefix: /api/users
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/users| View all users | GET | Distributor | ----- | [ User ]| ----- |
-| /api/users | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone , moreInfo } | Account activation link is sent via text |
-| /api/users/:id | View user info | GET | Private | ----- | User | ----- |
-| /api/users/:id | Update user info | PATCH | Private | ----- | { message, id, name, phone , moreInfo } | ----- |
-| /api/users/:id | Delete a user | DELETE | Private | ----- | { message, id, name, phone } | ----- |
+| /| View all users | GET | Distributor | ----- | [ User ]| ----- |
+| / | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone , moreInfo } | Account activation link is sent via text |
+| /:id | View user info | GET | Private | ----- | User | ----- |
+| /:id | Update user info | PATCH | Private | ----- | { message, id, name, phone , moreInfo } | ----- |
+| /:id | Delete a user | DELETE | Private | ----- | { message, id, name, phone } | ----- |
 
 
 > Contacts route is not up to date yet. Working on it.
