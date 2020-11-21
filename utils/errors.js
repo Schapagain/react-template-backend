@@ -44,9 +44,11 @@ async function getError(err){
     if (err.name){
         switch (err.name) {
             case 'ValidationError':
-                return new ValidationError(err.field);
+                return err;
             case 'NotFoundError':
-                return new NotFoundError(err.resource);
+                return err;
+            case 'NotAuthorizedError':
+                return err;
             case 'SequelizeValidationError':
                 return new ValidationError(err.errors[0].path);
             case 'SequelizeUniqueConstraintError':
