@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { getRandomId } = require('../utils');
+const { getRandomId, getRandomCode } = require('../utils');
 const { DISTRIBUTOR, DRIVER } = require('../utils/roles');
 const { getAuthToken } = require('../utils/auth');
 const { getError } = require('../utils/errors');
@@ -12,7 +12,6 @@ const Driver = require('../models/Driver');
 const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
-
     //Booleanify the value for usesPan field
     distributor.usesPan = distributor.pan? true : false
     distributor.panOrVat = distributor.pan? distributor.pan : distributor.vat;
@@ -28,14 +27,12 @@ async function postDistributor(distributor) {
         allFileNames.push(fileName);
     })
 
-    // Create a unique id for the new distributor
-    distributor.id = getRandomId();
     try{
         const filePath = path.resolve('.','uploads');
 
         // [TO ASK] Promise.all doesn't seem to work with rollback
         // How can we make this better?
-        await Distributor.create(distributor);
+        distributor = await Distributor.create(distributor);
         await _initDriver(distributor);
         await _initLogin(distributor);
         await _saveFiles(filePath,allFiles,allFileNames);
@@ -43,7 +40,8 @@ async function postDistributor(distributor) {
         return { id, email, name };
     }catch(err){
         // Roll back changes
-        deleteDistributor(distributor.adminId,distributor.id);
+        if (distributor.id)
+            deleteDistributor(distributor.adminId,distributor.id);
         throw await getError(err);
     }
 }
@@ -53,21 +51,28 @@ async function _initDriver(distributor) {
         const { id, phone, name, licenseDocument, id:distributorId } = distributor;
         await Driver.create({id,phone,name,licenseDocument,distributorId});
     }catch(err){
-        console.log(err);
+        throw err;
     }
 }
 
 async function _initLogin(distributor) {
     try{
         const { id, email, phone } = distributor;
-        //[TODO] send a token that'll let the distributor set a password later
-        const token = getAuthToken(id,DISTRIBUTOR);
-        console.log('New password reset token:',token);
 
         // Initialize login for the new distributor
-        await Login.create({id, email, phone, role:DISTRIBUTOR});
+        const result = await Login.create({id, email, phone, role:DISTRIBUTOR});
+
+        // Generate a random code that allows setting a new password
+        // [TODO] send this code via email   
+        const code_length = 6;
+        const setPasswordCode = getRandomCode(code_length)
+        console.log('Set password code: ',setPasswordCode);
+
+        // Store code in the database
+        Login.update({setPasswordCode},{where:{id}})
+        
     }catch(err){
-        console.log(err);
+        throw err;
     }
 }
 
@@ -97,7 +102,7 @@ async function getDistributor(adminId,id) {
         const result = await Distributor.findOne({where:{adminId,id}});
         return result? result.dataValues : result;
     }catch(err){
-        console.log(err);
+        throw await getError(err);
     }
 }
 
@@ -109,7 +114,7 @@ async function getDistributors(adminId) {
             return {id, email, name}
         });
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 }
 
@@ -127,7 +132,9 @@ async function deleteDistributor(adminId,id) {
         const { email, name } = result;
         return { id, email, name }
     }catch(err){
+        console.log('here')
         console.log(err)
+        throw await getError(err);
     }
 
 }
