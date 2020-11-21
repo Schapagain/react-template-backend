@@ -48,8 +48,8 @@ async function postDistributor(distributor) {
 
 async function _initDriver(distributor) {
     try{
-        const { id, phone, name, licenseDocument, id:distributorId } = distributor;
-        await Driver.create({id,phone,name,licenseDocument,distributorId});
+        const { phone, name, licenseDocument, id:distributorId } = distributor;
+        await Driver.create({phone,name,licenseDocument,distributorId});
     }catch(err){
         throw err;
     }
