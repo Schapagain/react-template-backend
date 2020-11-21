@@ -1,7 +1,7 @@
 const njwt = require('njwt');
 require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
-const { getError } = require('../utils/errors');
+const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
 const Distributor = require('../models/Distributor');
 
@@ -22,10 +22,11 @@ const auth = async (req,res,next) => {
         req.body.role = tokenRole;
 
         if (req.params.id){
-            const result = Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
-            if (!result && req.params.id !== tokenId) {
-                return res.status(401).json({error:'Not authorized'})
-            }
+            if (isNaN(Number(req.params.id)))
+                throw new ValidationError('id parameter')
+            const result = await Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
+            if (!result && req.params.id !== tokenId) 
+                throw new NotAuthorizedError('');
         }
         next();
     }catch(err){
