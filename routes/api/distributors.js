@@ -6,6 +6,9 @@ const { postDistributor, getDistributor, getDistributors, disableDistributor, up
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
+const { getError, ValidationError } = require('../../utils/errors');
+const { sendPasswordResetCode, updatePassword } = require('../../services/password');
+const validateNewPassword = require('../../middlewares/validateNewPassword');
 
 /**
  * Route to add a new distributor
@@ -26,11 +29,11 @@ router.post('/',
             result = {
                 'message':'Distributor created successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            return res.status(err.httpCode || 500).json({ error: err.message })
         }
     });
 
@@ -49,7 +52,7 @@ router.get('/:id',
         try{
             const adminId = req.body.id;
             const id = req.params.id;
-            if(!id) return res.json({error:'No id found'})
+            if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
             // Get info from database
             const result = await getDistributor(adminId,id);
@@ -62,7 +65,7 @@ router.get('/:id',
             })
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -93,18 +96,18 @@ router.patch('/:id',
             result = {
                 'message' : 'Distributor updated successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
 
 /**
  * Route to get all distributors
- * @name    api/distributors/:id
+ * @name    api/distributors
  * @method  GET
  * @access  Admin/Distributor
  * @inner
@@ -122,12 +125,12 @@ router.get('/',
 
             result = result.map(distributor => ({
                 ...distributor,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',distributor.id)
+                'moreInfo:': path.join(req.get('host'),'api','distributors',distributor.id.toString())
             }))
 
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -160,7 +163,7 @@ router.delete('/:id',
             }
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -185,16 +188,76 @@ router.get('/:id/files/:fileName', auth, async (req,res)=>{
     }catch(err){
 
         if (err.code === 'ENOENT'){
-            res.status(404).json({
-                error: "File not found"
-            })
+            res.status(404).json({ error: "File not found" })
         }else{
-            res.status(500).json({
-                error: "Server error. Try again later."
-            })
-            throw err;
+            err = getError(err);
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 });
+
+   /**
+ * Route to get forgetPassword code
+ * @name    api/forget_password
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/forget_password', 
+formParser,
+async (req,res) => {
+
+    let { email } = req.body;
+    // Check if phone number is given
+    
+    try{
+        if (!email)
+            throw new ValidationError('email');
+
+        const result = await sendPasswordResetCode(email);
+        //[TODO] send code via email
+        if (result)
+            console.log('Password reset link for distributor: ', path.join(req.get('host'),'api','set_password',result.id.toString(),result.setPasswordCode.toString()));
+
+        return res.status(200).json({
+            message: "If the email is registered, a password reset code has been sent!",
+        })
+    }
+    catch(err){
+        res.status(err.httpCode || 500).json({ error: err.message })
+    }
+}
+)
+
+/**
+ * Route to set distributor password
+ * @name    api/distributors/set_password/:id/:code
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Validate New Password
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/set_password/:id/:setPasswordCode',
+    formParser,
+    validateNewPassword,
+    async (req, res) => {
+        const { id, setPasswordCode } = req.params;
+        const { password } = req.body;
+        try{
+            if (!password)
+                throw new ValidationError('password');
+
+            await updatePassword(id,setPasswordCode,password);
+            res.status(201).json({msg: "Password updated successfully"})
+        }catch(err){
+            res.status(err.httpCode || 500).json({error: err.message})
+        }
+        
+    });
 
 module.exports = router;
