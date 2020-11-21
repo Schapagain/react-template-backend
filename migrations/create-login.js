@@ -17,6 +17,10 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false
       },
+      active: {
+        type: Sequelize.BOOLEAN,
+        defaultValue : false,
+      },
       otpCode: {
         type: Sequelize.INTEGER,
         field: 'otp_code'
