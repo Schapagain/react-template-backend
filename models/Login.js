@@ -2,24 +2,30 @@
 module.exports = function(sequelize, DataTypes){
     const Schema = {
         id: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            primaryKey: true,
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        distributorId: {
+            type: DataTypes.INTEGER,
+            field: 'distributor_id',
+            unique: true,
+            foreignKey: true,
+        },
+        driverId: {
+            type: DataTypes.INTEGER,
+            field: 'driver_id',
+            unique: true,
+            foreignKey: true,
         },
         email: {
             type: DataTypes.STRING,
-            unique: true,
         },
         phone: {
             type: DataTypes.STRING,
-            unique: true,
         },
         password: {
             type: DataTypes.STRING,
-        },
-        role: {
-            type: DataTypes.STRING,
-            allowNull: false
         },
         active: {
             type: DataTypes.BOOLEAN,
@@ -53,6 +59,11 @@ module.exports = function(sequelize, DataTypes){
     }
     
     const Login = sequelize.define('Login', Schema, options)
+
+    Login.associate = models => {
+        Login.hasOne(models.Distributor,{foreignKey: 'login_id'});
+        Login.hasOne(models.Driver, {foreignKey: 'login_id'});
+    }
 
     return Login;
 }

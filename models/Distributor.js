@@ -1,5 +1,4 @@
 
-
 const { allowedLanguages, allowedCountries } = require('../utils');
 
 module.exports = function(sequelize, DataTypes) {
@@ -13,6 +12,11 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+        },
+        loginId:{
+            type: DataTypes.INTEGER,
+            foreignKey: true,
+            field: 'login_id',
         },
         usesPan: {
             type: DataTypes.BOOLEAN,
@@ -97,15 +101,14 @@ module.exports = function(sequelize, DataTypes) {
 
     const options = {
         paranoid: true,
-        tableName: 'distributors',
-        classMethods:{
-            associate({ Driver, Vechicle }) {
-                Distributor.hasMany(Driver,{as: 'Drivers'});
-                Distributor.hasMany(Vechicle,{ as: 'Vehicles'});
-            }
-        }
+        tableName: 'distributors'
     }
 
-    const Distributor = sequelize.define('distributor', Schema, options);
+    const Distributor = sequelize.define('Distributor', Schema, options);
+    Distributor.associate = models => {
+        Distributor.hasMany(models.Driver,{foreignKey: 'distributor_id'});
+        Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
+    }
+
     return Distributor;
 }

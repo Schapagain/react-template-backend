@@ -2,15 +2,17 @@
 module.exports = function( sequelize, DataTypes){
     const Driver = sequelize.define('Driver', {
         distributorId: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'distributor_id',
-            foreignKey: true,
+            type: DataTypes.INTEGER,
+            field: 'distributor_id'
         },
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+        },
+        loginId: {
+            type: DataTypes.INTEGER,
+            field: 'login_id'
         },
         licenseDocument: {
             type: DataTypes.STRING,
@@ -20,7 +22,6 @@ module.exports = function( sequelize, DataTypes){
         phone: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
         },
         name: {
             type: DataTypes.STRING,
@@ -45,17 +46,15 @@ module.exports = function( sequelize, DataTypes){
             field: 'deleted_at'
         }
     },{
-        tableName: 'drivers',
         paranoid: true,
-        classMethods: {
-            associate({ Distributor }){
-                Driver.belongsTo(Distributor, {
-                    foreignKey: 'distributor_id'
-                })
-            }
-        }
+        tableName: 'drivers'
     }
     )
+
+    Driver.associate = models => {
+        Driver.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
+        Driver.hasOne(models.Login, {foreignKey: 'driver_id'});
+    }
 
     return Driver;
 }
