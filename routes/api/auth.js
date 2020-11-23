@@ -4,8 +4,9 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const { getRandomCode } = require('../../utils');
-const Login = require('../../models/Login');
+const { Login } = require('../../models/Login');
 const formParser = require('../../middlewares/formParser');
+const { getError, NotAuthorizedError } = require('../../utils/errors');
 
 /**
  * Route to get login code using phone number
@@ -52,10 +53,8 @@ router.post('/get_code',
             })
         }
         catch(err){
-            console.log(err);
-            return res.status(500).json({
-                error: 'Server error. Try again later.'
-            })
+            err = await getError(err)
+            return res.status(err.httpCode || 500).json({error: err.message})
         }
     }
 )
@@ -86,11 +85,8 @@ router.post('/',
             // Check if the user exists
             const queryOptions = {where:email?{email}:{phone,code}}
             let result = await Login.findOne(queryOptions);
-            if (!result) {
-                return res.status(400).json({
-                    error: "Not authorized"
-                })
-            } 
+            if (!result)
+                throw new NotAuthorizedError('')
 
             // Match password if logging in through email
             if (!phone){
@@ -114,10 +110,8 @@ router.post('/',
             })
         }
         catch(err){
-            console.log(err);
-            return res.status(500).json({
-                error: 'Server error. Try again later.'
-            })
+            err = await getError(err)
+            return res.status(err.httpCode || 500).json({error: err.message})
         }
     }
 )
