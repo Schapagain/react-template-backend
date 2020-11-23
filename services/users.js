@@ -4,9 +4,7 @@ const { getRandomId } = require('../utils');
 const { USER } = require('../utils/roles');
 const { getError } = require('../utils/errors');
 
-const User = require('../models/User');
-const Login = require('../models/Login');
-const Distributor = require('../models/Distributor');
+const { Distributor, Login, User } = require('../models');
 const { expectedFiles } = require('../utils');
 const { ValidationError, NotFoundError } = require('../utils/errors');
 
@@ -51,8 +49,8 @@ async function postUser(user) {
 
 async function _initLogin(user) {
     try{
-        const { id, phone } = user;
-        await Login.create({id, phone, role:USER});
+        const { phone } = user;
+        await Login.create({phone, role:USER});
     }catch(err){
         console.log(err);
     }

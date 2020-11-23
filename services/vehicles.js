@@ -3,10 +3,8 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { v4: uuid} = require('uuid');
 const fs = require('fs');
-const Driver = require('../models/Driver');
-const Login  =  require('../models/Login');
+const { Vehicle, Login, Driver } = require('../models');
 const { DRIVER } = require('../utils/roles');
-const Vehicle = require('../models/Vehicle');
 const { getRandomId } = require('../utils');
 const { response } = require('express');
 

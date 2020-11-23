@@ -3,8 +3,7 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId } = require('../utils');
 const fs = require('fs');
-const Driver = require('../models/Driver');
-const Login  =  require('../models/Login');
+const { Login, Driver } = require('../models');
 const { DRIVER } = require('../utils/roles');
 
 async function _saveFile(file, fileName) {
@@ -34,7 +33,7 @@ async function postDriver(driver) {
 
     try{
         driver = await Driver.create(driver);
-        await _initLogin(driver.id,driver.phone);
+        await _initLogin(driver.phone);
 
         const { id, name, email } = driver;
         return { id, email, name };
@@ -45,10 +44,10 @@ async function postDriver(driver) {
     }
 }
 
-async function _initLogin(id,phone) {
+async function _initLogin(phone) {
     try{
         const role = DRIVER
-        await Login.create({id, phone, role});
+        await Login.create({phone, role});
     }catch(err){
         console.log(err);
     }
