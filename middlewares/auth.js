@@ -4,6 +4,7 @@ const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
 const Distributor = require('../models/Distributor');
+const { ADMIN } = require('../utils/roles');
 
 // Acess controls based on roles remains to be implemented here
 const auth = async (req,res,next) => {
@@ -21,7 +22,7 @@ const auth = async (req,res,next) => {
         req.body.id = tokenId;
         req.body.role = tokenRole;
 
-        if (req.params.id){
+        if (tokenRole != ADMIN && req.params.id){
             if (isNaN(Number(req.params.id)))
                 throw new ValidationError('id parameter')
             const result = await Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
