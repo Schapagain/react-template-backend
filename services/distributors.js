@@ -2,13 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { getRandomId, getRandomCode } = require('../utils');
 const { DISTRIBUTOR, DRIVER } = require('../utils/roles');
-const { getAuthToken } = require('../utils/auth');
 const { getError } = require('../utils/errors');
 
-const Distributor = require('../models/Distributor');
-const Login = require('../models/Login');
-const Driver = require('../models/Driver');
-
+const { Distributor, Login, Driver, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
@@ -29,50 +25,50 @@ async function postDistributor(distributor) {
 
     try{
         const filePath = path.resolve('.','uploads');
+        
+        const result = await sequelize.transaction(async t => {
+            distributor = await Distributor.create(distributor,{transaction: t});
+            
+            // create a new driver model for the distributor
+            const { id: distributorId, phone, email, name, licenseDocument } = distributor;
+            const driver = await distributor.createDriver({
+                phone,
+                name,
+                licenseDocument,
+            },{transaction: t})
+            
+            // Generate a random code that allows setting a new password
+            // [TODO] send this code via email   
+            const code_length = 6;
+            const setPasswordCode = getRandomCode(code_length)
+            console.log('Set password code: ',setPasswordCode);
 
-        // [TO ASK] Promise.all doesn't seem to work with rollback
-        // How can we make this better?
-        distributor = await Distributor.create(distributor);
-        await _initDriver(distributor);
-        await _initLogin(distributor);
+            const { id: driverId } = driver;
+            console.log(driverId);
+            const login = await distributor.createLogin({
+                driverId,
+                phone,
+                email,
+                setPasswordCode,
+            },{transaction: t})
+
+            const { id:loginId } = login;
+            // Place foreign keys in Driver and Distributor models
+            await Distributor.update({loginId},{where:{id: distributorId}});
+            await Driver.update({loginId},{where:{id:driverId}});
+
+            return distributor;
+        });
+
         await _saveFiles(filePath,allFiles,allFileNames);
-        const { id, name, email } = distributor;
+        const { id, name, email } = result;
         return { id, email, name };
     }catch(err){
-        // Roll back changes
-        if (distributor.id)
-            deleteDistributor(distributor.adminId,distributor.id);
+        // Sequelize automaticaly rolls back if we get here.
+        // We don't need to rollback potential problems in _saveFiles 
+        // since we either succeed there, or we fail storing the files in the first place
+        console.log(err)
         throw await getError(err);
-    }
-}
-
-async function _initDriver(distributor) {
-    try{
-        const { phone, name, licenseDocument, id:distributorId } = distributor;
-        await Driver.create({phone,name,licenseDocument,distributorId});
-    }catch(err){
-        throw err;
-    }
-}
-
-async function _initLogin(distributor) {
-    try{
-        const { id, email, phone } = distributor;
-
-        // Initialize login for the new distributor
-        const result = await Login.create({id, email, phone, role:DISTRIBUTOR});
-
-        // Generate a random code that allows setting a new password
-        // [TODO] send this code via email   
-        const code_length = 6;
-        const setPasswordCode = getRandomCode(code_length)
-        console.log('Set password code: ',setPasswordCode);
-
-        // Store code in the database
-        Login.update({setPasswordCode},{where:{id}})
-        
-    }catch(err){
-        throw err;
     }
 }
 
