@@ -1,8 +1,6 @@
 
 const { getRandomId } = require('../utils');
-const Driver = require('../models/Driver');
-const Contact = require('../models/Contact');
-
+const { Driver, Contact } = require('../models');
 
 function validateNewContact(contact) {
     const { 
