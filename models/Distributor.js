@@ -17,6 +17,10 @@ module.exports = function(sequelize, DataTypes) {
             foreignKey: true,
             field: 'login_id',
         },
+        isSuperuser:{
+            type: DataTypes.BOOLEAN,
+            field: 'is_superuser'
+        },
         usesPan: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
@@ -104,6 +108,7 @@ module.exports = function(sequelize, DataTypes) {
 
     const Distributor = sequelize.define('Distributor', Schema, options);
     Distributor.associate = models => {
+        Distributor.hasMany(models.Distributor,{foreignKey: 'admin_id'});
         Distributor.hasMany(models.Driver,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
         Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
