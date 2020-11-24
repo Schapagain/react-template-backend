@@ -8,6 +8,12 @@ const { Distributor, Login, Driver, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
+
+    // Check if the given adminId exists
+    const admin = await Distributor.findOne({where:{id:distributor.adminId}});
+    if (!admin)
+        throw new NotFoundError('admin');
+
     //Booleanify the value for usesPan field
     distributor.usesPan = distributor.pan? true : false
     distributor.panOrVat = distributor.pan? distributor.pan : distributor.vat;
@@ -27,7 +33,9 @@ async function postDistributor(distributor) {
         const filePath = path.resolve('.','uploads');
         
         const result = await sequelize.transaction(async t => {
-            distributor = await Distributor.create(distributor,{transaction: t});
+            distributor = await admin.createDistributor({
+                ...distributor
+            },{transaction: t});
             
             // create a new driver model for the distributor
             const { id: distributorId, phone, email, name, licenseDocument } = distributor;
@@ -67,7 +75,6 @@ async function postDistributor(distributor) {
         // Sequelize automaticaly rolls back if we get here.
         // We don't need to rollback potential problems in _saveFiles 
         // since we either succeed there, or we fail storing the files in the first place
-        console.log(err)
         throw await getError(err);
     }
 }
@@ -95,28 +102,36 @@ function _deleteFiles(user) {
 
 async function getDistributor(adminId,id) {
     try {
-        const result = await Distributor.findOne({where:{adminId,id}});
-        return result? result.dataValues : result;
+
+        const admin = await Distributor.findOne({where:{id:adminId}});
+        if (!admin)
+            throw new NotAuthorizedError(' admin with that token does not exist!'); 
+        const distributor = await admin.getDistributors({where:{id}});
+        return distributor.length? distributor[0].dataValues : null;
     }catch(err){
         throw await getError(err);
     }
 }
 
-async function getDistributors(adminId,role) {
+async function getDistributors(adminId) {
     try {
+        const admin = await Distributor.findOne({where: {id:adminId}});
+        if (!admin)
+            throw new NotAuthorizedError(' admin with that token does not exist!'); 
+
         let allDistributors;
-        if (role === ADMIN){
+        if (admin.isSuperuser){
             allDistributors = await Distributor.findAll();
         }else{
             const distributor = await Distributor.findOne({where: {id:adminId}});
             if (!distributor)
                 throw new NotAuthorizedError(' distributor with that token does not exist!');
-            allDistributors = distributor.getDistributors();
+            allDistributors = await distributor.getDistributors();
         }
-        return allDistributors.map(distributor => {
-            const {id, email, name} = distributor
-            return {id, email, name}
-        });
+        return {count: allDistributors.length, data: allDistributors.map(distributor => {
+            const {id, adminId, email, name} = distributor
+            return {id, adminId, email, name}
+        })}
     }catch(err){
         throw await getError(err);
     }
@@ -136,18 +151,23 @@ async function deleteDistributor(adminId,id) {
         const { email, name } = result;
         return { id, email, name }
     }catch(err){
-        console.log('here')
-        console.log(err)
         throw await getError(err);
     }
 
 }
 
-async function disableDistributor(adminId,id) {
+async function disableDistributor(distributor) {
 
     try{
+        const { id, adminId } = distributor;
+        if (!id || !adminId) throw new ValidationError('id or adminId')
+
+        const admin = await Distributor.findOne({where: {adminId}});
+        if (!admin)
+            throw new NotAuthorizedError('admin with that token does not exist!'); 
+
         const result = await Distributor.findOne({where:{adminId,id}});
-        if (!result) return false;
+        if (!result) throw new NotFoundError('distributor')
 
         Distributor.destroy({where:{adminId,id}})
         Login.destroy({where:{id}});
@@ -156,7 +176,7 @@ async function disableDistributor(adminId,id) {
         const { email, name } = result;
         return { id, email, name }
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 
 }
@@ -164,17 +184,20 @@ async function disableDistributor(adminId,id) {
 async function updateDistributor(distributor) {
     try{
         const { id, adminId } = distributor;
-        if (!id || !adminId) return false;
+        if (!id || !adminId) throw new ValidationError('id or adminId')
+
+        const admin = await Distributor.findOne({where: {adminId}});
+        if (!admin)
+            throw new NotAuthorizedError(' admin with that token does not exist!'); 
 
         let result = await Distributor.findOne({where:{adminId,id}});
-        if (!result) return false;
+        if (!result) throw new NotFoundError('distributor');
 
         result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
         const { email, name } = result[1].dataValues;
         return {id, email, name}
     }catch(err){
-        console.log(err);
-        return false;
+        throw await getError(err);
     }
     
 }

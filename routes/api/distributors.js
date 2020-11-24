@@ -50,7 +50,7 @@ router.get('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
+            const adminId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
@@ -86,13 +86,12 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
+            const adminId = req.auth.id;
             const id = req.params.id;
-            if(!id) return res.json({error:'No id found'})
+            if(!id || isNaN(Number(id))) throw new ValidationError('id parameter'); 
 
             // Get info from database
             let result = await updateDistributor({adminId,...req.body,id});
-            if(!result) return res.json({error:'No distributor found'})
             result = {
                 'message' : 'Distributor updated successfully',
                 ...result,
@@ -119,17 +118,18 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const { id: adminId, role } = req.auth; 
-            let result = await getDistributors(adminId,role);
+            const adminId  = req.auth.id; 
+            let result = await getDistributors(adminId);
             if(!result) throw new Error();
 
-            result = result.map(distributor => ({
+            result.data = result.data.map(distributor => ({
                 ...distributor,
                 'moreInfo:': path.join(req.get('host'),'api','distributors',distributor.id.toString())
             }))
 
             res.status(200).json(result);
         }catch(err){
+            console.log(err)
             res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
@@ -149,14 +149,10 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
+            const adminId = req.auth.id;
             const id = req.params.id;
-            let result = await disableDistributor(adminId,id);
-            if(!result) {
-                return res.status(400).json({
-                    error: "Distributor not found"
-                })
-            };
+            if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
+            let result = await disableDistributor({adminId,...req.body,id});
             result = {
                 message: 'Distributor deleted successfully',
                 ...result,
