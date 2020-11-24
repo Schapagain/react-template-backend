@@ -6,6 +6,7 @@ module.exports = {
         uses_pan: true,
         pan_or_vat: 999999,
         name: 'Super User',
+        is_superuser: true,
         country: 'Nepal',
         language: 'Nepali',
         email: 'admin@admin.com',

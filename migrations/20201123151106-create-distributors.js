@@ -12,6 +12,10 @@ module.exports = {
             type: Sequelize.INTEGER,
             foreignKey: true,
         },
+        isSuperuser: {
+            type: Sequelize.BOOLEAN,
+            field: 'is_superuser'
+        },
         usesPan: {
             type: Sequelize.BOOLEAN,
             allowNull: false,
