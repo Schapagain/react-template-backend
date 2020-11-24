@@ -3,7 +3,7 @@ require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
-const Distributor = require('../models/Distributor');
+const { Distributor } = require('../models');
 const { ADMIN } = require('../utils/roles');
 
 // Acess controls based on roles remains to be implemented here
@@ -23,13 +23,13 @@ const auth = async (req,res,next) => {
             id: tokenId,
             role: tokenRole
         }
-
+        console.log('Request using token with id:',tokenId,'role:',tokenRole)
         if (tokenRole != ADMIN && req.params.id){
             if (isNaN(Number(req.params.id)))
                 throw new ValidationError('id parameter')
             const result = await Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
             if (!result && req.params.id !== tokenId) 
-                throw new NotAuthorizedError('');
+                throw new NotAuthorizedError('Private route');
         }
         next();
     }catch(err){
