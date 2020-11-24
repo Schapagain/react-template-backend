@@ -41,6 +41,7 @@ class ServerError extends Error {
 }
 
 async function getError(err){
+    console.log(err)
     if (err.name){
         switch (err.name) {
             case 'ValidationError':
