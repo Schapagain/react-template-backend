@@ -4,9 +4,11 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
 const { getRandomCode } = require('../../utils');
-const { Login } = require('../../models/Login');
+const { Login } = require('../../models');
 const formParser = require('../../middlewares/formParser');
 const { getError, NotAuthorizedError } = require('../../utils/errors');
+const { DRIVER, DISTRIBUTOR, USER } = require('../../utils/roles');
+const distributors = require('../../services/distributors');
 
 /**
  * Route to get login code using phone number
@@ -90,7 +92,7 @@ router.post('/',
 
             // Match password if logging in through email
             if (!phone){
-                var { id, password:passwordHash, role } = result;
+                var { id, password:passwordHash, driverId, distributorId, userId } = result;
 
                 if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
                 // Compare username/password combination
@@ -101,12 +103,20 @@ router.post('/',
                 Login.update({...result,code:null},{where:{phone}})
             }
 
-            // Clean up User and assign token before sending the user back
-            const user = phone? { id, phone, role } : { id, email, role }
-            const token = getAuthToken(id, role);
+            // Get all roles for the user
+            let roles = [];
+            if (distributorId)
+                roles.push(DISTRIBUTOR);
+            if (driverId)
+                roles.push(DRIVER);
+            if (userId)
+                roles.push(USER);
+
+            const user = phone? { id, phone, roles } : { id, email, roles }
+            const token = getAuthToken(id, roles[0]);
             res.status(200).json({
-                user,
                 token,
+                user,
             })
         }
         catch(err){
