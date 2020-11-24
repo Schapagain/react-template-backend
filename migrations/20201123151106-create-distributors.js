@@ -3,11 +3,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('distributors',{
-        adminId: {
-            type: Sequelize.STRING,
-            allowNull: false,
-            field: 'admin_id',
-        },
         id: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
@@ -17,10 +12,10 @@ module.exports = {
             type: Sequelize.INTEGER,
             foreignKey: true,
         },
-        uses_pan: {
+        usesPan: {
             type: Sequelize.BOOLEAN,
             allowNull: false,
-            field: 'uses_pan_or_vat'
+            field: 'uses_pan'
         },
         panOrVat: {
             type: Sequelize.INTEGER,
@@ -76,12 +71,10 @@ module.exports = {
         },
         updatedAt: {
             type: Sequelize.DATE,
-            allowNull: false,
             field: 'updated_at'
         },
         createdAt: {
             type: Sequelize.DATE,
-            allowNull: false,
             field: 'created_at'
         },
         district: Sequelize.STRING,
