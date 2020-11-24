@@ -19,8 +19,10 @@ const auth = async (req,res,next) => {
         const tokenRole = token.body.scope;
 
         // Inject userId into req before proceeding
-        req.body.id = tokenId;
-        req.body.role = tokenRole;
+        req.auth = {
+            id: tokenId,
+            role: tokenRole
+        }
 
         if (tokenRole != ADMIN && req.params.id){
             if (isNaN(Number(req.params.id)))
