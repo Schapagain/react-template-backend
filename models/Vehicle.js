@@ -9,7 +9,6 @@ module.exports = function(sequelize, DataTypes){
         },
         driverId: {
             type: DataTypes.STRING,
-            allowNull: false,
             field: 'driver_id',
             foreignKey: true,
         },
@@ -65,5 +64,11 @@ module.exports = function(sequelize, DataTypes){
         paranoid: true,
     }
     )
+
+    Vehicle.associate = models => {
+        Vehicle.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
+        Vehicle.belongsTo(models.Driver, {foreignKey: 'driver_id'});
+    }
+
     return Vehicle;
 }

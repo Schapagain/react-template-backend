@@ -5,7 +5,6 @@ module.exports = function(sequelize, DataTypes) {
     const Schema = {
         adminId: {
             type: DataTypes.STRING,
-            allowNull: false,
             field: 'admin_id',
         },
         id: {
@@ -21,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
         usesPan: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            field: 'uses_pan_or_vat'
+            field: 'uses_pan'
         },
         panOrVat: {
             type: DataTypes.INTEGER,
@@ -86,7 +85,6 @@ module.exports = function(sequelize, DataTypes) {
         },
         updatedAt: {
             type: DataTypes.DATE,
-            allowNull: false,
             field: 'updated_at'
         },
         createdAt: {
@@ -107,6 +105,7 @@ module.exports = function(sequelize, DataTypes) {
     const Distributor = sequelize.define('Distributor', Schema, options);
     Distributor.associate = models => {
         Distributor.hasMany(models.Driver,{foreignKey: 'distributor_id'});
+        Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
         Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
     }
 
