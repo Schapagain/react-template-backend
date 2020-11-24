@@ -119,8 +119,8 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
-            let result = await getDistributors(adminId);
+            const { id: adminId, role } = req.auth; 
+            let result = await getDistributors(adminId,role);
             if(!result) throw new Error();
 
             result = result.map(distributor => ({

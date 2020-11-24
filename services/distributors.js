@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { getRandomId, getRandomCode } = require('../utils');
-const { DISTRIBUTOR, DRIVER } = require('../utils/roles');
-const { getError } = require('../utils/errors');
+const { DISTRIBUTOR, DRIVER, ADMIN } = require('../utils/roles');
+const { getError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
 
 const { Distributor, Login, Driver, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
@@ -54,8 +54,8 @@ async function postDistributor(distributor) {
 
             const { id:loginId } = login;
             // Place foreign keys in Driver and Distributor models
-            await Distributor.update({loginId},{where:{id: distributorId}});
-            await Driver.update({loginId},{where:{id:driverId}});
+            await Distributor.update({loginId},{where:{id: distributorId},transaction: t});
+            await Driver.update({loginId},{where:{id:driverId}, transaction: t});
 
             return distributor;
         });
@@ -102,10 +102,18 @@ async function getDistributor(adminId,id) {
     }
 }
 
-async function getDistributors(adminId) {
+async function getDistributors(adminId,role) {
     try {
-        const result = await Distributor.findAll({where:{adminId}})
-        return result.map(distributor => {
+        let allDistributors;
+        if (role === ADMIN){
+            allDistributors = await Distributor.findAll();
+        }else{
+            const distributor = await Distributor.findOne({where: {id:adminId}});
+            if (!distributor)
+                throw new NotAuthorizedError(' distributor with that token does not exist!');
+            allDistributors = distributor.getDistributors();
+        }
+        return allDistributors.map(distributor => {
             const {id, email, name} = distributor
             return {id, email, name}
         });
