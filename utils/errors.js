@@ -1,6 +1,7 @@
 class ValidationError extends Error {
-    constructor(field){
-        super(`Invalid ${field}`);
+    constructor(field,message){
+        super(`Invalid ${field} : ${message}`);
+        this.message = message? `Invalid ${field} : ${message}`: `Invalid ${field}` ;
         this.field = field;
         this.name = this.constructor.name;
         this.httpCode = 400;
@@ -41,7 +42,7 @@ class ServerError extends Error {
 }
 
 async function getError(err){
-    console.log(err)
+    console.log(err);
     if (err.name){
         switch (err.name) {
             case 'ValidationError':
@@ -51,7 +52,7 @@ async function getError(err){
             case 'NotAuthorizedError':
                 return err;
             case 'SequelizeValidationError':
-                return new ValidationError(err.errors[0].path);
+                return new ValidationError(err.errors[0].path, err.errors[0].message);
             case 'SequelizeUniqueConstraintError':
                 return new NotUniqueError(err.errors[0].path);
             case 'SequelizeDatabaseError':
@@ -69,5 +70,6 @@ module.exports = {
     ValidationError,
     NotFoundError,
     NotAuthorizedError,
+    NotUniqueError,
     getError
 }
