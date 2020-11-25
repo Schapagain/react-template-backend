@@ -1,9 +1,16 @@
+const { NotUniqueError, ValidationError} = require('../utils/errors');
 
 module.exports = function( sequelize, DataTypes){
     const Driver = sequelize.define('Driver', {
         distributorId: {
             type: DataTypes.INTEGER,
-            field: 'distributor_id'
+            field: 'distributor_id',
+            validate: {
+                isNotSuperuser(id){
+                    if (Number(id) <= 1)
+                        throw new ValidationError('distributorId','must be greater than 1');
+                }
+            }
         },
         id: {
             type: DataTypes.INTEGER,
@@ -22,6 +29,13 @@ module.exports = function( sequelize, DataTypes){
         phone: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+                async isUnique(phone){
+                    const driver = await Driver.findOne({where:{distributorId: this.distributorId,phone}});
+                    if (driver)
+                        throw new NotUniqueError('phone'); 
+                }
+            }
         },
         name: {
             type: DataTypes.STRING,
