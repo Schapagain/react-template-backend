@@ -4,7 +4,7 @@ const { getRandomId, getRandomCode } = require('../utils');
 const { DISTRIBUTOR, DRIVER, ADMIN } = require('../utils/roles');
 const { getError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
 
-const { Distributor, Login, Driver, sequelize } = require('../models');
+const { Distributor, Login, Driver, sequelize, Op } = require('../models');
 const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
@@ -30,8 +30,6 @@ async function postDistributor(distributor) {
     })
 
     try{
-        const filePath = path.resolve('.','uploads');
-        
         const result = await sequelize.transaction(async t => {
             distributor = await admin.createDistributor({
                 ...distributor
@@ -40,6 +38,7 @@ async function postDistributor(distributor) {
             // create a new driver model for the distributor
             const { id: distributorId, phone, email, name, licenseDocument } = distributor;
             const driver = await distributor.createDriver({
+                distributorId,
                 phone,
                 name,
                 licenseDocument,
@@ -65,12 +64,11 @@ async function postDistributor(distributor) {
             await Distributor.update({loginId},{where:{id: distributorId},transaction: t});
             await Driver.update({loginId},{where:{id:driverId}, transaction: t});
 
-            return distributor;
+            return { id: distributorId, name, email };
         });
 
-        await _saveFiles(filePath,allFiles,allFileNames);
-        const { id, name, email } = result;
-        return { id, email, name };
+        await _saveFiles(allFiles,allFileNames);
+        return result;
     }catch(err){
         // Sequelize automaticaly rolls back if we get here.
         // We don't need to rollback potential problems in _saveFiles 
@@ -79,7 +77,8 @@ async function postDistributor(distributor) {
     }
 }
 
-async function _saveFiles(filePath, files, fileNames) {
+async function _saveFiles(files, fileNames) {
+        const filePath = path.join('.','uploads'); 
         const writeFile = fs.promises.writeFile;
         const readFile = fs.promises.readFile;
         files.forEach( async (file,index) => {
@@ -106,8 +105,14 @@ async function getDistributor(adminId,id) {
         const admin = await Distributor.findOne({where:{id:adminId}});
         if (!admin)
             throw new NotAuthorizedError(' admin with that token does not exist!'); 
-        const distributor = await admin.getDistributors({where:{id}});
-        return distributor.length? distributor[0].dataValues : null;
+
+        let distributor;
+        if (admin.isSuperuser)
+            distributor = await Distributor.findOne({where:{id}});
+        else
+            distributor = await admin.getDistributors({where:{id}});
+
+        return distributor? distributor.dataValues : null;
     }catch(err){
         throw await getError(err);
     }
@@ -121,12 +126,15 @@ async function getDistributors(adminId) {
 
         let allDistributors;
         if (admin.isSuperuser){
-            allDistributors = await Distributor.findAll();
+            allDistributors = await Distributor.findAll({
+                where: {
+                    id: {
+                        [Op.ne] : 1,
+                    }
+                }
+            });
         }else{
-            const distributor = await Distributor.findOne({where: {id:adminId}});
-            if (!distributor)
-                throw new NotAuthorizedError(' distributor with that token does not exist!');
-            allDistributors = await distributor.getDistributors();
+            allDistributors = await admin.getDistributors();
         }
         return {count: allDistributors.length, data: allDistributors.map(distributor => {
             const {id, adminId, email, name} = distributor

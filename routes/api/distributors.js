@@ -33,7 +33,12 @@ router.post('/',
             }
             res.status(201).json(result);
         }catch(err){
-            return res.status(err.httpCode || 500).json({ error: err.message })
+            res.status(err.httpCode || 500).json({
+                error : {
+                    field: err.field,
+                    msg: err.message
+                    }
+                })
         }
     });
 
