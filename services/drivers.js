@@ -3,79 +3,113 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId } = require('../utils');
 const fs = require('fs');
-const { Login, Driver } = require('../models');
+const { Login, Driver, Distributor, sequelize } = require('../models');
 const { DRIVER } = require('../utils/roles');
+const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
+const { expectedFiles } = require('../utils')
 
-async function _saveFile(file, fileName) {
-
-    const filePath = path.join('.','uploads');
+async function _saveFiles(files, fileNames) {
+    const filePath = path.join('.','uploads'); 
     const writeFile = fs.promises.writeFile;
     const readFile = fs.promises.readFile;
-    if (file) {
-        const fileStream = await readFile(file.path).catch(err => { throw err });
-        const fullPath = path.join(filePath,fileName);
-        writeFile(fullPath,fileStream).catch(err=>{throw err});
-    }
+    files.forEach( async (file,index) => {
+        if (file) {
+            const fileStream = await readFile(file.path).catch(err => { throw err });
+            const fullPath = path.join(filePath,fileNames[index]);
+            writeFile(fullPath,fileStream).catch(err=>{throw err});
+        }
+    })
 }
 
 async function postDriver(driver) {
-
-    // Save files to filesystem
-    // Replace files with filenames
-    Object.keys(driver).forEach(key => {
-        if (typeof driver[key] === 'object'){
-            const file = driver[key];
-            const fileName = getRandomId().concat(path.extname(file.name));
-            _saveFile(driver[key],fileName);
-            driver[key] = fileName;
-        }
-    })
-
     try{
-        driver = await Driver.create(driver);
-        await _initLogin(driver.phone);
+        const { distributorId } = driver;
+        if (!distributorId)
+            throw new ValidationError('distributorId');
 
-        const { id, name, email } = driver;
-        return { id, email, name };
-    }catch(err){
-        // [TODO] Roll back changes
-        console.error(err);
-        return false;
-    }
-}
+        const distributor = await Distributor.findOne({where:{id:driver.distributorId}});
+        if (!distributor)
+            throw new NotAuthorizedError(' distributor with that token/id does not exist!'); 
 
-async function _initLogin(phone) {
-    try{
-        const role = DRIVER
-        await Login.create({phone, role});
+        // Extract files
+        allFiles = expectedFiles.map(fieldName => driver[fieldName]);
+
+        // Replace files with random filenames before posting to database
+        allFileNames = [];
+        expectedFiles.forEach(fieldName => {
+            const file = driver[fieldName];
+            const fileName = file? getRandomId().concat(path.extname(file.name)) : null;
+            driver[fieldName] = fileName;
+            allFileNames.push(fileName);
+        })
+
+        const result = await sequelize.transaction( async t => {
+            driver = await distributor.createDriver(driver,{transaction:t});
+            const { id:driverId, phone, email, name } = driver;
+            const {id: loginId} = await driver.createLogin({phone,email,name,driverId},{transaction:t});
+            await Driver.update({loginId},{where:{id:driverId},transaction:t});
+            return { id:driverId, name, phone };
+        });
+
+        await _saveFiles(allFiles,allFileNames);
+        return result;
     }catch(err){
-        console.log(err);
+        throw await getError(err);
     }
 }
 
 async function getDrivers(distributorId) {
     try {
-        const result = await Driver.findAll({where:{distributorId}})
-        return result.map(driver => {
-            const {id, phone, name} = driver
-            return {id, phone, name}
-        });
+
+        if (!distributorId)
+            throw new ValidationError('distributor Id');
+
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist');
+        let allDrivers;        
+        if (distributor.isSuperuser){
+            allDrivers = await Driver.findAll();
+        }else{
+            allDrivers = await distributor.getDrivers();
+        }
+        
+        return {count: allDrivers.length, data: allDrivers.map(driver => {
+            const {id, distributorId, phone, name} = driver
+            return {id, distributorId, phone, name}
+        })}
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 }
 
 async function getDriver(distributorId,id) {
     try {
-        const result = await Driver.findOne({where:{distributorId,id}});
-        return result? result.dataValues : result;
+
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist'); 
+        
+        let driver;
+        if (distributor.isSuperuser)
+            driver = await Driver.findOne({where:{id}});
+        else
+            driver = await distributor.getDrivers({where:{id}});
+        return driver? driver.dataValues : driver;
     }catch(err){
-        console.log(err);
+        throw await getError(err);
     }
 }
 
 
 async function deleteDriver(distributorId,id) {
+
+    const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+    if (!distributor)
+        throw new NotAuthorizedError('distributor with that token does not exist'); 
 
     const result = await Driver.findOne({where:{distributorId,id}});
     if (!result) return false;
@@ -90,14 +124,25 @@ async function deleteDriver(distributorId,id) {
 
 async function disableDriver(distributorId,id) {
 
-    const result = await Driver.findOne({where:{distributorId,id}});
-    if (!result) return false;
+    try{
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token/id does not exist'); 
+        let driver;
+        if (distributor.isSuperuser)
+            driver = await Driver.findOne({where:{id}});
+        else
+            driver = await Driver.findOne({where:{distributorId,id}});
+        if (!driver)
+            throw new NotFoundError('driver');
 
-    Driver.destroy({where:{distributorId,id}})
-    Login.destroy({where:{id}});
-
-    const { email, name } = result;
-    return { id, email, name }
+        Driver.destroy({where:{id}})
+        const { phone, name } = driver;
+        return { id, distributorId: driver.distributorId, name, phone };
+    }catch(err){
+        throw await getError(err);
+    }
+    
 }
 
 function deleteFiles(user) {
@@ -112,17 +157,26 @@ function deleteFiles(user) {
 async function updateDriver(driver) {
     try{
         const { id, distributorId } = driver;
-        if (!id || !distributorId) return false;
-
-        let result = await Driver.findOne({where:{distributorId,id}});
-        if (!result) return false;
+        if (!id || !distributorId)
+            throw new ValidationError('distributor with that token/id does not exist');
+        
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist'); 
+        if (distributor.isSuperuser)
+            result = await Driver.findOne({where:{id}});
+        else
+            result = await Driver.findOne({where:{distributorId,id}});
+        if (!result)
+            throw new NotFoundError('driver');
+        // Keep the distributorId for the driver unchanged
+        driver.distributorId = result.distributorId;
 
         result = await Driver.update(driver,{where:{id},returning:true,plain:true});
         const { phone, name } = result[1].dataValues;
         return {id, name, phone}
     }catch(err){
-        console.log(err);
-        return false;
+        throw await getError(err);
     }
     
 }

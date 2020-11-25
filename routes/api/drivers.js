@@ -6,6 +6,40 @@ const { postDriver, getDrivers, getDriver, updateDriver, disableDriver } = requi
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
+const { ValidationError } = require('../../utils/errors');
+
+
+/**
+ * Route to add a new driver
+ * @name    api/drivers/independent
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/independent', 
+    formParser,
+    async (req, res) => {
+        try{
+            const driver = req.body;
+            let result = await postDriver(driver);
+            result = {
+                message: 'Driver added successfully',
+                ...result,
+                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id.toString())
+            }
+            res.status(201).json(result)
+        }catch(err){
+            res.status(err.httpCode || 500).json({
+                error : {
+                    field: err.field,
+                    msg: err.message
+                    }
+                })
+        }
+    });
 
 /**
  * Route to add a new driver
@@ -24,7 +58,7 @@ router.post('/',
     async (req, res) => {
         try{
             const driver = req.body;
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             let result = await postDriver({...driver,distributorId});
             if (!result) throw new Error();
 
@@ -35,7 +69,12 @@ router.post('/',
             }
             res.status(201).json(result)
         }catch(err){
-            res.status(err.httpCode || 500).json({ error: err.message })
+            res.status(err.httpCode || 500).json({
+                error : {
+                    field: err.field,
+                    msg: err.message
+                    }
+                })
         }
     });
 
@@ -53,9 +92,9 @@ router.get('/:id',
 auth,
 async (req,res) => {
     try{
-        const distributorId = req.body.id;
+        const distributorId = req.auth.id;
         const id = req.params.id;
-        if(!id) return res.json({error:'No id found'})
+        if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
         // Get info from database
         const result = await getDriver(distributorId,id);
@@ -88,11 +127,9 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
+            const adminId = req.auth.id;
             let result = await getDrivers(adminId);
-            if(!result) throw new Error();
-
-            result = result.map(driver => ({
+            result.data = result.data.map(driver => ({
                 ...driver,
                 'moreInfo:': path.join(req.get('host'),'api','drivers',driver.id.toString())
             }))
@@ -118,8 +155,10 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
+            const adminId = req.auth.id;
             const id = req.params.id;
+            if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
+
             let result = await disableDriver(adminId,id);
             if(!result) {
                 return res.status(400).json({
@@ -153,9 +192,9 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
-            if(!id) return res.json({error:'No id found'})
+            if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
             // Get info from database
             let result = await updateDriver({distributorId,...req.body,id});
