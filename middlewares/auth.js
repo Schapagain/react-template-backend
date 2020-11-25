@@ -3,11 +3,18 @@ require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
-const { Distributor } = require('../models');
+const { Distributor, Driver, User } = require('../models');
 const { ADMIN } = require('../utils/roles');
 
 // Acess controls based on roles remains to be implemented here
 const auth = async (req,res,next) => {
+
+    const modelMap = {
+        'drivers' : Driver,
+        'distributors' : Distributor,
+        'users' : User,
+    }
+
     try{
         // Get token from the header
         const userToken = req.header('authorization') || req.params.token;
@@ -27,7 +34,16 @@ const auth = async (req,res,next) => {
         if (tokenRole != ADMIN && req.params.id){
             if (isNaN(Number(req.params.id)))
                 throw new ValidationError('id parameter')
-            const result = await Distributor.findOne({where:{adminId:tokenId,id:req.params.id}})
+
+            // Check for permission in case of private route
+            const apiBaseString = req.baseUrl.split('/').pop();
+            const model = modelMap[apiBaseString];
+            let result;
+            if (apiBaseString === 'distributors'){
+                result = await model.findOne({where:{adminId:tokenId,id:req.params.id}})
+            }else{
+                result = await model.findOne({where:{distributorId:tokenId,id:req.params.id}}) 
+            }
             if (!result && req.params.id !== tokenId) 
                 throw new NotAuthorizedError('Private route');
         }
