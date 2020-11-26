@@ -51,7 +51,6 @@ async function postDistributor(distributor) {
             console.log('Set password code: ',setPasswordCode);
 
             const { id: driverId } = driver;
-            console.log(driverId);
             const login = await distributor.createLogin({
                 driverId,
                 phone,
