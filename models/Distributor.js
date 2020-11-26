@@ -62,16 +62,34 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             unique: true,
         },
-        street: {
-            type: DataTypes.STRING,
+        state: {
+            type: Sequelize.STRING,
             allowNull: false
         },
-        state: {
-            type: DataTypes.STRING,
+        district: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
+        municipality: {
+            type: Sequelize.STRING,
             allowNull: false
+        },
+        locality: {
+            type: Sequelize.STRING,
+        },
+        ward: Sequelize.STRING,
+        street: {
+            type: Sequelize.STRING,
+            allowNull: false
+        },
+        lat: {
+            type: Sequelize.FLOAT,
+        },
+        long: {
+            type: Sequelize.FLOAT
         },
         postal: {
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             allowNull: false
         },
         licenseDocument: {
@@ -95,9 +113,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at'
         },
-        district: DataTypes.STRING,
-        municipality: DataTypes.STRING,
-        ward: DataTypes.STRING,
         website: DataTypes.STRING,
     };
 
@@ -111,6 +126,7 @@ module.exports = function(sequelize, DataTypes) {
         Distributor.hasMany(models.Distributor,{foreignKey: 'admin_id'});
         Distributor.hasMany(models.Driver,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
+        Distributor.hasMany(models.User,{foreignKey: 'distributor_id'});
         Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
     }
 
