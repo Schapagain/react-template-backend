@@ -163,6 +163,8 @@ async function updateDriver(driver) {
         const distributor = await Distributor.findOne({where:{id:distributorId}});
         if (!distributor)
             throw new NotAuthorizedError('distributor with that token does not exist'); 
+
+        let result;
         if (distributor.isSuperuser)
             result = await Driver.findOne({where:{id}});
         else
