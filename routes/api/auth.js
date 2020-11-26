@@ -100,7 +100,7 @@ router.post('/',
                 if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
             } else{
                 // Expire code if logged in using OTP code and phone number
-                Login.update({...result,code:null},{where:{phone}})
+                Login.update({...result,code:null,active:true},{where:{phone}})
             }
 
             // Get all roles for the user
