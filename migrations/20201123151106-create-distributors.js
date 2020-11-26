@@ -48,13 +48,31 @@ module.exports = {
             allowNull: false,
             unique: true,
         },
+        state: {
+            type: Sequelize.STRING,
+            allowNull: false
+        },
+        district: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
+        municipality: {
+            type: Sequelize.STRING,
+            allowNull: false
+        },
+        locality: {
+            type: Sequelize.STRING,
+        },
+        ward: Sequelize.STRING,
         street: {
             type: Sequelize.STRING,
             allowNull: false
         },
-        state: {
-            type: Sequelize.STRING,
-            allowNull: false
+        lat: {
+            type: Sequelize.FLOAT,
+        },
+        long: {
+            type: Sequelize.FLOAT
         },
         postal: {
             type: Sequelize.STRING,
@@ -81,9 +99,6 @@ module.exports = {
             type: Sequelize.DATE,
             field: 'created_at'
         },
-        district: Sequelize.STRING,
-        municipality: Sequelize.STRING,
-        ward: Sequelize.STRING,
         website: Sequelize.STRING,
   })
   },
