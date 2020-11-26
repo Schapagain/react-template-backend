@@ -4,7 +4,7 @@ const { getRandomId } = require('../utils');
 const { USER } = require('../utils/roles');
 const { getError } = require('../utils/errors');
 
-const { Distributor, Login, User } = require('../models');
+const { Distributor, Login, User, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
 const { ValidationError, NotFoundError } = require('../utils/errors');
 
@@ -13,36 +13,36 @@ async function postUser(user) {
     try{
         // Check if the distributor is registered
         const distributorId = user.distributorId;
-        if (!distributorId) throw new ValidationError('distribuftorId');
+        if (!distributorId || isNaN(Number(distributorId))) throw new ValidationError('distribuftorId');
         
-        const result = await Distributor.findOne({where:{id:distributorId}});
-        if (!result) throw new ValidationError('distributorId');
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+        if (!distributor) throw new NotFoundError('distributor');
 
-        // extract all files and 
-        // Replace files with filenames
-        let allFiles = [];
-        Object.keys(user).forEach(key => {
-            if (typeof user[key] === 'object'){
-                const file = user[key];
-                const fileName = getRandomId().concat(path.extname(file.name));
-                allFiles.push({fileName,file});
-                user[key] = fileName;
-            }
+        // Extract files
+        allFiles = expectedFiles.map(fieldName => user[fieldName]);
+
+        // Replace files with random filenames before posting to database
+        allFileNames = [];
+        expectedFiles.forEach(fieldName => {
+            const file = user[fieldName];
+            const fileName = file? getRandomId().concat(path.extname(file.name)) : null;
+            user[fieldName] = fileName;
+            allFileNames.push(fileName);
         })
 
-        // Create a unique id for the new user
-        user.id = getRandomId();
+        const result = await sequelize.transaction( async t => {
+            user = await distributor.createUser(user,{transaction:t});
+            const { id:userId, phone, name } = user;
+            const {id: loginId} = await user.createLogin({phone,name,userId},{transaction:t});
+            await User.update({loginId},{where:{id:userId},transaction:t});
+            return { id:userId, name, phone };
+        });
 
-        // [TO ASK] Promise.all doesn't seem to work with rollback
-        // How can we make this better?
-        await User.create(user);
-        await _initLogin(user);
         await _saveFiles(allFiles);
-        const { id, name, phone } = user;
+        const { id, name, phone } = result;
         return { id, name, phone };
     }catch(err){
-        // Roll back changes
-        deleteUser(user.distributorId,user.id);
+        // [TODO] delete files to roll back changes
         throw await getError(err);
     }
 }
