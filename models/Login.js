@@ -18,6 +18,12 @@ module.exports = function(sequelize, DataTypes){
             unique: true,
             foreignKey: true,
         },
+        userId: {
+            type: DataTypes.INTEGER,
+            field: 'user_id',
+            unique: true,
+            foreignKey: true,
+        }, 
         email: {
             type: DataTypes.STRING,
         },
@@ -63,6 +69,7 @@ module.exports = function(sequelize, DataTypes){
     Login.associate = models => {
         Login.hasOne(models.Distributor,{foreignKey: 'login_id'});
         Login.hasOne(models.Driver, {foreignKey: 'login_id'});
+        Login.hasOne(models.User,{foreignKey: 'login_id'});
     }
 
     return Login;
