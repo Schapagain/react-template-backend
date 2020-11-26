@@ -1,3 +1,4 @@
+const { NotUniqueError } = require('../utils/errors'); 
 
 module.exports = function(sequelize, DataTypes){
     const Vehicle = sequelize.define('Vehicle', {
@@ -30,6 +31,13 @@ module.exports = function(sequelize, DataTypes){
             type: DataTypes.STRING,
             allowNull: false,
             field: 'license_plate',
+            validate: {
+                async isUnique(licensePlate){
+                    const vehicle = await Vehicle.findOne({where:{distributorId: this.distributorId,licensePlate}});
+                    if (vehicle)
+                        throw new NotUniqueError('license plate'); 
+                }
+            }
         },
         modelYear: {
             type: DataTypes.STRING,
