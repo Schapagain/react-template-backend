@@ -40,7 +40,6 @@ module.exports = function(sequelize, DataTypes) {
     },{
         tableName: 'contacts',
         paranoid:true,
-        deletedAt:'deleted_at',
     }
     )
 
