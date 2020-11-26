@@ -52,5 +52,10 @@ module.exports = function(sequelize, DataTypes){
     }
     )
 
+    User.associate = models => {
+        User.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
+        User.hasOne(models.Login, {foreignKey: 'user_id'});
+    }
+
     return User;
 }
