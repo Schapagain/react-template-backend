@@ -23,18 +23,16 @@ router.post('/',
     async (req, res) => {
         try{
             const vehicle = req.body;
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             let result = await postVehicle({...vehicle,distributorId});
-            if (!result) throw new Error();
 
             result = {
                 ...result,
-                'driverInfo': path.join(req.get('host'),'api','drivers',result.driverInfo),
-                'moreInfo': path.join(req.get('host'),'api','vehicles',result.id)
+                'moreInfo': path.join(req.get('host'),'api','vehicles',result.id.toString())
             }
             return res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     });
 
@@ -52,21 +50,22 @@ router.get('/:id',
 auth,
 async (req,res) => {
     try{
-        const distributorId = req.body.id;
+        const distributorId = req.auth.id;
         const id = req.params.id;
         if(!id) return res.json({error:'No id found'})
 
         // Get info from database
         let result = await getVehicle(distributorId,id);
-        if(!result) return res.json({error:'No vehicle found'})
-        console.log(result);
-        console.log(expectedFiles);
         // Convert filenames to API endpoints
-        const fileName = result['registrationDocument'];
-        result['registrationDocument'] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null;
+        expectedFiles.forEach(fieldName => {
+            result.data.forEach(vehicle => {
+                vehicle[fieldName] = vehicle[fieldName]? path.join(req.get('host'),req.originalUrl,'files',fieldName) : null 
+
+            })
+        })
         res.status(200).json(result);
     }catch(err){
-        res.status(err.httpCode).json({ error: err.message })
+        res.status(err.httpCode || 500 ).json({ error: err.message })
     }
 }
 );
@@ -85,24 +84,22 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.body.id;
-            let result = await getVehicles(adminId);
-            if(!result) throw new Error();
-            result = result.map(vehicle => ({
+            const distributorId = req.auth.id;
+            let result = await getVehicles(distributorId);
+            result.data = result.data.map(vehicle => ({
                 ...vehicle,
-                'driverInfo': path.join(req.get('host'),'api','drivers',vehicle.driverInfo),
-                'moreInfo:': path.join(req.get('host'),'api','vehicles',vehicle.id)
+                'moreInfo:': path.join(req.get('host'),'api','vehicles',vehicle.id.toString())
             }))
 
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
 
 /**
- * Route to delete a vehicle
+ * Route to disable a vehicle
  * @name    api/vehicles/:id
  * @method  DELETE
  * @access  Admin/Distributor
@@ -115,21 +112,16 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
-            const result = await disableVehicle(distributorId,id);
-            if(!result) {
-                return res.status(400).json({
-                    error: "Vehicle not found"
-                })
-            };
+            const result = await disableVehicle(distributorId,id);;
             res.status(200).json({
-                message: "Vechicle delete successfully",
+                message: "Vechicle deleted successfully",
                 ...result,
             });
         }catch(err){
             console.log(err);
-            res.status(500).json({error:"Could not delete vehicle. Try again later"})
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -151,22 +143,20 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
             if(!id) return res.json({error:'No id found'})
 
             // Get info from database
             let result = await updateVehicle({distributorId,...req.body,id});
-            if(!result) return res.json({error:'No vehicle found'})
             result = {
                 'message' : 'Vehicle updated successfully',
                 ...result,
-                'driverInfo': path.join(req.get('host'),'api','drivers',result.driverInfo),
-                'moreInfo:': path.join(req.get('host'),'api','vehicles',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','vehicles',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
