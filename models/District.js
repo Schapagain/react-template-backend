@@ -32,5 +32,5 @@ module.exports = function(sequelize, DataTypes) {
         District.belongsTo(models.State,{foreignKey: 'state_id'});
     }
 
-    return State;
+    return District;
 }
