@@ -3,7 +3,7 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId } = require('../utils');
 const fs = require('fs');
-const { Login, Driver, Distributor, sequelize } = require('../models');
+const { Login, Driver, Distributor, sequelize, Vehicle } = require('../models');
 const { DRIVER } = require('../utils/roles');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 const { expectedFiles } = require('../utils')
@@ -70,15 +70,29 @@ async function getDrivers(distributorId) {
             throw new NotAuthorizedError('distributor with that token does not exist');
         let allDrivers;        
         if (distributor.isSuperuser){
-            allDrivers = await Driver.findAll();
+            allDrivers = await Driver.findAll({include: Vehicle});
         }else{
-            allDrivers = await distributor.getDrivers();
+            allDrivers = await distributor.getDrivers({include: Vehicle});
         }
-        
-        return {count: allDrivers.length, data: allDrivers.map(driver => {
-            const {id, distributorId, phone, name} = driver
-            return {id, distributorId, phone, name}
-        })}
+
+        allDrivers = await Promise.all(allDrivers.map(async driver => {
+            const {id, distributorId, name, phone, Vehicles} = driver
+            return {
+                id, 
+                distributorId, 
+                name,
+                phone,
+                Vehicles: Vehicles.map(vehicle => ({
+                        id,
+                        model: vehicle.company.concat(' ',vehicle.model,', ', vehicle.modelYear), 
+                        licensePlate: vehicle.licensePlate
+                    })
+                )
+            }
+        }));
+
+        return {count: allDrivers.length, data: allDrivers}
+
     }catch(err){
         throw await getError(err);
     }
