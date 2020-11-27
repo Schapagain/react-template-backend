@@ -15,8 +15,8 @@ async function postDistributor(distributor) {
         throw new NotFoundError('admin');
 
     //Booleanify the value for usesPan field
-    distributor.usesPan = distributor.pan? true : false
-    distributor.panOrVat = distributor.pan? distributor.pan : distributor.vat;
+    distributor.usesPan = distributor.pan? true : false;
+
     // Extract files
     allFiles = expectedFiles.map(fieldName => distributor[fieldName]);
 
