@@ -1,4 +1,4 @@
-const { NotUniqueError } = require('../utils/errors'); 
+const { NotUniqueError, NotFoundError } = require('../utils/errors'); 
 
 module.exports = function(sequelize, DataTypes){
     const Vehicle = sequelize.define('Vehicle', {
@@ -12,6 +12,13 @@ module.exports = function(sequelize, DataTypes){
             type: DataTypes.STRING,
             field: 'driver_id',
             foreignKey: true,
+            validate: {
+                    async driverExists(id){
+                        const driver = await sequelize.models.Driver.findOne({where: {distributorId: this.distributorId, id}})
+                        if (!driver)
+                            throw new NotFoundError('driver')
+                }
+            }
         },
         id: {
             type: DataTypes.INTEGER,
