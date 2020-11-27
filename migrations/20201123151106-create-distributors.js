@@ -21,11 +21,8 @@ module.exports = {
             allowNull: false,
             field: 'uses_pan'
         },
-        panOrVat: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            field: 'pan_or_vat'
-        },
+        pan: Sequelize.INTEGER,
+        vat: Sequelize.INTEGER,
         name: {
             type: Sequelize.STRING,
             allowNull: false
@@ -64,19 +61,12 @@ module.exports = {
             type: Sequelize.STRING,
         },
         ward: Sequelize.STRING,
-        street: {
-            type: Sequelize.STRING,
-            allowNull: false
-        },
+        street: Sequelize.STRING,
         lat: {
             type: Sequelize.FLOAT,
         },
         long: {
             type: Sequelize.FLOAT
-        },
-        postal: {
-            type: Sequelize.STRING,
-            allowNull: false
         },
         licenseDocument: {
             type: Sequelize.STRING,

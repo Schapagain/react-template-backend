@@ -24,12 +24,20 @@ module.exports = function(sequelize, DataTypes) {
         usesPan: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            field: 'uses_pan'
+            field: 'uses_pan',
+            validate: {
+                hasPanOrVat(usesPan){
+                    if (usesPan && !this.pan || !usesPan && !this.vat){
+                        throw new Error('pan or vat number is required');
+                    }
+                }
+            }
         },
-        panOrVat: {
+        pan: {
             type: DataTypes.INTEGER,
-            allowNull: false,
-            field: 'pan_or_vat'
+        },
+        vat: {
+            type: DataTypes.INTEGER,
         },
         name: {
             type: DataTypes.STRING,
@@ -63,34 +71,27 @@ module.exports = function(sequelize, DataTypes) {
             unique: true,
         },
         state: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false
         },
         district: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         municipality: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false
         },
         locality: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
         },
-        ward: Sequelize.STRING,
-        street: {
-            type: Sequelize.STRING,
-            allowNull: false
-        },
+        ward: DataTypes.STRING,
+        street: DataTypes.STRING,
         lat: {
-            type: Sequelize.FLOAT,
+            type: DataTypes.FLOAT,
         },
         long: {
-            type: Sequelize.FLOAT
-        },
-        postal: {
-            type: Sequelize.STRING,
-            allowNull: false
+            type: DataTypes.FLOAT
         },
         licenseDocument: {
             type: DataTypes.STRING,
