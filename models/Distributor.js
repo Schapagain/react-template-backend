@@ -93,8 +93,13 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.JSONB,
             validate: {
                 isValidType(area){
-                    const validTypes = new Set(["'circle'","'rectangle'","'polygon'"]);
+                    const validTypes = new Set(["'none'","'circle'","'rectangle'","'polygon'"]);
                     const { type, options } = area;
+                    if (type === 'none'){
+                        this.area = {"type":"none"}
+                        return;
+                    }
+
                     if (!type || !options)
                         throw new ValidationError('area','area needs two properties: type and options')
                     switch(type){
@@ -108,7 +113,7 @@ module.exports = function(sequelize, DataTypes) {
                             validatePolygon(options);
                             break;
                         default:
-                            throw new ValidationError('area', 'type has to be either a ' + [...validTypes].join(' or a '))
+                            throw new ValidationError('area', 'type has to be either ' + [...validTypes].join(' or a '))
                         
                     }
                 }
