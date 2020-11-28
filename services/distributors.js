@@ -107,11 +107,14 @@ async function getDistributor(adminId,id) {
 
         let distributor;
         if (admin.isSuperuser)
-            distributor = await Distributor.findOne({where:{id}});
+            distributor = await Distributor.findAll({where:{id}});
         else
             distributor = await admin.getDistributors({where:{id}});
+    
+        if (!distributor.length)
+            throw new NotFoundError('distributor');
 
-        return distributor? distributor.dataValues : null;
+        return {count: 1, data: distributor.map(dist => dist.dataValues)}
     }catch(err){
         throw await getError(err);
     }
