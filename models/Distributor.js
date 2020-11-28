@@ -39,6 +39,17 @@ module.exports = function(sequelize, DataTypes) {
         vat: {
             type: DataTypes.INTEGER,
         },
+        area: {
+            type: DataTypes.JSONB,
+            validate: {
+                isValidType(area){
+                    const validTypes = new Set(['circle','rectangle','polygon']);
+                    const { type, options } = area;
+                    if (!validTypes.has(type))
+                        throw new ValidationError('area', 'type has to be one of: ' + [...validTypes].join(', '))
+                }
+            }
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false
