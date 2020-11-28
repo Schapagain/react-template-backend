@@ -3,7 +3,7 @@ require('dotenv').config();
 const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
-const { Distributor, Driver, User, Vehicle } = require('../models');
+const { Distributor, Driver, User, Vehicle, Country } = require('../models');
 const { ADMIN } = require('../utils/roles');
 
 // Acess controls based on roles remains to be implemented here
@@ -14,6 +14,7 @@ const auth = async (req,res,next) => {
         'distributors' : Distributor,
         'users' : User,
         'vehicles' : Vehicle,
+        'countries' : Country,
     }
 
     try{
