@@ -1,4 +1,6 @@
 
+const { ValidationError, NotUniqueError } = require('../utils/errors');
+
 module.exports = function(sequelize, DataTypes){
     const User = sequelize.define('User', {
         distributorId: {
@@ -23,7 +25,13 @@ module.exports = function(sequelize, DataTypes){
         phone: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
+            validate: {
+                async isUnique(phone){
+                    const user = await User.findOne({where:{distributorId: this.distributorId,phone}});
+                    if (user)
+                        throw new NotUniqueError('phone'); 
+                }
+            }
         },
         email: {
             type: DataTypes.STRING,
