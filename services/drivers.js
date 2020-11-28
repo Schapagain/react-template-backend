@@ -108,10 +108,15 @@ async function getDriver(distributorId,id) {
         
         let driver;
         if (distributor.isSuperuser)
-            driver = await Driver.findOne({where:{id}});
+            driver = await Driver.findAll({where:{id}});
         else
             driver = await distributor.getDrivers({where:{id}});
-        return driver? driver.dataValues : driver;
+            
+        if (!driver.length)
+            throw new NotFoundError('driver');
+        
+        return {count: 1, data: driver.map(driver => driver.dataValues)}
+
     }catch(err){
         throw await getError(err);
     }
