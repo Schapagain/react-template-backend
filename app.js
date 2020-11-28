@@ -32,6 +32,7 @@ app.use('/api/drivers',require('./routes/api/drivers'));
 app.use('/api/vehicles',require('./routes/api/vehicles'));
 app.use('/api/contacts',require('./routes/api/contacts'));
 app.use('/api/users',require('./routes/api/users'));
+app.use('/api/countries',require('./routes/api/countries'));
 
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
