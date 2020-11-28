@@ -26,7 +26,7 @@ router.post('/',
             result = {
                 'message':'User created successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','users',result.id)
+                'moreInfo:': path.join(req.get('host'),'api','users',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
@@ -49,18 +49,16 @@ router.get('/:id',
 auth,
 async (req,res) => {
     try{
-        const distributorId = req.body.id;
+        const distributorId = req.auth.id;
         const id = req.params.id;
         if(!id) return res.json({error:'No id found'})
 
         // Get info from database
         const result = await getUser(distributorId,id);
 
-        // Convert filenames to API endpoints
-        expectedFiles.forEach(fieldName => {
-            const fileName = result[fieldName];
-            result[fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
-        })
+        // Convert profilePicture name to API endpoint
+        if (result.data[0].profilePicture)
+            result.data[0].profilePicture = path.join(req.get('host'),req.originalUrl,'files',fileName);
 
         res.status(200).json(result);
     }catch(err){
@@ -73,7 +71,7 @@ async (req,res) => {
  * Route to get all users
  * @name    api/users
  * @method  GET
- * @access  Distributor
+ * @access  Admin/Distributor
  * @inner
  * @param   {string} path
  * @param   {callback} middleware - Authenticate  
@@ -83,18 +81,18 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             let result = await getUsers(distributorId);
             if(!result) throw new Error();
 
-            result = result.map(user => ({
+            result.data = result.data.map(user => ({
                 ...user,
-                'moreInfo:': path.join(req.get('host'),'api','users',user.id)
+                'moreInfo:': path.join(req.get('host'),'api','users',user.id.toString())
             }))
 
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -113,7 +111,7 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
             let result = await disableUser(distributorId,id);
             result ={
@@ -131,7 +129,7 @@ router.delete('/:id',
  * Route to update user info
  * @name    api/users/:id
  * @method  PATCH
- * @access  Distributor
+ * @access  Admin/Distributor
  * @inner
  * @param   {string} path
  * @param   {callback} middleware - Authenticate  
@@ -143,7 +141,7 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
 
             // Get info from database

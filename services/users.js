@@ -47,26 +47,22 @@ async function postUser(user) {
     }
 }
 
-async function _initLogin(user) {
-    try{
-        const { phone } = user;
-        await Login.create({phone, role:USER});
-    }catch(err){
-        console.log(err);
-    }
-}
-
 async function _saveFiles(files) {
     const filePath = path.resolve('.','uploads');
     const writeFile = fs.promises.writeFile;
     const readFile = fs.promises.readFile;
-    files.forEach( async ({fileName, file}) => {
-        if (file) {
-            const fileStream = await readFile(file.path).catch(err => { throw err });
-            const fullPath = path.join(filePath,fileName);
-            writeFile(fullPath,fileStream).catch(err=>{throw err});
-        }
-    })
+    try{
+        files.forEach( async ({fileName, file}) => {
+            if (file) {
+                const fileStream = await readFile(file.path).catch(err => { throw err });
+                const fullPath = path.join(filePath,fileName);
+                writeFile(fullPath,fileStream).catch(err=>{throw err});
+            }
+        })
+    }catch(err){
+        throw new getError(err);
+    }
+    
 }
 
 function _deleteFiles(user) {
@@ -80,9 +76,26 @@ function _deleteFiles(user) {
 
 async function getUser(distributorId,id) {
     try {
-        const result = await User.findOne({where:{distributorId,id}});
-        if (!result || !result.dataValues) throw new NotFoundError('user');
-        return result.dataValues;
+
+        if(isNaN(id))
+            throw new ValidationError('id parameter');
+
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist'); 
+        
+        let user;
+        if (distributor.isSuperuser)
+            user = await User.findAll({where:{id}});
+        else
+            user = await distributor.getUsers({where:{id}});
+
+        if (!user.length)
+            throw new NotFoundError('user');
+        
+        return {count: 1, data: user.map(user => user.dataValues)}
+
     }catch(err){
         throw await getError(err);
     }
@@ -90,11 +103,28 @@ async function getUser(distributorId,id) {
 
 async function getUsers(distributorId) {
     try {
-        const result = await User.findAll({where:{distributorId}})
-        return result.map(user => {
-            const {id, name, phone} = user
-            return {id, name, phone}
-        });
+
+        if (!distributorId)
+            throw new ValidationError('distributor Id');
+
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist');
+        let allUsers;        
+        if (distributor.isSuperuser){
+            allUsers = await User.findAll();
+        }else{
+            allUsers = await distributor.getUsers();
+        }
+
+        allUsers = await Promise.all(allUsers.map(async user => {
+            const {id, distributorId, name, phone} = user; 
+            return { id, distributorId, name, phone};
+        }));
+
+        return {count: allUsers.length, data: allUsers}
+
     }catch(err){
         throw await getError(err);
     }
@@ -123,17 +153,20 @@ async function deleteUser(distributorId,id) {
 async function disableUser(distributorId,id) {
 
     try{
-        if (!id) throw new ValidationError('id');
-        if (!distributorId) throw new ValidationError('distributorId');
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token/id does not exist'); 
+        let user;
+        if (distributor.isSuperuser)
+            user = await User.findOne({where:{id}});
+        else
+            user = await User.findOne({where:{distributorId,id}});
+        if (!user)
+            throw new NotFoundError('user');
 
-        const result = await User.findOne({where:{distributorId,id}});
-        if (!result) throw new NotFoundError('user');
-
-        User.destroy({where:{distributorId,id}})
-        Login.destroy({where:{id}});
-
-        const { phone, name } = result;
-        return { id, name, phone }
+        User.destroy({where:{id}})
+        const { phone, name } = user;
+        return { id, distributorId: user.distributorId, name, phone };
     }catch(err){
         throw await getError(err);
     }
@@ -143,22 +176,28 @@ async function disableUser(distributorId,id) {
 async function updateUser(user) {
     try{
         const { id, distributorId } = user;
-        if (!id) throw new ValidationError('id');
-        if (!distributorId) throw new ValidationError('distributorId');
+        if (!id || !distributorId)
+            throw new ValidationError('distributor with that token/id does not exist');
+        
+        const distributor = await Distributor.findOne({where:{id:distributorId}});
+        if (!distributor)
+            throw new NotAuthorizedError('distributor with that token does not exist'); 
 
-        let result = await User.findOne({where:{distributorId,id}});
-        if (!result) throw new NotFoundError('user');
+        let result;
+        if (distributor.isSuperuser)
+            result = await User.findOne({where:{id}});
+        else
+            result = await User.findOne({where:{distributorId,id}});
+        if (!result)
+            throw new NotFoundError('user');
+
+        // Keep the distributorId for the user unchanged
+        user.distributorId = result.distributorId;
 
         result = await User.update(user,{where:{id},returning:true,plain:true});
-        
-        if (user.phone){
-            Login.update({phone: user.phone},{where:{id}})
-        }
-
         const { phone, name } = result[1].dataValues;
-        return {id, name, phone }
+        return {id, distributorId, name, phone}
     }catch(err){
-        console.log(err)
         throw await getError(err);
     }
     
