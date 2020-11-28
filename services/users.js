@@ -113,14 +113,14 @@ async function getUsers(distributorId) {
             throw new NotAuthorizedError('distributor with that token does not exist');
         let allUsers;        
         if (distributor.isSuperuser){
-            allUsers = await User.findAll();
+            allUsers = await User.findAll({include: Login});
         }else{
-            allUsers = await distributor.getUsers();
+            allUsers = await distributor.getUsers({include: Login});
         }
 
         allUsers = await Promise.all(allUsers.map(async user => {
-            const {id, distributorId, name, phone} = user; 
-            return { id, distributorId, name, phone};
+            const {id, distributorId, name, phone, Login} = user; 
+            return { id, distributorId, active: Login.active, name, phone};
         }));
 
         return {count: allUsers.length, data: allUsers}
