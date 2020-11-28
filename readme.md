@@ -21,12 +21,6 @@
     ```
     SECRET_KEY
     ```
-* Used for admin auth:
-    ```
-    ADMIN_EMAIL='admin@admin.com'
-    ADMIN_PASSWORD='password77'
-    ADMIN_ID='123'
-    ```
 
 ## Setup PostgreSQL
 
@@ -51,7 +45,11 @@
 ## Setup database tables
 
 * All migrations are located at ```/migrations``` at project root
-* To create all required tables, simply run : ```npx sequelize db:migrate```
+* To create all required tables and insert admin info, run these commands from the command line : <br/>
+ ```npx sequelize db:migrate --to 20201123192233-add-login-distributor-association.js```<br/> 
+ ```npx sequelize db:migrate```<br/>
+ ```npx sequelize db:seed:all```
+
 
 ## Start development server
 * In the command line, run : ```npm run dev```
@@ -82,7 +80,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/admin | Admin authentication | POST | Public | email, password | { token } | ----- |
+| /api/admin | Admin authentication | POST | Public | password | { token } | password: password77 |
 | /api/auth/get_code | Get an OPT code via text | POST | Public | phone | { message } | ----- |
 | /api/auth | User authentication | POST | Public | <ins>Either</ins>: email, password <br/> <ins>OR</ins>: phone, code | {{ id, email, role }}, token | ----- |
 
