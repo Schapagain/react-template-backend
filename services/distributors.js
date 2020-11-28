@@ -209,8 +209,7 @@ async function updateDistributor(distributor) {
         if (!result) throw new NotFoundError('distributor');
 
         result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
-        const { email, name } = result[1].dataValues;
-        return {id, email, name}
+        return result[1].dataValues;
     }catch(err){
         throw await getError(err);
     }
