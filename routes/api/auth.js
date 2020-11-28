@@ -85,7 +85,7 @@ router.post('/',
 
         try{
             // Check if the user exists
-            const queryOptions = {where:email?{email}:{phone,code}}
+            const queryOptions = {where:email?{email}:{phone,otpCode:code}}
             let result = await Login.findOne(queryOptions);
             if (!result)
                 throw new NotAuthorizedError('')
@@ -100,7 +100,7 @@ router.post('/',
                 if (!credentialsMatch) return res.status(401).json({error:"Unauthorized"})
             } else{
                 // Expire code if logged in using OTP code and phone number
-                Login.update({...result,code:null,active:true},{where:{phone}})
+                Login.update({...result,otpCode:null,active:true},{where:{phone}})
             }
 
             // Get all roles for the user
