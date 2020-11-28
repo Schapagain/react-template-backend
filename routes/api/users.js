@@ -30,7 +30,11 @@ router.post('/',
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode || 500).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error : {
+                field: err.field,
+                msg: err.message
+                }
+            })
         }
     });
 
@@ -153,7 +157,11 @@ router.patch('/:id',
             }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({error: err.message})
+            res.status(err.httpCode).json({error : {
+                field: err.field,
+                msg: err.message
+                }
+            })
         }
     }
 );
