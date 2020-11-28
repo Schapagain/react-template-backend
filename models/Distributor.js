@@ -2,6 +2,56 @@
 const { allowedLanguages, allowedCountries } = require('../utils');
 const { ValidationError } = require('../utils/errors');
 
+const validateCircle = circle => {
+    const { radius, center } = circle;
+
+    if (!radius)
+        throw new ValidationError('area','circle needs a radius property');
+    if (!center)
+        throw new ValidationError('area','circle needs a center property');
+
+    const { lat, long } = center;
+
+    if(!lat)
+        throw new ValidationError('area','center needs a lat property');
+    if (!long)
+        throw new ValidationError('area','center needs a long property');
+
+}
+
+const validateRectangle = rectangle => {
+    const { bounds } = rectangle;
+
+    if (!bounds)
+        throw new ValidationError('area','rectangle needs a bounds property');
+    
+    const requiredBounds = ['south','west','east','north'];
+    requiredBounds.forEach(bound => {
+        if (!bounds[bound])
+            throw new ValidationError('area','bounds needs a '.concat(bound,' property'));
+    })
+}
+
+const validatePolygon = polygon => {
+    const { paths } = polygon;
+
+    if (!paths)
+        throw new ValidationError('area','polygon needs a paths property that holds an array of {lat,long}s');
+    
+    if (!Array.isArray(paths))
+        throw new ValidationError('area','paths should be an array of {lat,long}s')
+
+    paths.forEach(coordinate => {
+        const { lat, long } = coordinate;
+        if (!lat || !long)
+            throw new ValidationError('area','each element of paths needs to have a lat and a long property')
+    })
+
+    if (paths.length < 3)
+        throw new ValidationError('area','polygon needs at least three {lat,long} coordinates');
+
+}
+
 module.exports = function(sequelize, DataTypes) {
     const Schema = {
         adminId: {
@@ -43,10 +93,24 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.JSONB,
             validate: {
                 isValidType(area){
-                    const validTypes = new Set(['circle','rectangle','polygon']);
+                    const validTypes = new Set(["'circle'","'rectangle'","'polygon'"]);
                     const { type, options } = area;
-                    if (!validTypes.has(type))
-                        throw new ValidationError('area', 'type has to be one of: ' + [...validTypes].join(', '))
+                    if (!type || !options)
+                        throw new ValidationError('area','area needs two properties: type and options')
+                    switch(type){
+                        case 'circle':
+                            validateCircle(options);
+                            break;
+                        case 'rectangle':
+                            validateRectangle(options);
+                            break;
+                        case 'polygon':
+                            validatePolygon(options);
+                            break;
+                        default:
+                            throw new ValidationError('area', 'type has to be either a ' + [...validTypes].join(' or a '))
+                        
+                    }
                 }
             }
         },
@@ -55,7 +119,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         country: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING, 
             allowNull: false,
             validate: {
                 isIn: [allowedCountries]
