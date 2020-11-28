@@ -3,10 +3,14 @@ const { NotUniqueError, NotFoundError } = require('../utils/errors');
 module.exports = function(sequelize, DataTypes){
     const Vehicle = sequelize.define('Vehicle', {
         distributorId: {
-            type: DataTypes.STRING,
-            allowNull: false,
+            type: DataTypes.INTEGER,
             field: 'distributor_id',
-            foreignKey: true,
+            validate: {
+                isNotSuperuser(id){
+                    if (Number(id) <= 1)
+                        throw new ValidationError('distributorId','must be greater than 1');
+                }
+            }
         },
         driverId: {
             type: DataTypes.STRING,
