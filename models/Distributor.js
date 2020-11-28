@@ -1,5 +1,6 @@
 
 const { allowedLanguages, allowedCountries } = require('../utils');
+const { ValidationError } = require('../utils/errors');
 
 module.exports = function(sequelize, DataTypes) {
     const Schema = {
@@ -27,9 +28,8 @@ module.exports = function(sequelize, DataTypes) {
             field: 'uses_pan',
             validate: {
                 hasPanOrVat(usesPan){
-                    if (usesPan && !this.pan || !usesPan && !this.vat){
-                        throw new Error('pan or vat number is required');
-                    }
+                    if (usesPan && !this.pan || !usesPan && !this.vat)
+                        throw new ValidationError('pan/vat',' Either pan or vat number is required');
                 }
             }
         },
@@ -129,6 +129,7 @@ module.exports = function(sequelize, DataTypes) {
         Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.User,{foreignKey: 'distributor_id'});
         Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
+        Distributor.hasMany(models.Country,{foreignKey: 'distributor_id'});
     }
 
     return Distributor;
