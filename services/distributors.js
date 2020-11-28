@@ -139,8 +139,8 @@ async function getDistributors(adminId) {
             allDistributors = await admin.getDistributors();
         }
         return {count: allDistributors.length, data: allDistributors.map(distributor => {
-            const {id, adminId, email, name} = distributor
-            return {id, adminId, email, name}
+            const {id, adminId, area, email, name} = distributor
+            return {id, adminId, area, email, name}
         })}
     }catch(err){
         throw await getError(err);
@@ -196,11 +196,16 @@ async function updateDistributor(distributor) {
         const { id, adminId } = distributor;
         if (!id || !adminId) throw new ValidationError('id or adminId')
 
-        const admin = await Distributor.findOne({where: {adminId}});
+        const admin = await Distributor.findOne({where: {id:adminId}});
         if (!admin)
             throw new NotAuthorizedError(' admin with that token does not exist!'); 
+        let result;
+        if (admin.isSuperuser){
+            result = await Distributor.findOne({where:{id}});
+        }else{
+            result = await Distributor.findOne({where:{adminId,id}}); 
+        }
 
-        let result = await Distributor.findOne({where:{adminId,id}});
         if (!result) throw new NotFoundError('distributor');
 
         result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
