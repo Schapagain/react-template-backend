@@ -23,6 +23,7 @@ module.exports = {
         },
         pan: Sequelize.INTEGER,
         vat: Sequelize.INTEGER,
+        area: Sequelize.JSONB,
         name: {
             type: Sequelize.STRING,
             allowNull: false
