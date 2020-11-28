@@ -52,7 +52,8 @@ async function getError(err){
             case 'NotAuthorizedError':
                 return err;
             case 'SequelizeValidationError':
-                return new ValidationError(err.errors[0].path, err.errors[0].message);
+                const originalError = err.errors[0].original;
+                return originalError? originalError : new ValidationError(err.errors[0].path, err.errors[0].message);
             case 'SequelizeUniqueConstraintError':
                 return new NotUniqueError(err.errors[0].path);
             case 'SequelizeDatabaseError':
