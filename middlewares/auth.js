@@ -34,7 +34,7 @@ const auth = async (req,res,next) => {
         }
         console.log('Request using token with id:',tokenId,'role:',tokenRole)
         if (tokenRole != ADMIN && req.params.id){
-            if (isNaN(Number(req.params.id)))
+            if (isNaN(req.params.id))
                 throw new ValidationError('id parameter')
 
             // Check for permission in case of private route
@@ -42,9 +42,9 @@ const auth = async (req,res,next) => {
             const model = modelMap[apiBaseString];
             let result;
             if (apiBaseString === 'distributors'){
-                result = await model.findOne({where:{adminId:tokenId,id:req.params.id}})
+                result = await model.findOne({where:{adminId:tokenId,id:Number(req.params.id)}})
             }else{
-                result = await model.findOne({where:{distributorId:tokenId,id:req.params.id}}) 
+                result = await model.findOne({where:{distributorId:tokenId,id:Number(req.params.id)}}) 
             }
             if (!result && req.params.id !== tokenId) 
                 throw new NotAuthorizedError('Private route');
