@@ -19,6 +19,7 @@ module.exports = {
       queryInterface.bulkInsert('login',[{
         distributor_id: 1,
         email: 'admin@admin.com',
+        password: 'password77',
         phone: '1111111111',
         active: true,
       }]),
