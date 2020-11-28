@@ -4,7 +4,7 @@ const formParser = require('../../middlewares/formParser');
 const router = express.Router();
 const { getAuthToken } = require('../../utils/auth');
 const { ADMIN } = require('../../utils/roles');
-const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
+const { Login } = require('../../models');
 
 /**
  * Route to authenticate admin
@@ -19,12 +19,13 @@ const { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_ID } = process.env;
 router.post('/', 
     formParser,
     async (req, res) => {
-        const { email, password } = req.body;
-        if(!email || !password){
-            return res.status(400).json({error: 'Please provide email and password'});
+        const { password } = req.body;
+        if(!password){
+            return res.status(400).json({error: 'Please provide administrator password'});
         }else{
-            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
-                const token = getAuthToken(ADMIN_ID,ADMIN);
+            const admin = await Login.findOne({where: {id: 1,password}})
+            if (admin){
+                const token = getAuthToken(1,ADMIN);
                 return res.status(200).json({token});
             }else{
                 return res.status(401).json({error: 'Not authorized'});
