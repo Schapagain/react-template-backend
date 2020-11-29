@@ -29,7 +29,6 @@ router.post('/',
             result = {
                 'message':'Distributor created successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
@@ -65,8 +64,8 @@ router.get('/:id',
 
             // Convert filenames to API endpoints
             expectedFiles.forEach(fieldName => {
-                const fileName = result[fieldName];
-                result[fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
+                const fileName = result.data[0][fieldName];
+                result.data[0][fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
             })
             res.status(200).json(result);
         }catch(err){
@@ -100,7 +99,6 @@ router.patch('/:id',
             result = {
                 'message' : 'Distributor updated successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
@@ -133,7 +131,6 @@ router.get('/',
 
             result.data = result.data.map(distributor => ({
                 ...distributor,
-                'moreInfo:': path.join(req.get('host'),'api','distributors',distributor.id.toString())
             }))
 
             res.status(200).json(result);
