@@ -28,7 +28,6 @@ router.post('/independent',
             result = {
                 message: 'Driver added successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id.toString())
             }
             res.status(201).json(result)
         }catch(err){
@@ -65,7 +64,6 @@ router.post('/',
             result = {
                 message: 'Driver added successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',result.id.toString())
             }
             res.status(201).json(result)
         }catch(err){
@@ -102,8 +100,8 @@ async (req,res) => {
 
         // Convert filenames to API endpoints
         expectedFiles.forEach(fieldName => {
-            const fileName = result[fieldName];
-            result[fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
+            const fileName = result.data[0][fieldName];
+            result.data[0][fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
         })
 
         res.status(200).json(result);
@@ -129,10 +127,6 @@ router.get('/',
         try{
             const adminId = req.auth.id;
             let result = await getDrivers(adminId);
-            result.data = result.data.map(driver => ({
-                ...driver,
-                'moreInfo:': path.join(req.get('host'),'api','drivers',driver.id.toString())
-            }))
 
             res.status(200).json(result);
         }catch(err){
