@@ -18,6 +18,10 @@ module.exports = function(sequelize, DataTypes){
             autoIncrement: true,
             primaryKey: true,
         },
+        loginId: {
+            type: DataTypes.INTEGER,
+            field: 'login_id'
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -27,7 +31,7 @@ module.exports = function(sequelize, DataTypes){
             allowNull: false,
             validate: {
                 async isUnique(phone){
-                    const user = await User.findOne({where:{distributorId: this.distributorId,phone}});
+                    const user = await User.findOne({where:{distributorId: this.distributorId,phone,deletedAt:null}});
                     if (user)
                         throw new NotUniqueError('phone'); 
                 }
@@ -60,6 +64,7 @@ module.exports = function(sequelize, DataTypes){
             field: 'created_at'
         },
     },{
+        paranoid: true,
         tableName: 'users',
     }
     )
