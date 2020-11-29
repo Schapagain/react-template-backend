@@ -1,12 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { getRandomId } = require('../utils');
+const { getRandomId, getRandomCode } = require('../utils');
 const { USER } = require('../utils/roles');
 const { getError } = require('../utils/errors');
 
 const { Distributor, Login, User, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
-const { ValidationError, NotFoundError } = require('../utils/errors');
+const { ValidationError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
 
 async function postUser(user) {
 
@@ -19,10 +19,10 @@ async function postUser(user) {
         if (!distributor) throw new NotFoundError('distributor');
 
         // Extract files
-        allFiles = expectedFiles.map(fieldName => user[fieldName]);
+        let allFiles = expectedFiles.map(fieldName => user[fieldName]);
 
         // Replace files with random filenames before posting to database
-        allFileNames = [];
+        let allFileNames = [];
         expectedFiles.forEach(fieldName => {
             const file = user[fieldName];
             const fileName = file? getRandomId().concat(path.extname(file.name)) : null;
@@ -32,30 +32,37 @@ async function postUser(user) {
 
         const result = await sequelize.transaction( async t => {
             user = await distributor.createUser(user,{transaction:t});
+
+            // Generate an OTP
+            // [TODO] send this code via text   
+            const code_length = 6;
+            const otpCode = getRandomCode(code_length)
+            console.log('OTP for user: ',otpCode)
+
             const { id:userId, phone, name } = user;
-            const {id: loginId} = await user.createLogin({phone,name,userId},{transaction:t});
+            const {id: loginId} = await user.createLogin({phone,name,userId,otpCode},{transaction:t});
+            console.log('login id is:',loginId)
             await User.update({loginId},{where:{id:userId},transaction:t});
             return { id:userId, name, phone };
         });
 
-        await _saveFiles(allFiles);
+        await _saveFiles(allFiles, allFileNames);
         const { id, name, phone } = result;
         return { id, name, phone };
     }catch(err){
-        // [TODO] delete files to roll back changes
         throw await getError(err);
     }
 }
 
-async function _saveFiles(files) {
+async function _saveFiles(files, fileNames) {
     const filePath = path.resolve('.','uploads');
     const writeFile = fs.promises.writeFile;
     const readFile = fs.promises.readFile;
     try{
-        files.forEach( async ({fileName, file}) => {
+        files.forEach( async (file,index) => {
             if (file) {
                 const fileStream = await readFile(file.path).catch(err => { throw err });
-                const fullPath = path.join(filePath,fileName);
+                const fullPath = path.join(filePath,fileNames[index]);
                 writeFile(fullPath,fileStream).catch(err=>{throw err});
             }
         })
@@ -80,17 +87,21 @@ async function getUser(distributorId,id) {
         if(isNaN(id))
             throw new ValidationError('id parameter');
 
-        const distributor = await Distributor.findOne({where:{id:distributorId}});
-
-        if (!distributor)
-            throw new NotAuthorizedError('distributor with that token does not exist'); 
-        
         let user;
-        if (distributor.isSuperuser)
+        // View their own info
+        if (distributorId == id){
             user = await User.findAll({where:{id}});
-        else
-            user = await distributor.getUsers({where:{id}});
-
+        }else{
+            const distributor = await Distributor.findOne({where:{id:distributorId}});
+            if (!distributor)
+                throw new NotAuthorizedError('distributor with that token does not exist'); 
+        
+            if (distributor.isSuperuser)
+                user = await User.findAll({where:{id}});
+            else
+                user = await distributor.getUsers({where:{id}});
+        }
+        
         if (!user.length)
             throw new NotFoundError('user');
         
