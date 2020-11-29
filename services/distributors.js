@@ -35,33 +35,24 @@ async function postDistributor(distributor) {
                 ...distributor
             },{transaction: t});
             
-            // create a new driver model for the distributor
-            const { id: distributorId, phone, email, name, licenseDocument } = distributor;
-            const driver = await distributor.createDriver({
-                distributorId,
-                phone,
-                name,
-                licenseDocument,
-            },{transaction: t})
-            
             // Generate a random code that allows setting a new password
             // [TODO] send this code via email   
             const code_length = 6;
             const setPasswordCode = getRandomCode(code_length)
             console.log('Set password code: ',setPasswordCode);
 
-            const { id: driverId } = driver;
+            const { id: distributorId, name, email } = distributor;
+
             const login = await distributor.createLogin({
-                driverId,
-                phone,
+                distributorId,
+                name,
                 email,
                 setPasswordCode,
             },{transaction: t})
 
             const { id:loginId } = login;
-            // Place foreign keys in Driver and Distributor models
+            // Place foreign keys in Distributor model
             await Distributor.update({loginId},{where:{id: distributorId},transaction: t});
-            await Driver.update({loginId},{where:{id:driverId}, transaction: t});
 
             return { id: distributorId, name, email };
         });
@@ -69,9 +60,6 @@ async function postDistributor(distributor) {
         await _saveFiles(allFiles,allFileNames);
         return result;
     }catch(err){
-        // Sequelize automaticaly rolls back if we get here.
-        // We don't need to rollback potential problems in _saveFiles 
-        // since we either succeed there, or we fail storing the files in the first place
         throw await getError(err);
     }
 }
@@ -80,13 +68,18 @@ async function _saveFiles(files, fileNames) {
         const filePath = path.join('.','uploads'); 
         const writeFile = fs.promises.writeFile;
         const readFile = fs.promises.readFile;
-        files.forEach( async (file,index) => {
-            if (file) {
-                const fileStream = await readFile(file.path).catch(err => { throw err });
-                const fullPath = path.join(filePath,fileNames[index]);
-                writeFile(fullPath,fileStream).catch(err=>{throw err});
-            }
-        })
+        try{
+            files.forEach( async (file,index) => {
+                if (file) {
+                    const fileStream = await readFile(file.path);
+                    const fullPath = path.join(filePath,fileNames[index]);
+                    writeFile(fullPath,fileStream).catch(err=>{throw err});
+                }
+            })
+        }catch(err){
+            throw err;
+        }
+        
 }
 
 function _deleteFiles(user) {
@@ -101,16 +94,22 @@ function _deleteFiles(user) {
 async function getDistributor(adminId,id) {
     try {
 
-        const admin = await Distributor.findOne({where:{id:adminId}});
-        if (!admin)
-            throw new NotAuthorizedError(' admin with that token does not exist!'); 
-
         let distributor;
-        if (admin.isSuperuser)
-            distributor = await Distributor.findAll({where:{id}});
-        else
-            distributor = await admin.getDistributors({where:{id}});
-    
+        // View own info
+        if (adminId == id){
+            distributor = await Distributor.findAll({where:{id:adminId}}); 
+        }else{
+            const admin = await Distributor.findAll({where:{id:adminId}});
+            if (!admin)
+                throw new NotAuthorizedError(' admin with that token does not exist!'); 
+
+            if (admin.isSuperuser)
+                distributor = await Distributor.findAll({where:{id}});
+            else
+                distributor = await admin[0].getDistributors({where:{id}}); 
+        }
+        
+
         if (!distributor.length)
             throw new NotFoundError('distributor');
 
