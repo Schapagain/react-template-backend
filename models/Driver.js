@@ -31,7 +31,7 @@ module.exports = function( sequelize, DataTypes){
             allowNull: false,
             validate: {
                 async isUnique(phone){
-                    const driver = await Driver.findOne({where:{distributorId: this.distributorId,phone}});
+                    const driver = await Driver.findOne({where:{distributorId: this.distributorId,phone,deletedAt:null}});
                     if (driver)
                         throw new NotUniqueError('phone'); 
                 }
@@ -67,7 +67,7 @@ module.exports = function( sequelize, DataTypes){
 
     Driver.associate = models => {
         Driver.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
-        Driver.hasMany(models.Vehicle,{foreignKey: 'driver_id'});
+        Driver.hasOne(models.Vehicle,{foreignKey: 'driver_id'});
         Driver.hasOne(models.Login, {foreignKey: 'driver_id'});
     }
 
