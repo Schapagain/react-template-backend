@@ -1,19 +1,18 @@
 const bcrypt =  require('bcrypt');
-const { Login } = require('../models');
-const { getError, NotAuthorizedError } = require('../utils/errors');
+const { Login, Distributor } = require('../models');
+const { getError, NotAuthorizedError, ValidationError, NotUniqueError, NotFoundError } = require('../utils/errors');
 const { getRandomCode } = require('../utils');
 
 const updatePassword = async (id,setPasswordCode,password) => {
 
     try{
 
-        const user = await Login.findOne({where:{id,setPasswordCode}});
+        const user = await Login.findOne({where:{distributorId:id,setPasswordCode}});
         if (!user)
             throw new NotAuthorizedError('Code has expired')
 
         password = await generatePasswordHash(password);
-        console.log(setPasswordCode,id)
-        const updated = await Login.update({password,setPasswordCode:null},{where:{id}})
+        const updated = await Login.update({password,setPasswordCode:null},{where:{distributorId:id}})
         if (!updated){
             throw new Error();
         }
@@ -34,6 +33,40 @@ const generatePasswordHash = async passwordPlain => {
     }
 }
 
+const sendOTP = async (distributorId,phone) => {
+    try{
+
+        if (!phone)
+            throw new ValidationError('phone','not found');
+
+        if (!distributorId)
+            throw new ValidationError('distributorId','not found');
+        
+        // Check if the distributor Exists
+        const distributor = await Distributor.findOne({where: {id: distributorId}});
+
+        if (!distributor)
+            throw new NotFoundError('distributor');
+
+        const user = await distributor.getUsers({where:{phone}});
+        console.log(user);
+
+        if (user){
+            // Generate random six-digit code
+            const otpCode = getRandomCode(6);
+
+            // store code to the databse
+            Login.update({otpCode},{where:{phone}})
+            
+            //[TODO] send code via text
+            console.log('OTP code for user: ', otpCode);
+        }
+        
+    }catch(err){
+        throw await getError(err);
+    }
+}
+
 const sendPasswordResetCode = async email => {
     // Check if the user exists
     let result = await Login.findOne({where:{email}});
@@ -50,4 +83,4 @@ const sendPasswordResetCode = async email => {
     }
 }
 
-module.exports = { updatePassword, sendPasswordResetCode };
+module.exports = { updatePassword, sendPasswordResetCode, sendOTP };
