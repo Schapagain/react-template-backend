@@ -26,7 +26,6 @@ router.post('/',
             result = {
                 'message':'User created successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','users',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
@@ -91,7 +90,6 @@ router.get('/',
 
             result.data = result.data.map(user => ({
                 ...user,
-                'moreInfo:': path.join(req.get('host'),'api','users',user.id.toString())
             }))
 
             res.status(200).json(result);
