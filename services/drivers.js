@@ -1,7 +1,7 @@
 
 const auth = require('../middlewares/auth');
 const path = require('path');
-const { getRandomId } = require('../utils');
+const { getRandomId, getRandomCode } = require('../utils');
 const fs = require('fs');
 const { Login, Driver, Distributor, sequelize, Vehicle } = require('../models');
 const { DRIVER } = require('../utils/roles');
@@ -45,8 +45,15 @@ async function postDriver(driver) {
 
         const result = await sequelize.transaction( async t => {
             driver = await distributor.createDriver(driver,{transaction:t});
-            const { id:driverId, phone, email, name } = driver;
-            const {id: loginId} = await driver.createLogin({phone,email,name,driverId},{transaction:t});
+
+             // Generate an OTP
+            // [TODO] send this code via text   
+            const code_length = 6;
+            const otpCode = getRandomCode(code_length)
+            console.log('OTP for driver: ',otpCode)
+
+            const { id:driverId, phone, name } = driver;
+            const {id: loginId} = await driver.createLogin({phone,name,driverId,otpCode},{transaction:t});
             await Driver.update({loginId},{where:{id:driverId},transaction:t});
             return { id:driverId, name, phone };
         });
@@ -74,20 +81,18 @@ async function getDrivers(distributorId) {
         }else{
             allDrivers = await distributor.getDrivers({include: Vehicle});
         }
-
         allDrivers = await Promise.all(allDrivers.map(async driver => {
-            const {id, distributorId, name, phone, Vehicles} = driver
+            const {id, distributorId, name, phone, Vehicle} = driver
             return {
                 id, 
                 distributorId, 
                 name,
                 phone,
-                Vehicles: Vehicles.map(vehicle => ({
-                        id,
-                        model: vehicle.company.concat(' ',vehicle.model,', ', vehicle.modelYear), 
-                        licensePlate: vehicle.licensePlate
-                    })
-                )
+                Vehicle: Vehicle? {
+                    id: Vehicle.id,
+                    model: Vehicle.company.concat(' ',Vehicle.model,', ', Vehicle.modelYear), 
+                    licensePlate: Vehicle.licensePlate
+                } : null,
             }
         }));
 
@@ -100,18 +105,22 @@ async function getDrivers(distributorId) {
 
 async function getDriver(distributorId,id) {
     try {
-
-        const distributor = await Distributor.findOne({where:{id:distributorId}});
-
-        if (!distributor)
-            throw new NotAuthorizedError('distributor with that token does not exist'); 
-        
         let driver;
-        if (distributor.isSuperuser)
-            driver = await Driver.findAll({where:{id}});
-        else
-            driver = await distributor.getDrivers({where:{id}});
+        // View their own info
+        if (distributorId == id){
+            driver = await Driver.findAll({where:{id},include: Vehicle});
+        }else{
+            const distributor = await Distributor.findOne({where:{id:distributorId}});
+
+            if (!distributor)
+                throw new NotAuthorizedError('distributor with that token does not exist'); 
             
+            if (distributor.isSuperuser)
+                driver = await Driver.findAll({where:{id},include: Vehicle});
+            else
+                driver = await distributor.getDrivers({where:{id}, include: Vehicle});
+        }
+
         if (!driver.length)
             throw new NotFoundError('driver');
         
@@ -119,7 +128,7 @@ async function getDriver(distributorId,id) {
 
     }catch(err){
         throw await getError(err);
-    }
+    } 
 }
 
 
