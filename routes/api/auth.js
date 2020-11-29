@@ -9,6 +9,7 @@ const formParser = require('../../middlewares/formParser');
 const { getError, NotAuthorizedError } = require('../../utils/errors');
 const { DRIVER, DISTRIBUTOR, USER } = require('../../utils/roles');
 const distributors = require('../../services/distributors');
+const { sendOTP } = require('../../services/password');
 
 /**
  * Route to get login code using phone number
@@ -23,35 +24,14 @@ router.post('/get_code',
     formParser,
     async (req,res) => {
 
-        let { phone } = req.body;
-        // Check if phone number is given
-        if (!phone){
-            return res.status(400).json({
-                error: "Please provide phone number"
-            })
-        }
+        let { phone, distributorId } = req.body;
 
         try{
-            // Check if the user exists
-            let result = await Login.findOne({where:{phone}});
-            if (!result) {
-                return res.status(400).json({
-                    error: "Phone number is not registered"
-                })
-            } 
-            
-            // Generate random six-digit code
-            const otpCode = getRandomCode(6);
-
-            // store code to the databse
-            Login.update({...result.dataValues,otpCode},{where:{phone}})
-            
-            //[TODO] send code via text
-            console.log('OTP code for user: ', otpCode);
+            await sendOTP(distributorId,phone);
 
             // send code through the API
             return res.status(200).json({
-                message: "OTP code has been sent!",
+                message: "If phone is registered, an OTP code has been sent!",
             })
         }
         catch(err){
@@ -90,10 +70,12 @@ router.post('/',
             if (!result)
                 throw new NotAuthorizedError('')
 
+            let { id, password:passwordHash, driverId, distributorId, userId } = result;
             // Match password if logging in through email
             if (!phone){
-                var { id, password:passwordHash, driverId, distributorId, userId } = result;
-
+                // if logging in through email, remove the driver role
+                delete result.driverId;
+                
                 if (!passwordHash) return res.status(400).json({error:"Password has not been set."})
                 // Compare username/password combination
                 const credentialsMatch = await bcrypt.compare(password,passwordHash);
@@ -105,6 +87,9 @@ router.post('/',
 
             // Get all roles for the user
             let roles = getRoles(result);
+
+            // set id to appropriate model id
+            id = distributorId || driverId || userId;
 
             const user = phone? { id, phone, roles } : { id, email, roles }
             const token = getAuthToken(id, roles[0]);
