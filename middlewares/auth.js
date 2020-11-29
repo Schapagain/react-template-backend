@@ -33,7 +33,7 @@ const auth = async (req,res,next) => {
             role: tokenRole
         }
         console.log('Request using token with id:',tokenId,'role:',tokenRole)
-        if (tokenRole != ADMIN && req.params.id){
+        if (tokenRole != ADMIN && req.params.id && req.params.id != tokenId){
             if (isNaN(req.params.id))
                 throw new ValidationError('id parameter')
 
@@ -46,7 +46,7 @@ const auth = async (req,res,next) => {
             }else{
                 result = await model.findOne({where:{distributorId:tokenId,id:Number(req.params.id)}}) 
             }
-            if (!result && req.params.id !== tokenId) 
+            if (!result) 
                 throw new NotAuthorizedError('Private route');
         }
         next();
