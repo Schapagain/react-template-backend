@@ -25,11 +25,6 @@ router.post('/',
             const vehicle = req.body;
             const distributorId = req.auth.id;
             let result = await postVehicle({...vehicle,distributorId});
-
-            result = {
-                ...result,
-                'moreInfo': path.join(req.get('host'),'api','vehicles',result.id.toString())
-            }
             return res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({ error : {
@@ -92,7 +87,6 @@ router.get('/',
             let result = await getVehicles(distributorId);
             result.data = result.data.map(vehicle => ({
                 ...vehicle,
-                'moreInfo:': path.join(req.get('host'),'api','vehicles',vehicle.id.toString())
             }))
 
             res.status(200).json(result);
@@ -156,7 +150,6 @@ router.patch('/:id',
             result = {
                 'message' : 'Vehicle updated successfully',
                 ...result,
-                'moreInfo:': path.join(req.get('host'),'api','vehicles',result.id.toString())
             }
             res.status(201).json(result);
         }catch(err){
