@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postVehicle, getVehicle, getVehicles, updateVehicle, deleteVehicle, disableVehicle } = require('../../services/vehicles');
+const { postVehicle, getVehicle, getVehicles, updateVehicle, getAssignedDrivers, disableVehicle } = require('../../services/vehicles');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 
@@ -65,6 +65,39 @@ async (req,res) => {
         res.status(200).json(result);
     }catch(err){
         res.status(err.httpCode || 500 ).json({ error: err.message })
+    }
+}
+);
+
+/**
+ * Route to get driver info assigned to a vehicle
+ * @name    api/vehicles/:id/drivers
+ * @method  GET
+ * @access  Admin/Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/:id/drivers', 
+auth,
+async (req,res) => {
+    try{
+        const id = req.params.id;
+        if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
+
+        // Get info from database
+        const result = await getAssignedDrivers(id);
+
+        // Convert filenames to API endpoints
+        expectedFiles.forEach(fieldName => {
+            const fileName = result.data[0][fieldName];
+            result.data[0][fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
+        })
+
+        res.status(200).json(result);
+    }catch(err){
+        res.status(err.httpCode || 500).json({ error: err.message })
     }
 }
 );
