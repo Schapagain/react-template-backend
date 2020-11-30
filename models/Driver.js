@@ -21,6 +21,18 @@ module.exports = function( sequelize, DataTypes){
             type: DataTypes.INTEGER,
             field: 'login_id'
         },
+        vehicleId: {
+            type: DataTypes.STRING,
+            field: 'vehicle_id',
+            foreignKey: true,
+            validate: {
+                    async vehicleExists(id){
+                        const vehicle = await sequelize.models.Vehicle.findOne({where: {distributorId: this.distributorId, id}})
+                        if (!vehicle)
+                            throw new NotFoundError('vehicle')
+                }
+            }
+        },
         licenseDocument: {
             type: DataTypes.STRING,
             allowNull: false,
