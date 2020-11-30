@@ -9,7 +9,7 @@ const fs = require('fs');
 const { getError, ValidationError } = require('../../utils/errors');
 const { sendPasswordResetCode, updatePassword } = require('../../services/password');
 const validateNewPassword = require('../../middlewares/validateNewPassword');
-
+const { ADMIN } = require('../../utils/roles');
 /**
  * Route to add a new distributor
  * @name    api/distributors
@@ -21,11 +21,45 @@ const validateNewPassword = require('../../middlewares/validateNewPassword');
  * @param   {callback} middleware - Handle HTTP response
 */
 router.post('/', 
+    auth,
     formParser,
     async (req, res) => {
         try{
+            const adminId = req.auth.role === ADMIN ? (req.body.adminId || req.auth.id) : req.auth.id;
             const distributor = req.body;
-            let result = await postDistributor(distributor);
+            let result = await postDistributor({...distributor,adminId});
+            result = {
+                'message':'Distributor created successfully',
+                ...result,
+            }
+            res.status(201).json(result);
+        }catch(err){
+            res.status(err.httpCode || 500).json({
+                error : {
+                    field: err.field,
+                    msg: err.message
+                    }
+                })
+        }
+    });
+
+/**
+ * Route to signup as an independent distributor
+ * @name    api/distributors/signup
+ * @method  POST
+ * @access  Public
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Form Parser  
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/signup', 
+    formParser,
+    async (req, res) => {
+        try{
+            const adminId = 1;
+            const distributor = req.body;
+            let result = await postDistributor({...distributor,adminId});
             result = {
                 'message':'Distributor created successfully',
                 ...result,
