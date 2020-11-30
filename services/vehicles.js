@@ -57,11 +57,34 @@ async function getVehicle(distributorId,id) {
             vehicle = await Vehicle.findOne({where:{id}});
         else
             vehicle = await distributor.getVehicles({where:{id},include: Driver});
+        
+        if (!vehicle)
+            throw new NotFoundError('vehicle');
+
         return {count: 1, data: vehicle}
     }catch(err){
         throw await getError(err);
     }
 }
+
+async function getAssignedDrivers(vehicleId) {
+    try {
+
+        if (!vehicleId)
+            throw new ValidationError('driver Id');
+
+        const vehicle = await Vehicle.findOne({where:{id:vehicleId}});
+
+        if (!vehicle)
+            throw new NotAuthorizedError('vehicle');
+        let allDrivers = await Driver.findAll({where:{vehicleId}});
+
+        return {count: allDrivers.length, data: allDrivers};
+    }catch(err){
+        throw await getError(err);
+    }
+}
+
 
 async function getVehicles(distributorId) {
     try {
@@ -174,4 +197,4 @@ async function updateVehicle(vehicle) {
     
 }
 
-module.exports = { postVehicle, getVehicle, getVehicles, updateVehicle, disableVehicle, deleteVehicle };
+module.exports = { postVehicle, getVehicle, getVehicles, updateVehicle, disableVehicle, deleteVehicle, getAssignedDrivers };
