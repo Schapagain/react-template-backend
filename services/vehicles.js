@@ -29,13 +29,7 @@ async function postVehicle(vehicle) {
             allFileNames.push(fileName);
         })
 
-        // Adding distributor's driver model as the default driver
-        // [TODO] replace this later
-        const login = await distributor.getLogin();
-        console.log(login);
-        const { driverId } = login;
-        vehicle = await distributor.createVehicle({ ...vehicle,driverId});
-
+        vehicle = await distributor.createVehicle(vehicle);
         const { id, distributorId, model, modelYear, company } = vehicle;
         return { distributorId, id, model: [company,model,modelYear].join(' ')};
     }catch(err){
