@@ -91,9 +91,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
-| / | Add a distributor | POST | Public | <ins>Required</ins>: adminId, (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name, moreInfo } | A link is sent via email to set a new password |
+| / | Add a distributor | POST | Admin/Distributor | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name } | A link is sent via email to set a new password <br/><br/> Admin can pass in an optional 'adminId' (defaults to 1) field to add resellers under specefic distributors |
+| /signup | Signup as an independent distributor | POST | Public | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name } | A link is sent via email to set a new password |
 | /:id | View distributor info | GET | Private | ----- | Distributor | ----- |
-| /:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name, moreInfo } | ----- |
+| /:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name } | ----- |
 | /:id | Delete a distributor | DELETE | Private | ----- | { message, id, email, name } | ----- |
 | /forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
 | /set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
@@ -104,9 +105,11 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
-| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name, moreInfo } | ----- |
-| /:id | View driver info | GET | Private | ----- | Driver | ----- |
-| /:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone, moreInfo } | ----- |
+| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name } | ----- |
+| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: distributorId, phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name } | OTP is sent via text |
+| /:id | View driver info | GET | Private | ----- | Driver | OTP is sent via text |
+| /:id/vehicles | Get assigned vehicle info | GET | Private | ----- | Driver | ----- |
+| /:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone } | ----- |
 | /:id | Delete a driver | DELETE | Private | ----- | { message, id, phone, name } | ----- |
 
 ### Vehicle handling
@@ -115,9 +118,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
-| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo, moreInfo } | ----- |
+| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo } | ----- |
 | /:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
-| /:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo, moreInfo } | ----- |
+| /:id/drivers | View assigned driver info | GET | Distributor | ----- | Vehicle | ----- |
+| /:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo } | ----- |
 | /:id | Delete a vehicle | DELETE | Distributor | ----- | { message, id } | ----- |
 
 ### User handling
@@ -126,9 +130,9 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all users | GET | Distributor | ----- | [ User ]| ----- |
-| / | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone , moreInfo } | Account activation link is sent via text |
+| / | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone  } | Account activation link is sent via text |
 | /:id | View user info | GET | Private | ----- | User | ----- |
-| /:id | Update user info | PATCH | Private | ----- | { message, id, name, phone , moreInfo } | ----- |
+| /:id | Update user info | PATCH | Private | ----- | { message, id, name, phone  } | ----- |
 | /:id | Delete a user | DELETE | Private | ----- | { message, id, name, phone } | ----- |
 
 
@@ -143,7 +147,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
     * **Payload**: 
         * required: { name, email | phone | mobile }
         * optional: { jobPosition, title }
-    * **Return**: { message, id, name, moreInfo }
+    * **Return**: { message, id, name }
 
 2. View all contacts
     * **Endpoint**: /api/contacts
@@ -164,7 +168,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
     * **Method**: PATCH
     * **Access**: distributor
     * **Header**: Authorization: token
-    * **Return**: { message, id, name, moreInfo }
+    * **Return**: { message, id, name }
 
 5. Delete a contact
     * **Endpoint**: /api/contacts/:id
