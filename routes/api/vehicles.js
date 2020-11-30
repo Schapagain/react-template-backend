@@ -105,7 +105,7 @@ async (req,res) => {
 /**
  * Route to get all vehicles
  * @name    api/vehicles
- * @method  DELETE
+ * @method  GET
  * @access  Admin/Distributor
  * @inner
  * @param   {string} path
