@@ -131,6 +131,7 @@ async function getDrivers(distributorId) {
         }else{
             allDrivers = await distributor.getDrivers({include: Vehicle});
         }
+
         allDrivers = await Promise.all(allDrivers.map(async driver => {
             const {id, distributorId, name, phone, Vehicle} = driver
             return {
@@ -271,6 +272,11 @@ async function updateDriver(driver) {
         driver.distributorId = result.distributorId;
 
         result = await Driver.update(driver,{where:{id},returning:true,plain:true});
+
+        // Update the vehicle if new assigned
+        if (driver.vehicleId)
+            Vehicle.update({driver_id: driver.id},{where:{id:driver.vehicleId}});
+
         const { phone, name } = result[1].dataValues;
         return {id, name, phone}
     }catch(err){
