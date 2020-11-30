@@ -111,12 +111,12 @@ async function getVehicles(distributorId) {
                 distributorId, 
                 model: company.concat(' ',model,', ', modelYear), 
                 licensePlate, 
-                driver:{
+                driver: Driver? {
                     id: Driver.id,
                     name: Driver.name,
                     phone: Driver.phone,
                     licenseDocument: Driver.licenseDocument,
-                }
+                } : null
             }
         }));
         return {count: allVehicles.length, data: allVehicles};
