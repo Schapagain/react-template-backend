@@ -86,7 +86,7 @@ module.exports = function(sequelize, DataTypes){
 
     Vehicle.associate = models => {
         Vehicle.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
-        Vehicle.belongsTo(models.Driver, {foreignKey: 'driver_id'});
+        Vehicle.hasOne(models.Driver, {foreignKey: 'vehicle_id'});
     }
 
     return Vehicle;
