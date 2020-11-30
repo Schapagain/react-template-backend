@@ -1,5 +1,4 @@
-
-const { allowedLanguages, allowedCountries } = require('../utils');
+const allCountries = require('iso3166-2-db');
 const { ValidationError } = require('../utils/errors');
 
 const validateCircle = circle => {
@@ -127,15 +126,15 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING, 
             allowNull: false,
             validate: {
-                isIn: [allowedCountries]
+                isValidCountry(name){
+                    if (!allCountries.findCountryByName(name))
+                        throw new ValidationError('country name','does not exist on Earth');
+                },
             }
         },
         language: {
             type: DataTypes.STRING,
             allowNull: false,
-            validate: {
-                isIn: [allowedLanguages]
-            }
         },
         email: {
             type: DataTypes.STRING,
