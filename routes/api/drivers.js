@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postDriver, getDrivers, getDriver, updateDriver, disableDriver } = require('../../services/drivers');
+const { postDriver, getDrivers, getDriver, updateDriver, disableDriver, getAssignedVehicles, registerDriver } = require('../../services/drivers');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
@@ -10,8 +10,8 @@ const { ValidationError } = require('../../utils/errors');
 
 
 /**
- * Route to add a new driver
- * @name    api/drivers/independent
+ * Route for an independent driver to signup
+ * @name    api/drivers/signup
  * @method  POST
  * @access  Public
  * @inner
@@ -19,12 +19,12 @@ const { ValidationError } = require('../../utils/errors');
  * @param   {callback} middleware - Form Parser
  * @param   {callback} middleware - Handle HTTP response
 */
-router.post('/independent', 
+router.post('/signup', 
     formParser,
     async (req, res) => {
         try{
             const driver = req.body;
-            let result = await postDriver(driver);
+            let result = await registerDriver(driver);
             result = {
                 message: 'Driver added successfully',
                 ...result,
@@ -92,11 +92,42 @@ async (req,res) => {
     try{
         const distributorId = req.auth.id;
         const id = req.params.id;
-        if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
         // Get info from database
         const result = await getDriver(distributorId,id);
-        if(!result) return res.json({error:'No driver found'})
+
+        // Convert filenames to API endpoints
+        expectedFiles.forEach(fieldName => {
+            const fileName = result.data[0][fieldName];
+            result.data[0][fieldName] = fileName ? path.join(req.get('host'),req.originalUrl,'files',fileName) : null
+        })
+
+        res.status(200).json(result);
+    }catch(err){
+        res.status(err.httpCode || 500).json({ error: err.message })
+    }
+}
+);
+
+/**
+ * Route to get vehicle info assigned to a driver
+ * @name    api/drivers/:id
+ * @method  GET
+ * @access  Private
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/:id/vehicles', 
+auth,
+async (req,res) => {
+    try{
+        const id = req.params.id;
+        if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
+
+        // Get info from database
+        const result = await getAssignedVehicles(id);
 
         // Convert filenames to API endpoints
         expectedFiles.forEach(fieldName => {
