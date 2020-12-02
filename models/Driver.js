@@ -1,4 +1,4 @@
-const { NotUniqueError, ValidationError} = require('../utils/errors');
+const { NotUniqueError, ValidationError, NotFoundError} = require('../utils/errors');
 
 module.exports = function( sequelize, DataTypes){
     const Driver = sequelize.define('Driver', {
