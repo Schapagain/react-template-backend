@@ -1,13 +1,8 @@
 
 const auth = require('../middlewares/auth');
-const path = require('path');
-const { v4: uuid} = require('uuid');
-const fs = require('fs');
 const { Package, Login, Driver, Distributor } = require('../models');
 const { DRIVER } = require('../utils/roles');
-const { getRandomId } = require('../utils');
 const { getError, ValidationError,NotFoundError } = require('../utils/errors');
-const { expectedFiles } = require('../utils');
 
 async function postPackage(package) {
 
