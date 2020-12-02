@@ -54,6 +54,51 @@ async function postUser(user) {
     }
 }
 
+async function registerUser(user) {
+    try{
+        const { appId } = user;
+        if (!appId)
+            throw new ValidationError('distributorId');
+
+        const distributor = await Distributor.findOne({where:{appId}});
+        if (!distributor)
+            throw new NotFoundError('app'); 
+
+        // Extract files
+        allFiles = expectedFiles.map(fieldName => user[fieldName]);
+
+        // Replace files with random filenames before posting to database
+        allFileNames = [];
+        expectedFiles.forEach(fieldName => {
+            const file = user[fieldName];
+            const fileName = file? getRandomId().concat(path.extname(file.name)) : null;
+            user[fieldName] = fileName;
+            allFileNames.push(fileName);
+        })
+
+        const result = await sequelize.transaction( async t => {
+
+            const reseller = await distributor.createUser(user,{transaction:t});
+            // Generate an OTP
+            // [TODO] send this code via text   
+            const code_length = 6;
+            const otpCode = getRandomCode(code_length)
+            console.log('OTP for user: ',otpCode)
+
+            const { id:userId, phone,name } = user;
+            const {id: loginId} = await user.createLogin({phone,name,userId,distributorId: distributor.id,otpCode},{transaction:t});
+            await User.update({loginId},{where:{id:userId},transaction:t});
+            return { id:userId, name, phone };
+        });
+
+        await _saveFiles(allFiles,allFileNames);
+        return result;
+    }catch(err){
+        throw await getError(err);
+    }
+}
+
+
 async function _saveFiles(files, fileNames) {
     const filePath = path.resolve('.','uploads');
     const writeFile = fs.promises.writeFile;
@@ -214,4 +259,4 @@ async function updateUser(user) {
     
 } 
 
-module.exports = { postUser, getUsers, getUser, updateUser, disableUser, deleteUser };
+module.exports = { postUser, registerUser, getUsers, getUser, updateUser, disableUser, deleteUser };
