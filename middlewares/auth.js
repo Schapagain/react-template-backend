@@ -4,18 +4,18 @@ const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
 const { Distributor, Driver, User, Vehicle, Country, Package } = require('../models');
-const { ADMIN } = require('../utils/roles');
+const { ADMIN, DISTRIBUTOR, DRIVER } = require('../utils/roles');
 
 // Acess controls based on roles remains to be implemented here
 const auth = async (req,res,next) => {
 
     const modelMap = {
-        'drivers' : Driver,
-        'distributors' : Distributor,
-        'users' : User,
-        'vehicles' : Vehicle,
-        'countries' : Country,
-        'packages' : Package
+        'drivers' : [Driver,new Set([DISTRIBUTOR])],
+        'distributors' : [Distributor,new Set([DISTRIBUTOR])],
+        'users' : [User,new Set([DISTRIBUTOR])],
+        'vehicles' : [Vehicle,new Set([DRIVER,DISTRIBUTOR])],
+        'countries' : [Country,new Set([])],
+        'packages' : [Package,new Set([DISTRIBUTOR])],
     }
 
     try{
@@ -33,17 +33,28 @@ const auth = async (req,res,next) => {
             id: tokenId,
             role: tokenRole
         }
+
+        // [LOG] 
         console.log('Request using token with id:',tokenId,'role:',tokenRole)
+
+        // Allow admins unrestricted access
+        // If an id param is passed and the user is accessing their own data, allow access
+        // if not, check if the user is accessing their childrens' data
+        // If neither, throw unauthorized
         if (tokenRole != ADMIN && req.params.id && req.params.id != tokenId){
             if (isNaN(req.params.id))
                 throw new ValidationError('id parameter')
 
             // Check for permission in case of private route
             const apiBaseString = req.baseUrl.split('/').pop();
-            const model = modelMap[apiBaseString];
+            const model = modelMap[apiBaseString][0];
+            const allowedRoles = modelMap[apiBaseString][1]
+            if (!allowedRoles.has(tokenRole))
+                throw new NotAuthorizedError('Restricted route');
+
             let result;
             if (apiBaseString === 'distributors'){
-                result = await model.findOne({where:{adminId:tokenId,id:Number(req.params.id)}})
+                result = await model.findOne({where:{parentId:tokenId,id:Number(req.params.id)}})
             }else{
                 result = await model.findOne({where:{distributorId:tokenId,id:Number(req.params.id)}}) 
             }
