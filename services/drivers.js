@@ -68,13 +68,13 @@ async function postDriver(driver) {
 
 async function registerDriver(driver) {
     try{
-        const { distributorId } = driver;
-        if (!distributorId)
-            throw new ValidationError('distributorId');
+        const { appId } = driver;
+        if (!appId)
+            throw new ValidationError('appId',"not found");
 
-        const distributor = await Distributor.findOne({where:{id:driver.distributorId}});
+        const distributor = await Distributor.findOne({where:{appId}});
         if (!distributor)
-            throw new NotFoundError('distributor'); 
+            throw new NotFoundError('app'); 
 
         // Extract files
         allFiles = expectedFiles.map(fieldName => driver[fieldName]);
@@ -253,29 +253,16 @@ function deleteFiles(user) {
 
 async function updateDriver(driver) {
     try{
-        const { id, distributorId } = driver;
-        if (!id || !distributorId)
-            throw new ValidationError('distributor with that token/id does not exist');
-        
-        const distributor = await Distributor.findOne({where:{id:distributorId}});
-        if (!distributor)
-            throw new NotAuthorizedError('distributor with that token does not exist'); 
-
-        let result;
-        if (distributor.isSuperuser)
-            result = await Driver.findOne({where:{id}});
-        else
-            result = await Driver.findOne({where:{distributorId,id}});
+        const { id } = driver;
+        let result = await Driver.findOne({where:{id}});
         if (!result)
             throw new NotFoundError('driver');
-        // Keep the distributorId for the driver unchanged
-        driver.distributorId = result.distributorId;
 
-        result = await Driver.update(driver,{where:{id},returning:true,plain:true});
-
-        // Update the vehicle if new assigned
-        if (driver.vehicleId)
-            Vehicle.update({driver_id: driver.id},{where:{id:driver.vehicleId}});
+        const newDriver = {
+            ...driver,
+            distributorId: result.distributorId 
+        };
+        result = await Driver.update(newDriver,{where:{id},returning:true,plain:true});
 
         const { phone, name } = result[1].dataValues;
         return {id, name, phone}
