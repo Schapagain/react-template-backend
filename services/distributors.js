@@ -9,8 +9,8 @@ const { expectedFiles } = require('../utils');
 
 async function postDistributor(distributor) {
 
-    // Check if the given adminId exists
-    const admin = await Distributor.findOne({where:{id:distributor.adminId}});
+    // Check if the given parentId exists
+    const admin = await Distributor.findOne({where:{id:distributor.parentId}});
     if (!admin)
         throw new NotFoundError('admin');
 
@@ -91,15 +91,15 @@ function _deleteFiles(user) {
     })
 }
 
-async function getDistributor(adminId,id) {
+async function getDistributor(parentId,id) {
     try {
 
         let distributor;
         // View own info
-        if (adminId == id){
-            distributor = await Distributor.findAll({where:{id:adminId}}); 
+        if (parentId == id){
+            distributor = await Distributor.findAll({where:{id:parentId}}); 
         }else{
-            const admin = await Distributor.findAll({where:{id:adminId}});
+            const admin = await Distributor.findAll({where:{id:parentId}});
             if (!admin)
                 throw new NotAuthorizedError(' admin with that token does not exist!'); 
 
@@ -119,9 +119,9 @@ async function getDistributor(adminId,id) {
     }
 }
 
-async function getDistributors(adminId) {
+async function getDistributors(parentId) {
     try {
-        const admin = await Distributor.findOne({where: {id:adminId}});
+        const admin = await Distributor.findOne({where: {id:parentId}});
         if (!admin)
             throw new NotAuthorizedError(' admin with that token does not exist!'); 
 
@@ -138,22 +138,22 @@ async function getDistributors(adminId) {
             allDistributors = await admin.getDistributors();
         }
         return {count: allDistributors.length, data: allDistributors.map(distributor => {
-            const {id, adminId, area, email, name} = distributor
-            return {id, adminId, area, email, name}
+            const {id, parentId, area, email, name} = distributor
+            return {id, parentId, area, email, name}
         })}
     }catch(err){
         throw await getError(err);
     }
 }
 
-async function deleteDistributor(adminId,id) {
+async function deleteDistributor(parentId,id) {
 
     try{
-        const result = await Distributor.findOne({where:{adminId,id}});
+        const result = await Distributor.findOne({where:{parentId,id}});
         if (!result) return false;
     
         _deleteFiles(result.dataValues);
-        Distributor.destroy({where:{adminId,id},force: true})
+        Distributor.destroy({where:{parentId,id},force: true})
         Login.destroy({where:{id},force:true});
         Driver.destroy({where:{id},force:true});
 
@@ -168,17 +168,17 @@ async function deleteDistributor(adminId,id) {
 async function disableDistributor(distributor) {
 
     try{
-        const { id, adminId } = distributor;
-        if (!id || !adminId) throw new ValidationError('id or adminId')
+        const { id, parentId } = distributor;
+        if (!id || !parentId) throw new ValidationError('id or parentId')
 
-        const admin = await Distributor.findOne({where: {adminId}});
+        const admin = await Distributor.findOne({where: {parentId}});
         if (!admin)
             throw new NotAuthorizedError('admin with that token does not exist!'); 
 
-        const result = await Distributor.findOne({where:{adminId,id}});
+        const result = await Distributor.findOne({where:{parentId,id}});
         if (!result) throw new NotFoundError('distributor')
 
-        Distributor.destroy({where:{adminId,id}})
+        Distributor.destroy({where:{parentId,id}})
         Login.destroy({where:{id}});
         Driver.destroy({where:{id}})
 
@@ -192,17 +192,17 @@ async function disableDistributor(distributor) {
 
 async function updateDistributor(distributor) {
     try{
-        const { id, adminId } = distributor;
-        if (!id || !adminId) throw new ValidationError('id or adminId')
+        const { id, parentId } = distributor;
+        if (!id || !parentId) throw new ValidationError('id or parentId')
 
-        const admin = await Distributor.findOne({where: {id:adminId}});
+        const admin = await Distributor.findOne({where: {id:parentId}});
         if (!admin)
             throw new NotAuthorizedError(' admin with that token does not exist!'); 
         let result;
         if (admin.isSuperuser){
             result = await Distributor.findOne({where:{id}});
         }else{
-            result = await Distributor.findOne({where:{adminId,id}}); 
+            result = await Distributor.findOne({where:{parentId,id}}); 
         }
 
         if (!result) throw new NotFoundError('distributor');
