@@ -91,11 +91,11 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
-| / | Add a distributor | POST | Admin/Distributor | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name } | A link is sent via email to set a new password <br/><br/> Admin can pass in an optional 'adminId' (defaults to 1) field to add resellers under specefic distributors |
-| /signup | Signup as an independent distributor | POST | Public | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { message, id, email, name } | A link is sent via email to set a new password |
+| / | Add a distributor | POST | Admin/Distributor | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { id, email, name } | A link is sent via email to set a new password <br/><br/> Admin can pass in an optional 'parentId' (defaults to 1) field to add resellers under specefic distributors |
+| /signup | Signup as an independent distributor | POST | Public | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { id, email, name } | A link is sent via email to set a new password |
 | /:id | View distributor info | GET | Private | ----- | Distributor | ----- |
-| /:id | Update distributor info | PATCH | Private | ----- | { message, id, email, name } | ----- |
-| /:id | Delete a distributor | DELETE | Private | ----- | { message, id, email, name } | ----- |
+| /:id | Update distributor info | PATCH | Private | ----- | { id, email, name } | ----- |
+| /:id | Delete a distributor | DELETE | Private | ----- | { id, email, name } | ----- |
 | /forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
 | /set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
 
@@ -105,12 +105,12 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
-| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name } | ----- |
-| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: distributorId, phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { message, id , name } | OTP is sent via text |
-| /:id | View driver info | GET | Private | ----- | Driver | OTP is sent via text |
+| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
+| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: appId , phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
+| /:id | View driver info | GET | Private | ----- | Driver | ----- |
 | /:id/vehicles | Get assigned vehicle info | GET | Private | ----- | Driver | ----- |
-| /:id | Update driver info | PATCH | Private | ----- | { message, id, name, phone } | ----- |
-| /:id | Delete a driver | DELETE | Private | ----- | { message, id, phone, name } | ----- |
+| /:id | Update driver info | PATCH | Private | ----- | { id, name, phone } | ----- |
+| /:id | Delete a driver | DELETE | Private | ----- | { id, phone, name } | ----- |
 
 ### Vehicle handling
 > url prefix: /api/vehicles
@@ -118,11 +118,11 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
-| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { message, id, model, driverInfo } | ----- |
+| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { id, model, driverInfo } | ----- |
 | /:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
 | /:id/drivers | View assigned driver info | GET | Distributor | ----- | Vehicle | ----- |
-| /:id | Update vehicle info | PATCH | Distributor | ----- | { message, id, model, licensePlate, driver, driverInfo } | ----- |
-| /:id | Delete a vehicle | DELETE | Distributor | ----- | { message, id } | ----- |
+| /:id | Update vehicle info | PATCH | Distributor | ----- | { id, model, licensePlate, driver, driverInfo } | ----- |
+| /:id | Delete a vehicle | DELETE | Distributor | ----- | { id } | ----- |
 
 ### User handling
 > url prefix: /api/users
@@ -130,11 +130,14 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all users | GET | Distributor | ----- | [ User ]| ----- |
-| / | Add a user | POST | Public | name, phone, distributorId | { message, id, name, phone  } | Account activation link is sent via text |
+| / | Add a user | POST | Distributor | name, phone | { id, name, phone  } | OTP is sent via text |
+| /signup | Signup as a user | POST | Public | name, phone, appId | { id, name, phone  } | OTP is sent via text |
 | /:id | View user info | GET | Private | ----- | User | ----- |
-| /:id | Update user info | PATCH | Private | ----- | { message, id, name, phone  } | ----- |
-| /:id | Delete a user | DELETE | Private | ----- | { message, id, name, phone } | ----- |
+| /:id | Update user info | PATCH | Private | ----- | { id, name, phone  } | ----- |
+| /:id | Delete a user | DELETE | Private | ----- | { id, name, phone } | ----- |
 
+
+<br/>
 
 > Contacts route is not up to date yet. Working on it.
 ### Contacts handling
