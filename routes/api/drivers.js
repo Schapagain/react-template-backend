@@ -156,8 +156,8 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.auth.id;
-            let result = await getDrivers(adminId);
+            const distributorId = req.auth.id;
+            let result = await getDrivers(distributorId);
 
             res.status(200).json(result);
         }catch(err){
@@ -180,11 +180,11 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.auth.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
-            let result = await disableDriver(adminId,id);
+            let result = await disableDriver(distributorId,id);
             if(!result) {
                 return res.status(400).json({
                     error: "Driver not found"
@@ -217,12 +217,11 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const distributorId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
             // Get info from database
-            let result = await updateDriver({distributorId,...req.body,id});
+            let result = await updateDriver({...req.body,id});
             if(!result) return res.json({error:'No driver found'})
             result = {
                 'message' : 'Driver updated successfully',
