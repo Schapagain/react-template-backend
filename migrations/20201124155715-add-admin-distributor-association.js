@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.addColumn(
           'distributors',
-          'admin_id',
+          'parent_id',
           {
             type: Sequelize.INTEGER,
             references: {
@@ -20,7 +20,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     return queryInterface.removeColumn(
           'distributors',
-          'admin_id'
+          'parent_id'
         );
   }
 };
