@@ -12,7 +12,7 @@ const { expectedFiles } = require('../utils');
 async function postVehicle(vehicle) {
 
     try{
-        // Check if the given adminId exists
+        // Check if the given distributor exists
         const distributor = await Distributor.findOne({where:{id:vehicle.distributorId}});
         if (!distributor)
             throw new NotFoundError('distributor');
