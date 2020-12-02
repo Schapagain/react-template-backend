@@ -8,16 +8,49 @@ const { expectedFiles } = require('../../utils');
 const fs = require('fs');
 
 /**
- * Route to add a new user
- * @name    api/users
+ * Route for an independent user to signup
+ * @name    api/users/signup
  * @method  POST
  * @access  Public
  * @inner
  * @param   {string} path
+ * @param   {callback} middleware - Form Parser
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/signup', 
+    formParser,
+    async (req, res) => {
+        try{
+            const driver = req.body;
+            let result = await registerDriver(driver);
+            result = {
+                message: 'Driver added successfully',
+                ...result,
+            }
+            res.status(201).json(result)
+        }catch(err){
+            res.status(err.httpCode || 500).json({
+                error : {
+                    field: err.field,
+                    msg: err.message
+                    }
+                })
+        }
+    });
+
+/**
+ * Route to add a new user
+ * @name    api/users
+ * @method  POST
+ * @access  Distributor
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate
  * @param   {callback} middleware - Form Parser  
  * @param   {callback} middleware - Handle HTTP response
 */
 router.post('/', 
+    auth,
     formParser,
     async (req, res) => {
         try{
