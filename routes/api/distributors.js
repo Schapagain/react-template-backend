@@ -25,9 +25,9 @@ router.post('/',
     formParser,
     async (req, res) => {
         try{
-            const adminId = req.auth.role === ADMIN ? (req.body.adminId || req.auth.id) : req.auth.id;
+            const parentId = req.auth.role === ADMIN ? (req.body.parentId || req.auth.id) : req.auth.id;
             const distributor = req.body;
-            let result = await postDistributor({...distributor,adminId});
+            let result = await postDistributor({...distributor,parentId});
             result = {
                 'message':'Distributor created successfully',
                 ...result,
@@ -57,9 +57,9 @@ router.post('/signup',
     formParser,
     async (req, res) => {
         try{
-            const adminId = 1;
+            const parentId = 1;
             const distributor = req.body;
-            let result = await postDistributor({...distributor,adminId});
+            let result = await postDistributor({...distributor,parentId});
             result = {
                 'message':'Distributor created successfully',
                 ...result,
@@ -88,12 +88,12 @@ router.get('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.auth.id;
+            const parentId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
 
             // Get info from database
-            const result = await getDistributor(adminId,id);
+            const result = await getDistributor(parentId,id);
             if(!result) return res.json({error:'No distributor found'})
 
             // Convert filenames to API endpoints
@@ -124,12 +124,12 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const adminId = req.auth.id;
+            const parentId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter'); 
 
             // Get info from database
-            let result = await updateDistributor({adminId,...req.body,id});
+            let result = await updateDistributor({parentId,...req.body,id});
             result = {
                 'message' : 'Distributor updated successfully',
                 ...result,
@@ -159,8 +159,8 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const adminId  = req.auth.id; 
-            let result = await getDistributors(adminId);
+            const parentId  = req.auth.id; 
+            let result = await getDistributors(parentId);
             if(!result) throw new Error();
 
             result.data = result.data.map(distributor => ({
@@ -189,10 +189,10 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const adminId = req.auth.id;
+            const parentId = req.auth.id;
             const id = req.params.id;
             if(!id || isNaN(Number(id))) throw new ValidationError('id parameter');
-            let result = await disableDistributor({adminId,...req.body,id});
+            let result = await disableDistributor({parentId,...req.body,id});
             result = {
                 message: 'Distributor deleted successfully',
                 ...result,
