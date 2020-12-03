@@ -33,6 +33,38 @@ module.exports = function( sequelize, DataTypes){
                 }
             }
         },
+        subscriptionType:{
+            type: DataTypes.String,
+            allowNull: false,
+            field: 'subscription_type',
+            validate: {
+                async isValidType(subscriptionType){
+                    const validSubscriptions = new Set(['package','profit sharing']);
+                    if (!validSubscriptions.has(subscriptionType))
+                        throw new ValidationError('subscritionType','must be one of: ' + [...validSubscriptions].join(','))
+                    
+                    if (subscriptionType === 'package' && !this.packageId)
+                        throw new ValidationError('packageId')
+
+                    if (subscriptionType === 'profit sharing' && !this.cutPercent)
+                        throw new ValidationError('cutPercent')
+                }
+            }
+        },
+        packageId:{
+            type: DataTypes.STRING,
+            field: 'package_id',
+            foreignKey: true,
+        },
+        cutPercent:{
+            type: DataTypes.INTEGER,
+            validate: {
+                async isValidPercent(cut){
+                    if (cut<0 || cut>100)
+                        throw new ValidationError('percentage')
+                }
+            }
+        },
         licenseDocument: {
             type: DataTypes.STRING,
             allowNull: false,
