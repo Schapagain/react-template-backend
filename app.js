@@ -34,6 +34,11 @@ app.use('/api/contacts',require('./routes/api/contacts'));
 app.use('/api/users',require('./routes/api/users'));
 
 app.use('/api/countries',require('./routes/api/countries'));
+app.use('/api/states',require('./routes/api/states'));
+app.use('/api/districts',require('./routes/api/districts'));
+app.use('/api/municipalities',require('./routes/api/municipalities'));
+app.use('/api/localities',require('./routes/api/localities'));
+app.use('/api/wards',require('./routes/api/wards'));
 
 app.use('/api/packages',require('./routes/api/packages'));
 
