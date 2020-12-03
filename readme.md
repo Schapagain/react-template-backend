@@ -84,6 +84,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | /api/auth/get_code | Get an OPT code via text | POST | Public | phone | { message } | ----- |
 | /api/auth | User authentication | POST | Public | <ins>Either</ins>: email, password <br/> <ins>OR</ins>: phone, code | {{ id, email, role }}, token | ----- |
 
+<br/>
 
 ### Distributor handling
 > url prefix: /api/distributors
@@ -99,6 +100,8 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | /forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
 | /set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
 
+<br/>
+
 ### Driver handling
 > url prefix: /api/drivers
 
@@ -112,6 +115,8 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | /:id | Update driver info | PATCH | Private | ----- | { id, name, phone } | ----- |
 | /:id | Delete a driver | DELETE | Private | ----- | { id, phone, name } | ----- |
 
+<br/>
+
 ### Vehicle handling
 > url prefix: /api/vehicles
 
@@ -123,6 +128,8 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | /:id/drivers | View assigned driver info | GET | Distributor | ----- | Vehicle | ----- |
 | /:id | Update vehicle info | PATCH | Distributor | ----- | { id, model, licensePlate, driver, driverInfo } | ----- |
 | /:id | Delete a vehicle | DELETE | Distributor | ----- | { id } | ----- |
+
+<br/>
 
 ### User handling
 > url prefix: /api/users
@@ -136,47 +143,36 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | /:id | Update user info | PATCH | Private | ----- | { id, name, phone  } | ----- |
 | /:id | Delete a user | DELETE | Private | ----- | { id, name, phone } | ----- |
 
+<br/>
+
+### Contacts handling
+> url prefix: /api/contacts
+
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| / | View all contacts | GET | Public | ----- | [ Contact ]| ----- |
+| / | Add a contact | POST | Distributor | <ins>Required</ins>: name <br/> <ins>Optional</ins>: jobPosition,title,email,phone,mobile | { id, name } | ----- |
+| /:id | View contact info | GET | Public | ----- | Contact | ----- |
+| /:id | Update contact info | PATCH | Distributor | ----- | { id, name } | ----- |
+| /:id | Delete a contact | DELETE | Distributor | ----- | { id, name } | ----- |
 
 <br/>
 
-> Contacts route is not up to date yet. Working on it.
-### Contacts handling
+### Locations handling
 
-1. Add a contact
-    * **Endpoint**: /api/contacts
-    * **Method**: POST
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Payload**: 
-        * required: { name, email | phone | mobile }
-        * optional: { jobPosition, title }
-    * **Return**: { message, id, name }
+> url prefix: /api/resources <br/>
+> resources is one of [```countries```,```states```,```districts```,```municipalities```,```localities```,```wards```]<br/>
+> resource immediately following another resource is the child of the preceeding one <br/>
+> for instance :  ```districts``` is a child of ```states``` for the purposes of the table below
 
-2. View all contacts
-    * **Endpoint**: /api/contacts
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: [ { Contact } ]
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| / | View all resources | GET | Public | ----- | [ Resource ]| ----- |
+| / | Add a resource | POST | Admin | name, parentResourceId | { id, name } | <ins>Example usagae</ins>: for api/localities payload would be: {```name```: 'locality1', ```municipalityId```: 2}<br/><ins>Exception</ins>: ```number``` instead of ```name``` for ward <br/><ins>Exception:</ins> No parentResourceId required for adding a country |
+| /:id | View resource info | GET | Public | ----- | Resource | ----- |
+| /:id/children | View all children of resource | GET | Public | ----- | Resource | <ins>Example usagae</ins>: api/states/1/districts to view all districts of state with id=1<br/><ins>Exception</ins>: Doesn't apply to wards |
+| /:id | Update resource info | PATCH | Admin | ----- | Resource | ----- |
+| /:id | Delete a resource | DELETE | Private | ----- | Resource | ----- |
 
-3. Get contact info
-    * **Endpoint**: /api/contacts/:id
-    * **Method**: GET
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**:  { Contact }
 
-4. Update contact info
-    * **Endpoint**: /api/contacts/:id
-    * **Method**: PATCH
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, id, name }
-
-5. Delete a contact
-    * **Endpoint**: /api/contacts/:id
-    * **Method**: DELETE
-    * **Access**: distributor
-    * **Header**: Authorization: token
-    * **Return**: { message, title, name }
 
