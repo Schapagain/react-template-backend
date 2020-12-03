@@ -55,9 +55,17 @@ module.exports = function( sequelize, DataTypes){
             type: DataTypes.STRING,
             field: 'package_id',
             foreignKey: true,
+            validate: {
+                async packageExists(packageId){
+                    const package = await sequelize.models.Package.findOne({where:{id:packageId}});
+                    if (!package)
+                        throw new NotFoundError('package');
+                }
+            }
         },
         cutPercent:{
             type: DataTypes.INTEGER,
+            field: 'cut_percent',
             validate: {
                 async isValidPercent(cut){
                     if (cut<0 || cut>100)
@@ -113,6 +121,7 @@ module.exports = function( sequelize, DataTypes){
         Driver.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
         Driver.hasOne(models.Vehicle,{foreignKey: 'driver_id'});
         Driver.hasOne(models.Login, {foreignKey: 'driver_id'});
+        Driver.belongsTo(models.Package,{foreignKey: 'package_id'});
     }
 
     return Driver;
