@@ -24,13 +24,6 @@ router.post('/',
             const contact = req.body;
             const distributorId = req.body.id;
             let result = await postContact({...contact,distributorId});
-            if (!result) throw new Error();
-
-            result = {
-                message: 'Contact added successfully',
-                ...result,
-                'moreInfo:': path.join(req.get('host'),'api','contacts',result.id.toString())
-            }
             res.status(201).json(result)
         }catch(err){
             res.status(err.httpCode || 500).json({ error: err.message })
@@ -53,14 +46,10 @@ async (req,res) => {
     try{
         const distributorId = req.body.id;
         const id = req.params.id;
-        if(!id) return res.json({error:'No id found'})
-
-        const result = await getContact(distributorId,id);
-        if(!result) return res.json({error:'No contact found'})
-
+        const result = await getContact(distributorId,id)
         res.status(200).json(result);
     }catch(err){
-        res.status(err.httpCode).json({ error: err.message })
+        res.status(err.httpCode || 500).json({ error: err.message })
     }
 }
 );
@@ -81,10 +70,9 @@ router.get('/',
         try{
             const distributorId = req.body.id;
             let result = await getContacts(distributorId);
-            if(!result) throw new Error();
             res.status(200).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -106,19 +94,10 @@ router.delete('/:id',
             const distributorId = req.body.id;
             const id = req.params.id;
             let result = await disableContact(distributorId,id);
-            if(!result) {
-                return res.status(400).json({
-                    error: "Contact not found"
-                })
-            };
-            result ={
-                message: 'Contact deleted successfully',
-                ...result,
-            }
             const { message, title, name, } = result;
             res.status(200).json({ message, title, name });
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );
@@ -140,19 +119,12 @@ router.patch('/:id',
         try{
             const distributorId = req.body.id;
             const id = req.params.id;
-            if(!id) return res.json({error:'No id found'})
 
             // Get info from database
             let result = await updateContact({distributorId,...req.body,id});
-            if(!result) return res.json({error:'No contact found'})
-            result = {
-                'message' : 'Contact updated successfully',
-                ...result,
-                'moreInfo:': path.join(req.get('host'),'api','contacts',result.id)
-            }
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: err.message })
         }
     }
 );

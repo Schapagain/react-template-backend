@@ -1,34 +1,14 @@
 
-const { getRandomId } = require('../utils');
-const { Driver, Contact } = require('../models');
-
-function validateNewContact(contact) {
-    const { 
-        name,
-        phone,
-        email,
-        mobile,
-    } = contact;
-
-    if (!name || !(email || phone || mobile) ) return false;
-    return true;
-}
+const { Contact } = require('../models');
+const { getError, NotFoundError, ValidationError } = require('../utils/errors');
 
 async function postContact(contact) {
-
-    // [TODO] validation here
-    if (!validateNewContact(contact)) throw new Error("Please provide all fields")
-
-    // Create a unique id for the new contact
-    contact.id = getRandomId();
     try{
         await Contact.create(contact);
         const { id, name, title } = contact;
         return { id, name, title };
     }catch(err){
-        // [TODO] Roll back changes
-        console.error(err);
-        return false;
+       throw await getError(err); 
     }
 }
 
@@ -40,7 +20,7 @@ async function getContacts(distributorId) {
             return contact;
         });
     }catch(err){
-        console.log(err)
+        throw await getError(err);
     }
 }
 
@@ -49,48 +29,56 @@ async function getContact(distributorId,id) {
         const result = await Contact.findOne({where:{distributorId,id}});
         return result? result.dataValues : result;
     }catch(err){
-        console.log(err);
+        throw await getError(err);
     }
 }
 
 
 async function deleteContact(distributorId,id) {
 
-    const result = await Contact.findOne({where:{distributorId,id}});
-    if (!result) return false;
-
-    Contact.destroy({where:{distributorId,id},force:true})
-
-    const { title, name } = result;
-    return { id, title, name }
+    try{
+        const result = await Contact.findOne({where:{distributorId,id}});
+        if (!result) 
+            throw new NotFoundError('contact')
+        Contact.destroy({where:{distributorId,id},force:true})
+        const { title, name } = result;
+        return { id, title, name }
+    }catch(err){
+        throw await getError(err);
+    }
+   
 }
 
 async function disableContact(distributorId,id) {
 
-    const result = await Contact.findOne({where:{distributorId,id}});
-    if (!result) return false;
-
-    Contact.destroy({where:{distributorId,id}})
-
-    const { title, name } = result;
-    return { id, title, name }
+    try{
+        const result = await Contact.findOne({where:{distributorId,id}});
+        if (!result) return false;
+        Contact.destroy({where:{distributorId,id}})
+        const { title, name } = result;
+        return { id, title, name }
+    }catch(err){
+        throw await getError(err);
+    }
+    
 }
 
 
 async function updateContact(contact) {
     try{
         const { id, distributorId } = contact;
-        if (!id || !distributorId) return false;
+        if (!id || !distributorId) 
+            throw new ValidationError('id/distributorId')
 
         let result = await Contact.findOne({where:{distributorId,id}});
-        if (!result) return false;
+        if (!result) 
+            throw new NotFoundError('contact')
 
         result = await Contact.update(contact,{where:{id},returning:true,plain:true});
         const { title, name } = result[1].dataValues;
         return {id, title, name}
     }catch(err){
-        console.log(err);
-        return false;
+        throw await getError(err);
     }
     
 }
