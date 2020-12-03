@@ -10,12 +10,17 @@ const { ADMIN, DISTRIBUTOR, DRIVER } = require('../utils/roles');
 const auth = async (req,res,next) => {
 
     const modelMap = {
-        'drivers' : [Driver,new Set([DISTRIBUTOR])],
-        'distributors' : [Distributor,new Set([DISTRIBUTOR])],
-        'users' : [User,new Set([DISTRIBUTOR])],
-        'vehicles' : [Vehicle,new Set([DRIVER,DISTRIBUTOR])],
-        'countries' : [Country,new Set([])],
-        'packages' : [Package,new Set([DISTRIBUTOR])],
+        'drivers' : [Driver,new Set([ADMIN,DISTRIBUTOR])],
+        'distributors' : [Distributor,new Set([ADMIN,DISTRIBUTOR])],
+        'users' : [User,new Set([ADMIN,DISTRIBUTOR])],
+        'vehicles' : [Vehicle,new Set([ADMIN,DRIVER,DISTRIBUTOR])],
+        'countries' : [Country,new Set([ADMIN])],
+        'states' : [Country,new Set([ADMIN])],
+        'districts' : [Country,new Set([ADMIN])],
+        'municipalities' : [Country,new Set([ADMIN])],
+        'localities' : [Country,new Set([ADMIN])],
+        'wards' : [Country,new Set([ADMIN])],
+        'packages' : [Package,new Set([ADMIN,DISTRIBUTOR])],
     }
 
     try{
@@ -37,6 +42,13 @@ const auth = async (req,res,next) => {
         // [LOG] 
         console.log('Request using token with id:',tokenId,'role:',tokenRole)
 
+        // Check route permissions
+        const apiBaseString = req.baseUrl.split('/').pop();
+        const model = modelMap[apiBaseString][0];
+        const allowedRoles = modelMap[apiBaseString][1]
+        if (!allowedRoles.has(tokenRole))
+            throw new NotAuthorizedError('Restricted route');
+
         // Allow admins unrestricted access
         // If an id param is passed and the user is accessing their own data, allow access
         // if not, check if the user is accessing their childrens' data
@@ -44,13 +56,6 @@ const auth = async (req,res,next) => {
         if (tokenRole != ADMIN && req.params.id && req.params.id != tokenId){
             if (isNaN(req.params.id))
                 throw new ValidationError('id parameter')
-
-            // Check for permission in case of private route
-            const apiBaseString = req.baseUrl.split('/').pop();
-            const model = modelMap[apiBaseString][0];
-            const allowedRoles = modelMap[apiBaseString][1]
-            if (!allowedRoles.has(tokenRole))
-                throw new NotAuthorizedError('Restricted route');
 
             let result;
             if (apiBaseString === 'distributors'){
