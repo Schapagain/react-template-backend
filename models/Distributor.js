@@ -210,7 +210,6 @@ module.exports = function(sequelize, DataTypes) {
         Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.User,{foreignKey: 'distributor_id'});
         Distributor.hasOne(models.Login,{foreignKey: 'distributor_id'});
-        Distributor.hasMany(models.Country,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.Package,{foreignKey: 'distributor_id'});
     }
 
