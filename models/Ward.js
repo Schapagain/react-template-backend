@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
             foreignKey: true,
             field: 'municipality_id'
         },
-        locality_id: {
+        localityId: {
             type: DataTypes.INTEGER,
             foreignKey: true,
             field: 'locality_id'
