@@ -13,6 +13,15 @@ module.exports = {
           allowNull: false,
           field: 'license_document'
       },
+      subscriptionType:{
+        type: Sequelize.String,
+        allowNull: false,
+        field: 'subscription_type',
+      },
+      cutPercent:{
+          type: Sequelize.INTEGER,
+          field: 'cut_percent'
+      },
       phone: {
           type: Sequelize.STRING,
           allowNull: false,
