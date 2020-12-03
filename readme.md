@@ -108,8 +108,8 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
-| / | Add a driver | POST | Distributor | <ins>Required</ins>: phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
-| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: appId , phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
+| / | Add a driver | POST | Distributor | <ins>Required</ins>: subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
+| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: appId , subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
 | /:id | View driver info | GET | Private | ----- | Driver | ----- |
 | /:id/vehicles | Get assigned vehicle info | GET | Private | ----- | Driver | ----- |
 | /:id | Update driver info | PATCH | Private | ----- | { id, name, phone } | ----- |
