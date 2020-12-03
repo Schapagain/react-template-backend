@@ -3,11 +3,9 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId, getRandomCode } = require('../utils');
 const fs = require('fs');
-const { Login, Driver, Distributor, sequelize, Vehicle } = require('../models');
-const { DRIVER } = require('../utils/roles');
+const { Login, Driver, Distributor, sequelize, Vehicle, Package } = require('../models');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 const { expectedFiles } = require('../utils');
-const vehicles = require('./vehicles');
 
 async function _saveFiles(files, fileNames) {
     const filePath = path.join('.','uploads'); 
@@ -129,20 +127,28 @@ async function getDrivers(distributorId) {
         if (distributor.isSuperuser){
             allDrivers = await Driver.findAll({include: Vehicle});
         }else{
-            allDrivers = await distributor.getDrivers({include: Vehicle});
+            allDrivers = await distributor.getDrivers({include: [Vehicle,Package]});
         }
-
+        
         allDrivers = await Promise.all(allDrivers.map(async driver => {
-            const {id, distributorId, name, phone, Vehicle} = driver
+            const {id, distributorId, subscriptionType, cutPercent, name, phone, Vehicle,Package} = driver
             return {
                 id, 
-                distributorId, 
+                distributorId,
+                subscriptionType, 
+                cutPercent,
                 name,
                 phone,
-                Vehicle: Vehicle? {
+                vehicle: Vehicle? {
                     id: Vehicle.id,
                     model: Vehicle.company.concat(' ',Vehicle.model,', ', Vehicle.modelYear), 
                     licensePlate: Vehicle.licensePlate
+                } : null,
+                package: Package? {
+                    id: Package.id,
+                    name: Package.name,
+                    price: Package.price,
+                    duration: Package.duration,
                 } : null,
             }
         }));
