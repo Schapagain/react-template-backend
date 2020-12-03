@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postCountry, getCountries, deleteCountry } = require('../../services/countries');
-const path = require('path');
-const { expectedFiles } = require('../../utils');
-const fs = require('fs');
+const { postCountry, getCountries, deleteCountry, updateCountry } = require('../../services/countries');
+const { getStates } = require('../../services/states');
 
 /**
  * Route to add a new country
@@ -24,12 +22,7 @@ router.post('/',
     async (req, res) => {
         try{
             let country = req.body;
-            country.distributorId = req.auth.id;
             let result = await postCountry(country);
-            result = {
-                'message':'Country added successfully',
-                ...result,
-            }
             res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({ error : {
@@ -42,24 +35,86 @@ router.post('/',
 
 
 /**
- * Route to get all countries
- * @name    api/countries
+ * Route to get all states for a country 
+ * @name    api/countries/:id/states
  * @method  GET
- * @access  Admin/Distributor
+ * @access  Public 
  * @inner
  * @param   {string} path
  * @param   {callback} middleware - Authenticate  
  * @param   {callback} middleware - Handle HTTP response
 */
-router.get('/', 
-    auth,
+router.get('/:id/states', 
     async (req,res) => {
         try{
-            const distributorId = req.auth.id;
-            let result = await getCountries(distributorId);
+            let result = await getStates(req.params.id);
             res.status(200).json(result);
         }catch(err){
             res.status(err.httpCode).json({ error: err.message })
+        }
+    }
+);    
+
+/**
+ * Route to get country info
+ * @name    api/countries/:id
+ * @method  GET
+ * @access  Public 
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate  
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/:id', 
+    async (req,res) => {
+        try{
+            let result = await getCountries(req.params.id);
+            res.status(200).json(result);
+        }catch(err){
+            res.status(err.httpCode).json({ error: err.message })
+        }
+    }
+);   
+
+/**
+ * Route to get all countries
+ * @name    api/countries
+ * @method  GET
+ * @access  Public
+ * @inner
+ * @param   {string} path  
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/', 
+    async (req,res) => {
+        try{
+            let result = await getCountries();
+            res.status(200).json(result);
+        }catch(err){
+            res.status(err.httpCode).json({ error: err.message })
+        }
+    }
+);
+
+/**
+ * Route to update a Country
+ * @name    api/countries/:id
+ * @method  PATCH
+ * @access  Admin
+ * @inner
+ * @param   {string} path
+ * @param   {callback} middleware - Authenticate  
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.patch('/:id', 
+    auth,
+    async (req,res) => {
+        try{
+            const id = req.params.id;
+            let result = await updateCountry({...req.body,id});
+            res.status(200).json(result);
+        }catch(err){
+            res.status(err.httpCode).json({error: err.message})
         }
     }
 );
@@ -78,13 +133,8 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.auth.id;
             const id = req.params.id;
-            let result = await deleteCountry(distributorId,id);
-            result ={
-                message: 'Country deleted successfully',
-                ...result,
-            }
+            let result = await deleteCountry(id);
             res.status(200).json(result);
         }catch(err){
             res.status(err.httpCode).json({error: err.message})
