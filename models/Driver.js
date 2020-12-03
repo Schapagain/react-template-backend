@@ -34,7 +34,7 @@ module.exports = function( sequelize, DataTypes){
             }
         },
         subscriptionType:{
-            type: DataTypes.String,
+            type: DataTypes.STRING,
             allowNull: false,
             field: 'subscription_type',
             validate: {

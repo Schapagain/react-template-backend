@@ -14,7 +14,7 @@ module.exports = {
           field: 'license_document'
       },
       subscriptionType:{
-        type: Sequelize.String,
+        type: Sequelize.STRING,
         allowNull: false,
         field: 'subscription_type',
       },
