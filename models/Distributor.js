@@ -1,4 +1,3 @@
-const allCountries = require('iso3166-2-db');
 const { ValidationError } = require('../utils/errors');
 
 const validateCircle = circle => {
@@ -53,9 +52,15 @@ const validatePolygon = polygon => {
 
 module.exports = function(sequelize, DataTypes) {
     const Schema = {
-        adminId: {
+        appId: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV1,
+            unique: true,
+            field: 'app_id'
+        },
+        parentId: {
             type: DataTypes.STRING,
-            field: 'admin_id',
+            field: 'parent_id',
         },
         id: {
             type: DataTypes.INTEGER,
@@ -90,6 +95,9 @@ module.exports = function(sequelize, DataTypes) {
         },
         area: {
             type: DataTypes.JSONB,
+            defaultValue: {
+                type: "none"
+            },
             validate: {
                 isValidType(area){
                     const validTypes = new Set(["'none'","'circle'","'rectangle'","'polygon'"]);
@@ -125,12 +133,6 @@ module.exports = function(sequelize, DataTypes) {
         country: {
             type: DataTypes.STRING, 
             allowNull: false,
-            validate: {
-                isValidCountry(name){
-                    if (!allCountries.findCountryByName(name))
-                        throw new ValidationError('country name','does not exist on Earth');
-                },
-            }
         },
         language: {
             type: DataTypes.STRING,
@@ -203,7 +205,7 @@ module.exports = function(sequelize, DataTypes) {
 
     const Distributor = sequelize.define('Distributor', Schema, options);
     Distributor.associate = models => {
-        Distributor.hasMany(models.Distributor,{foreignKey: 'admin_id'});
+        Distributor.hasMany(models.Distributor,{foreignKey: 'parent_id'});
         Distributor.hasMany(models.Driver,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.Vehicle,{foreignKey: 'distributor_id'});
         Distributor.hasMany(models.User,{foreignKey: 'distributor_id'});

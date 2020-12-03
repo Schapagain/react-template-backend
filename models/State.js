@@ -7,6 +7,11 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             primaryKey: true,
         },
+        countryId: {
+            type: DataTypes.INTEGER,
+            foreignKey: true,
+            field:'country_id'
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -31,6 +36,9 @@ module.exports = function(sequelize, DataTypes) {
     State.associate = models => {
         State.belongsTo(models.Country,{foreignKey: 'country_id'});
         State.hasMany(models.District,{foreignKey: 'state_id'});
+        State.hasMany(models.Municipality,{foreignKey: 'state_id'});
+        State.hasMany(models.Locality,{foreignKey: 'state_id'});
+        State.hasMany(models.Ward,{foreignKey: 'state_id'});
     }
 
     return State;

@@ -1,18 +1,6 @@
-const allCountries = require('iso3166-2-db');
-const { ValidationError, NotUniqueError } = require('../utils/errors');
 
 module.exports = function(sequelize, DataTypes) {
     const Country = sequelize.define('Country', {
-        distributorId: {
-            type: DataTypes.INTEGER,
-            field: 'distributor_id',
-            validate: {
-                isNotSuperuser(id){
-                    if (Number(id) <= 1)
-                        throw new ValidationError('distributorId','must be greater than 1');
-                }
-            }
-        },
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -21,19 +9,7 @@ module.exports = function(sequelize, DataTypes) {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
-            validate: {
-                isValidCountry(name){
-                    if (!allCountries.findCountryByName(name))
-                        throw new ValidationError('country name','does not exist on Earth');
-                },
-                async isUniqueCountry(name){
-                    const country = await Country.findOne({where:{distributorId: this.distributorId,name}});
-                    if (country){
-                        console.log(country)
-                        throw new NotUniqueError('country with that name');
-                    }
-                }
-            }
+            uinque: true,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -53,6 +29,10 @@ module.exports = function(sequelize, DataTypes) {
     )
     Country.associate = models => {
         Country.hasMany(models.State,{foreignKey: 'country_id'});
+        Country.hasMany(models.District,{foreignKey: 'country_id'});
+        Country.hasMany(models.Municipality,{foreignKey: 'country_id'});
+        Country.hasMany(models.Locality,{foreignKey: 'country_id'});
+        Country.hasMany(models.Ward,{foreignKey: 'country_id'});
     }
     return Country;
 }
