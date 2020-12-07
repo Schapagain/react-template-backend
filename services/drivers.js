@@ -6,6 +6,7 @@ const fs = require('fs');
 const { Login, Driver, Distributor, sequelize, Vehicle, Package } = require('../models');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 const { expectedFiles } = require('../utils');
+const distributors = require('./distributors');
 
 async function _saveFiles(files, fileNames) {
     const filePath = path.join('.','uploads'); 
@@ -92,7 +93,8 @@ async function registerDriver(driver) {
             driver.usesPan = driver.pan? true : false;
 
             const reseller = await distributor.createDistributor(driver,{transaction:t});
-            driver = await reseller.createDriver(driver,{transaction:t});
+            const distributorId = reseller.id;
+            driver = await reseller.createDriver({...driver,distributorId},{transaction:t});
 
              // Generate an OTP
             // [TODO] send this code via text   
@@ -101,7 +103,7 @@ async function registerDriver(driver) {
             console.log('OTP for driver: ',otpCode)
 
             const { id:driverId, phone, name } = driver;
-            const {id: loginId} = await driver.createLogin({phone,name,driverId,distributorId: reseller.id,otpCode},{transaction:t});
+            const {id: loginId} = await driver.createLogin({phone,name,email:reseller.email,driverId,distributorId: reseller.id,otpCode},{transaction:t});
             await Driver.update({loginId},{where:{id:driverId},transaction:t});
             return { id:driverId, name, phone };
         });
@@ -127,7 +129,12 @@ async function getDrivers(distributorId) {
         if (distributor.isSuperuser){
             allDrivers = await Driver.findAll({include: Vehicle});
         }else{
+            // include resellers drivers
+            const resellers = await distributor.getDistributors({include: {model:Driver,include:[Vehicle,Package]}});
             allDrivers = await distributor.getDrivers({include: [Vehicle,Package]});
+            if (resellers){
+                resellers.forEach(reseller => allDrivers.push(...reseller.Drivers));
+            }
         }
         
         allDrivers = await Promise.all(allDrivers.map(async driver => {
@@ -174,8 +181,9 @@ async function getDriver(distributorId,id) {
             
             if (distributor.isSuperuser)
                 driver = await Driver.findAll({where:{id},include: Vehicle});
-            else
+            else{
                 driver = await distributor.getDrivers({where:{id}, include: Vehicle});
+            }
         }
 
         if (!driver.length)

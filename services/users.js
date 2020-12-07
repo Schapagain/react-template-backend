@@ -78,7 +78,7 @@ async function registerUser(user) {
 
         const result = await sequelize.transaction( async t => {
 
-            const reseller = await distributor.createUser(user,{transaction:t});
+            user = await distributor.createUser({distributorId: distributor.id,...user},{transaction:t});
             // Generate an OTP
             // [TODO] send this code via text   
             const code_length = 6;
@@ -86,7 +86,7 @@ async function registerUser(user) {
             console.log('OTP for user: ',otpCode)
 
             const { id:userId, phone,name } = user;
-            const {id: loginId} = await user.createLogin({phone,name,userId,distributorId: distributor.id,otpCode},{transaction:t});
+            const {id: loginId} = await user.createLogin({phone,name,userId,otpCode},{transaction:t});
             await User.update({loginId},{where:{id:userId},transaction:t});
             return { id:userId, name, phone };
         });
@@ -233,17 +233,24 @@ async function updateUser(user) {
     try{
         const { id, distributorId } = user;
         if (!id || !distributorId)
-            throw new ValidationError('distributor with that token/id does not exist');
+            throw new ValidationError('id');
         
-        const distributor = await Distributor.findOne({where:{id:distributorId}});
-        if (!distributor)
-            throw new NotAuthorizedError('distributor with that token does not exist'); 
-
         let result;
-        if (distributor.isSuperuser)
-            result = await User.findOne({where:{id}});
-        else
-            result = await User.findOne({where:{distributorId,id}});
+        // Update their own info
+        if (distributorId == id){
+            result = await User.findOne({where:{id}}); 
+        }else{
+            const distributor = await Distributor.findOne({where:{id:distributorId}});
+            if (!distributor)
+                throw new NotAuthorizedError('distributor with that token does not exist'); 
+
+            let result;
+            if (distributor.isSuperuser)
+                result = await User.findOne({where:{id}});
+            else
+                result = await User.findOne({where:{distributorId,id}});
+        }
+        
         if (!result)
             throw new NotFoundError('user');
 
