@@ -10,9 +10,9 @@ const { expectedFiles } = require('../utils');
 async function postDistributor(distributor) {
 
     // Check if the given parentId exists
-    const admin = await Distributor.findOne({where:{id:distributor.parentId}});
-    if (!admin)
-        throw new NotFoundError('admin');
+    const parent = await Distributor.findOne({where:{id:distributor.parentId}});
+    if (!parent)
+        throw new NotFoundError('parent');
 
     //Booleanify the value for usesPan field
     distributor.usesPan = distributor.pan? true : false;
@@ -31,7 +31,7 @@ async function postDistributor(distributor) {
 
     try{
         const result = await sequelize.transaction(async t => {
-            distributor = await admin.createDistributor({
+            distributor = await parent.createDistributor({
                 ...distributor
             },{transaction: t});
             
@@ -101,7 +101,7 @@ async function getDistributor(parentId,id) {
         }else{
             const admin = await Distributor.findAll({where:{id:parentId}});
             if (!admin)
-                throw new NotAuthorizedError(' admin with that token does not exist!'); 
+                throw new NotAuthorizedError('parent with that token does not exist!'); 
 
             if (admin.isSuperuser)
                 distributor = await Distributor.findAll({where:{id}});
@@ -123,7 +123,7 @@ async function getDistributors(parentId) {
     try {
         const admin = await Distributor.findOne({where: {id:parentId}});
         if (!admin)
-            throw new NotAuthorizedError(' admin with that token does not exist!'); 
+            throw new NotAuthorizedError('parent with that token does not exist!'); 
 
         let allDistributors;
         if (admin.isSuperuser){
@@ -194,16 +194,23 @@ async function updateDistributor(distributor) {
     try{
         const { id, parentId } = distributor;
         if (!id || !parentId) throw new ValidationError('id or parentId')
-
-        const admin = await Distributor.findOne({where: {id:parentId}});
-        if (!admin)
-            throw new NotAuthorizedError(' admin with that token does not exist!'); 
+        
         let result;
-        if (admin.isSuperuser){
+        // edit their own info
+        if (parentId == id){
             result = await Distributor.findOne({where:{id}});
         }else{
-            result = await Distributor.findOne({where:{parentId,id}}); 
+            const parent = await Distributor.findOne({where: {id:parentId}});
+            if (!parent)
+                throw new NotAuthorizedError('parent with that token does not exist!'); 
+            
+            if (parent.isSuperuser){
+                result = await Distributor.findOne({where:{id}});
+            }else{
+                result = await Distributor.findOne({where:{parentId,id}}); 
+            }
         }
+        
 
         if (!result) throw new NotFoundError('distributor');
 
