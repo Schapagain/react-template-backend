@@ -88,10 +88,10 @@ module.exports = function(sequelize, DataTypes) {
             }
         },
         pan: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
         },
         vat: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
         },
         area: {
             type: DataTypes.JSONB,

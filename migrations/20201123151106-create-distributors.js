@@ -26,8 +26,8 @@ module.exports = {
             allowNull: false,
             field: 'uses_pan'
         },
-        pan: Sequelize.INTEGER,
-        vat: Sequelize.INTEGER,
+        pan: Sequelize.STRING,
+        vat: Sequelize.STRING,
         area: Sequelize.JSONB,
         name: {
             type: Sequelize.STRING,
