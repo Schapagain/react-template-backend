@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postUser, getUsers, getUser, updateUser, disableUser } = require('../../services/users');
+const { postUser, getUsers, getUser, updateUser, disableUser, registerUser } = require('../../services/users');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
@@ -22,11 +22,7 @@ router.post('/signup',
     async (req, res) => {
         try{
             const driver = req.body;
-            let result = await registerDriver(driver);
-            result = {
-                message: 'Driver added successfully',
-                ...result,
-            }
+            let result = await registerUser(driver);
             res.status(201).json(result)
         }catch(err){
             res.status(err.httpCode || 500).json({
@@ -56,10 +52,6 @@ router.post('/',
         try{
             const user = req.body;
             let result = await postUser(user);
-            result = {
-                'message':'User created successfully',
-                ...result,
-            }
             res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({ error : {
@@ -181,11 +173,6 @@ router.patch('/:id',
 
             // Get info from database
             let result = await updateUser({distributorId,...req.body,id});
-            result = {
-                'message' : 'User updated successfully',
-                ...result,
-                'moreInfo:': path.join(req.get('host'),'api','users',result.id)
-            }
             res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode).json({error : {
