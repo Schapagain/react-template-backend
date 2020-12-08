@@ -102,8 +102,13 @@ async function registerDriver(driver) {
             const otpCode = getRandomCode(code_length)
             console.log('OTP for driver: ',otpCode)
 
+            // Generate setPasswordLink
+            // [TODO] send this via email
+            const setPasswordCode = getRandomCode(code_length);
+            console.log(`Set Password for reseller: ${reseller.id}/${setPasswordCode}`)
+
             const { id:driverId, phone, name } = driver;
-            const {id: loginId} = await driver.createLogin({phone,name,email:reseller.email,driverId,distributorId: reseller.id,otpCode},{transaction:t});
+            const {id: loginId} = await driver.createLogin({phone,name,email:reseller.email,driverId,distributorId: reseller.id,otpCode,setPasswordCode},{transaction:t});
             await Driver.update({loginId},{where:{id:driverId},transaction:t});
             return { id:driverId, name, phone };
         });
