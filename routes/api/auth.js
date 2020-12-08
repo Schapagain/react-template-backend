@@ -3,12 +3,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { getAuthToken } = require('../../utils/auth');
-const { getRandomCode, getRoles } = require('../../utils');
+const { getRoles } = require('../../utils');
 const { Login } = require('../../models');
 const formParser = require('../../middlewares/formParser');
 const { getError, NotAuthorizedError } = require('../../utils/errors');
-const { DRIVER, DISTRIBUTOR, USER } = require('../../utils/roles');
-const distributors = require('../../services/distributors');
 const { sendOTP } = require('../../services/password');
 
 /**
@@ -86,10 +84,11 @@ router.post('/',
             }
 
             // Get all roles and relevant ids for the user
-            let roles = getRoles(result);
-
-            const user = phone? { id, phone, email:result.email, ...roles.pop() } : { id, phone:result.phone, email, ...roles.shift() }
-            const token = getAuthToken(id, roles[0]);
+            let role = getRoles(result);
+            ({ id, role } = phone ? {...role.pop()} : {...role.shift()});
+            ({ phone, email } = result);
+            const user = { id , phone, email, role };
+            const token = getAuthToken(id, role);
             res.status(200).json({
                 token,
                 user,
