@@ -12,13 +12,14 @@ const getRandomId = () => uuid().slice(0,5);
 const getRandomCode = length => Math.floor(Math.random() * (10**length - 10**(length-1)) + 10**(length-1));
 
 const getRoles = user => {
+    const { distributorId, driverId, userId } = user;
     let roles = [];
-    if (user.distributorId)
-        roles.push(DISTRIBUTOR);
-    if (user.driverId)
-        roles.push(DRIVER);
-    if (user.userId)
-        roles.push(USER);
+    if (distributorId)
+        roles.push({role:DISTRIBUTOR,id:distributorId});
+    if (driverId)
+        roles.push({role:DRIVER,id:driverId});
+    if (userId)
+        roles.push({role:USER,id:userId});
     return roles;
 }
 
