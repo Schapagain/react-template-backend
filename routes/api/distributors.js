@@ -53,9 +53,12 @@ router.post('/signup',
     formParser,
     async (req, res) => {
         try{
-            const parentId = 1;
-            const distributor = req.body;
-            let result = await postDistributor({...distributor,parentId});
+            // default parentId to admin's id (1)
+            const distributor = {
+                parentId: 1,
+                ...req.body
+            }
+            let result = await postDistributor(distributor);
             res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({
