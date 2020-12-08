@@ -41,12 +41,13 @@ async function postDistributor(distributor) {
             const setPasswordCode = getRandomCode(code_length)
             console.log('Set password code: ',setPasswordCode);
 
-            const { id: distributorId, name, email } = distributor;
+            const { id: distributorId, name, email, phone } = distributor;
 
             const login = await distributor.createLogin({
                 distributorId,
                 name,
                 email,
+                phone,
                 setPasswordCode,
             },{transaction: t})
 
