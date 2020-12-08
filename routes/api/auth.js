@@ -24,10 +24,10 @@ router.post('/get_code',
     formParser,
     async (req,res) => {
 
-        let { phone, distributorId } = req.body;
+        let { phone, appId } = req.body;
 
         try{
-            await sendOTP(distributorId,phone);
+            await sendOTP(appId,phone);
 
             // send code through the API
             return res.status(200).json({
@@ -85,13 +85,10 @@ router.post('/',
                 Login.update({...result,otpCode:null,active:true},{where:{phone}})
             }
 
-            // Get all roles for the user
+            // Get all roles and relevant ids for the user
             let roles = getRoles(result);
 
-            // set id to appropriate model id
-            id = distributorId || driverId || userId;
-
-            const user = phone? { id, phone, roles } : { id, email, roles }
+            const user = phone? { id, phone, email:result.email, ...roles.pop() } : { id, phone:result.phone, email, ...roles.shift() }
             const token = getAuthToken(id, roles[0]);
             res.status(200).json({
                 token,
