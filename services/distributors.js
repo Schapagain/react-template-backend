@@ -138,8 +138,8 @@ async function getDistributors(parentId) {
             allDistributors = await admin.getDistributors();
         }
         return {count: allDistributors.length, data: allDistributors.map(distributor => {
-            const {id, parentId, area, email, name} = distributor
-            return {id, parentId, area, email, name}
+            const {id, parentId, appId, area, email, name} = distributor
+            return {id, parentId, appId, area, email, name}
         })}
     }catch(err){
         throw await getError(err);
