@@ -30,6 +30,7 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false,
       },
+      email: Sequelize.STRING,
       dob: Sequelize.DATE,
       address : Sequelize.STRING,
       profilePicture: {
