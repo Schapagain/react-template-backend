@@ -3,7 +3,7 @@ const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId, getRandomCode } = require('../utils');
 const fs = require('fs');
-const { Login, Driver, Distributor, sequelize, Vehicle, Package } = require('../models');
+const { Login, Driver, Distributor, sequelize, Vehicle, Package, Subscription } = require('../models');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 const { expectedFiles } = require('../utils');
 const distributors = require('./distributors');
@@ -44,7 +44,11 @@ async function postDriver(driver) {
         })
 
         const result = await sequelize.transaction( async t => {
-            driver = await distributor.createDriver(driver,{transaction:t});
+
+            // Create a subscription for the driver
+            const {id: subscriptionId} = await Subscription.create(driver);
+
+            driver = await distributor.createDriver({...driver,subscriptionId},{transaction:t});
 
              // Generate an OTP
             // [TODO] send this code via text   
@@ -89,12 +93,15 @@ async function registerDriver(driver) {
 
         const result = await sequelize.transaction( async t => {
 
+
+            // Create a subscription for the driver
+            const {id: subscriptionId} = await Subscription.create(driver);
             //Booleanify the value for usesPan field
             driver.usesPan = driver.pan? true : false;
 
             const reseller = await distributor.createDistributor(driver,{transaction:t});
             const distributorId = reseller.id;
-            driver = await reseller.createDriver({...driver,distributorId},{transaction:t});
+            driver = await reseller.createDriver({...driver,subscriptionId,distributorId},{transaction:t});
 
              // Generate an OTP
             // [TODO] send this code via text   
@@ -135,15 +142,15 @@ async function getDrivers(distributorId) {
             allDrivers = await Driver.findAll({include: Vehicle});
         }else{
             // include resellers drivers
-            const resellers = await distributor.getDistributors({include: {model:Driver,include:[Vehicle,Package]}});
-            allDrivers = await distributor.getDrivers({include: [Vehicle,Package]});
+            const resellers = await distributor.getDistributors({include: {model:Driver,include:[Vehicle,Subscription]}});
+            allDrivers = await distributor.getDrivers({include: [Vehicle,Subscription]});
             if (resellers){
                 resellers.forEach(reseller => allDrivers.push(...reseller.Drivers));
             }
         }
         
         allDrivers = await Promise.all(allDrivers.map(async driver => {
-            const {id, distributorId, subscriptionType, cutPercent, name, phone, Vehicle,Package} = driver
+            const {id, distributorId, subscriptionType, cutPercent, name, phone, Vehicle,Subscription} = driver
             return {
                 id, 
                 distributorId,
@@ -156,11 +163,11 @@ async function getDrivers(distributorId) {
                     model: Vehicle.company.concat(' ',Vehicle.model,', ', Vehicle.modelYear), 
                     licensePlate: Vehicle.licensePlate
                 } : null,
-                package: Package? {
-                    id: Package.id,
-                    name: Package.name,
-                    price: Package.price,
-                    duration: Package.duration,
+                subscription: Subscription? {
+                    id: Subscription.id,
+                    type: Subscription.type,
+                    packageId: Subscription.packageId,
+                    cutPercent: Subscription.cutPercent,
                 } : null,
             }
         }));
