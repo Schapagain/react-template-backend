@@ -48,7 +48,7 @@ module.exports = function(sequelize, DataTypes) {
 
     Package.associate = models => {
         Package.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
-        Package.hasMany(models.Driver,{foreignKey: 'package_id'});
+        Package.hasMany(models.Subscription,{foreignKey: 'package_id'});
     }
 
     return Package;
