@@ -236,7 +236,7 @@ async (req,res) => {
         const result = await sendPasswordResetCode(email);
         //[TODO] send code via email
         if (result)
-            console.log('Password reset link for distributor: ', path.join(req.get('host'),'api','set_password',result.id.toString(),result.setPasswordCode.toString()));
+            console.log('Password reset link for distributor: ', path.join(req.get('host'),'api','dstributors','set_password',result.id.toString(),result.setPasswordCode.toString()));
 
         return res.status(200).json({
             message: "If the email is registered, a password reset code has been sent!",
