@@ -54,7 +54,7 @@ module.exports = function(sequelize, DataTypes) {
     const Schema = {
         appId: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV1,
+            defaultValue: DataTypes.UUIDV4,
             unique: true,
             field: 'app_id'
         },
