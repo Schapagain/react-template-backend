@@ -33,45 +33,17 @@ module.exports = function( sequelize, DataTypes){
                 }
             }
         },
-        subscriptionType:{
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'subscription_type',
-            validate: {
-                async isValidType(subscriptionType){
-                    const validSubscriptions = new Set(['package','profit sharing']);
-                    if (!validSubscriptions.has(subscriptionType))
-                        throw new ValidationError('subscritionType','must be one of: ' + [...validSubscriptions].join(','))
-                    
-                    if (subscriptionType === 'package' && !this.packageId)
-                        throw new ValidationError('packageId')
-
-                    if (subscriptionType === 'profit sharing' && !this.cutPercent)
-                        throw new ValidationError('cutPercent')
-                }
-            }
-        },
-        packageId:{
-            type: DataTypes.STRING,
-            field: 'package_id',
+        subscriptionId: {
+            type: DataTypes.INTEGER,
+            field: 'subscription_id',
             foreignKey: true,
             validate: {
-                async packageExists(packageId){
-                    const package = await sequelize.models.Package.findOne({where:{id:packageId}});
-                    if (!package)
-                        throw new NotFoundError('package');
-                }
+                async subscriptionExists(id){
+                    const subscription = await sequelize.models.Subscription.findOne({where: {id}})
+                    if (!subscription)
+                        throw new NotFoundError('subscription')
             }
-        },
-        cutPercent:{
-            type: DataTypes.INTEGER,
-            field: 'cut_percent',
-            validate: {
-                async isValidPercent(cut){
-                    if (cut<0 || cut>100)
-                        throw new ValidationError('percentage')
-                }
-            }
+        }
         },
         licenseDocument: {
             type: DataTypes.STRING,
@@ -128,7 +100,7 @@ module.exports = function( sequelize, DataTypes){
         Driver.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
         Driver.hasOne(models.Vehicle,{foreignKey: 'driver_id'});
         Driver.hasOne(models.Login, {foreignKey: 'driver_id'});
-        Driver.belongsTo(models.Package,{foreignKey: 'package_id'});
+        Driver.belongsTo(models.Subscription,{foreignKey: 'subscription_id'});
     }
 
     return Driver;
