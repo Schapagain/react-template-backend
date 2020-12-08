@@ -33,23 +33,22 @@ const generatePasswordHash = async passwordPlain => {
     }
 }
 
-const sendOTP = async (distributorId,phone) => {
+const sendOTP = async (appId,phone) => {
     try{
 
         if (!phone)
             throw new ValidationError('phone','not found');
 
-        if (!distributorId)
-            throw new ValidationError('distributorId','not found');
+        if (!appId)
+            throw new ValidationError('appId','not found');
         
         // Check if the distributor Exists
-        const distributor = await Distributor.findOne({where: {id: distributorId}});
+        const distributor = await Distributor.findOne({where: {appId}});
 
         if (!distributor)
             throw new NotFoundError('distributor');
 
         const user = await distributor.getUsers({where:{phone}});
-        console.log(user);
 
         if (user){
             // Generate random six-digit code
@@ -78,7 +77,7 @@ const sendPasswordResetCode = async email => {
         // store code to the databse
         Login.update({...result.dataValues,setPasswordCode},{where:{email}})
         
-        const { id } = result;
+        const { distributorId:id } = result;
         return { id, setPasswordCode}
     }
 }
