@@ -95,6 +95,13 @@ module.exports = function( sequelize, DataTypes){
         },
         dob: DataTypes.DATE,
         address : DataTypes.STRING,
+        email: {
+            type: DataTypes.STRING,
+            unique: true,
+            validate:{
+                isEmail: true,
+            }
+        },
         profilePicture: {
             type: DataTypes.STRING,
             field: 'profile_picture',
