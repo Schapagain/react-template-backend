@@ -41,6 +41,7 @@ app.use('/api/localities',require('./routes/api/localities'));
 app.use('/api/wards',require('./routes/api/wards'));
 
 app.use('/api/packages',require('./routes/api/packages'));
+app.use('/api/subscriptions',require('./routes/api/subscriptions'));
 
 
 // Forward invalid routes to the error handler below
