@@ -34,9 +34,10 @@ module.exports = function(sequelize, DataTypes){
             allowNull: false,
             field: 'registration_document'
         },
-        model: {
+        modelId: {
             type: DataTypes.STRING,
-            allowNull: false
+            field: 'model_id',
+            foreignKey: true,
         },
         licensePlate: {
             type: DataTypes.STRING,
@@ -49,15 +50,6 @@ module.exports = function(sequelize, DataTypes){
                         throw new NotUniqueError('license plate'); 
                 }
             }
-        },
-        modelYear: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'model_year',
-        },
-        company: {
-            type: DataTypes.STRING,
-            allowNull: false,
         },
         chassisNumber: {
             type: DataTypes.STRING,
@@ -87,6 +79,7 @@ module.exports = function(sequelize, DataTypes){
     Vehicle.associate = models => {
         Vehicle.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
         Vehicle.belongsTo(models.Driver, {foreignKey: 'driver_id'});
+        Vehicle.belongsTo(models.VehicleModel, {foreignKey: 'model_id'});
     }
 
     return Vehicle;
