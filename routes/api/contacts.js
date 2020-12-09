@@ -22,7 +22,7 @@ router.post('/',
     async (req, res) => {
         try{
             const contact = req.body;
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             let result = await postContact({...contact,distributorId});
             res.status(201).json(result)
         }catch(err){
@@ -44,7 +44,7 @@ router.get('/:id',
 auth,
 async (req,res) => {
     try{
-        const distributorId = req.body.id;
+        const distributorId = req.auth.id;
         const id = req.params.id;
         const result = await getContact(distributorId,id)
         res.status(200).json(result);
@@ -68,7 +68,7 @@ router.get('/',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             let result = await getContacts(distributorId);
             res.status(200).json(result);
         }catch(err){
@@ -91,7 +91,7 @@ router.delete('/:id',
     auth,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
             let result = await disableContact(distributorId,id);
             const { message, title, name, } = result;
@@ -117,7 +117,7 @@ router.patch('/:id',
     formParser,
     async (req,res) => {
         try{
-            const distributorId = req.body.id;
+            const distributorId = req.auth.id;
             const id = req.params.id;
 
             // Get info from database
