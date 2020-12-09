@@ -45,10 +45,7 @@ async function postDriver(driver) {
 
         const result = await sequelize.transaction( async t => {
 
-            // Create a subscription for the driver
-            const {id: subscriptionId} = await Subscription.create(driver);
-
-            driver = await distributor.createDriver({...driver,subscriptionId},{transaction:t});
+            driver = await distributor.createDriver(driver,{transaction:t});
 
              // Generate an OTP
             // [TODO] send this code via text   
@@ -93,15 +90,12 @@ async function registerDriver(driver) {
 
         const result = await sequelize.transaction( async t => {
 
-
-            // Create a subscription for the driver
-            const {id: subscriptionId} = await Subscription.create(driver);
             //Booleanify the value for usesPan field
             driver.usesPan = driver.pan? true : false;
 
             const reseller = await distributor.createDistributor(driver,{transaction:t});
             const distributorId = reseller.id;
-            driver = await reseller.createDriver({...driver,subscriptionId,distributorId},{transaction:t});
+            driver = await reseller.createDriver({...driver,distributorId},{transaction:t});
 
              // Generate an OTP
             // [TODO] send this code via text   
