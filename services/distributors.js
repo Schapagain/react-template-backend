@@ -215,6 +215,9 @@ async function updateDistributor(distributor) {
 
         if (!result) throw new NotFoundError('distributor');
 
+        // Retain the previous parentId
+        distributor.parentId = result.parentId;
+
         result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
         return result[1].dataValues;
     }catch(err){
