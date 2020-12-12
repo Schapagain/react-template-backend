@@ -39,6 +39,10 @@ module.exports = function(sequelize, DataTypes){
             field: 'model_id',
             foreignKey: true,
         },
+        modelYear:{
+            type: DataTypes.INTEGER,
+            field: 'model_year',
+        },
         licensePlate: {
             type: DataTypes.STRING,
             allowNull: false,
