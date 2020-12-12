@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postContact, disableContact, getContact, updateContact, getContacts } = require('../../services/subscriptions');
+const { postSubscription, disableSubscription, getSubscription, updateSubscription, getSubscriptions } = require('../../services/subscriptions');
 
 /**
  * Route to add a new subscription
@@ -22,10 +22,13 @@ router.post('/',
         try{
             const subscription = req.body;
             const distributorId = req.auth.id;
-            let result = await postContact({...subscription,distributorId});
+            let result = await postSubscription({...subscription,distributorId});
             res.status(201).json(result)
         }catch(err){
-            res.status(err.httpCode || 500).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: {
+                field: err.field,
+                msg: err.message
+            } })
         }
     });
 
@@ -45,7 +48,7 @@ async (req,res) => {
     try{
         const distributorId = req.auth.id;
         const id = req.params.id;
-        const result = await getContact(distributorId,id)
+        const result = await getSubscription(distributorId,id)
         res.status(200).json(result);
     }catch(err){
         res.status(err.httpCode || 500).json({ error: err.message })
@@ -68,7 +71,7 @@ router.get('/',
     async (req,res) => {
         try{
             const distributorId = req.auth.id;
-            let result = await getContacts(distributorId);
+            let result = await getSubscriptions(distributorId);
             res.status(200).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({ error: err.message })
@@ -92,7 +95,7 @@ router.delete('/:id',
         try{
             const distributorId = req.auth.id;
             const id = req.params.id;
-            let result = await disableContact(distributorId,id);
+            let result = await disableSubscription(distributorId,id);
             const { message, title, name, } = result;
             res.status(200).json({ message, title, name });
         }catch(err){
@@ -120,10 +123,13 @@ router.patch('/:id',
             const id = req.params.id;
 
             // Get info from database
-            let result = await updateContact({distributorId,...req.body,id});
+            let result = await updateSubscription({distributorId,...req.body,id});
             res.status(201).json(result);
         }catch(err){
-            res.status(err.httpCode || 500).json({ error: err.message })
+            res.status(err.httpCode || 500).json({ error: {
+                field: err.field,
+                msg: err.message
+            } })
         }
     }
 );
