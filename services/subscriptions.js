@@ -12,8 +12,8 @@ async function postSubscription(subscription) {
             throw new NotFoundError('distributor');
 
         subscription = await distributor.createSubscription(subscription);
-        const { id, distributorId, name, price, duration } = subscription;
-        return { distributorId, id, name, price, duration};
+        const { id, distributorId, type, cutPercent, packageId } = subscription;
+        return { distributorId, id, type, cutPercent, packageId }
     }catch(err){
         throw await getError(err);
     }
@@ -54,9 +54,9 @@ async function getSubscriptions(distributorId) {
             throw new NotAuthorizedError('distributor with that token does not exist');
         let allSubscriptions;        
         if (distributor.isSuperuser){
-            allSubscriptions = await Subscription.findAll({attributes : ['id','name','price','duration']});
+            allSubscriptions = await Subscription.findAll({attributes : ['id','type','cut_percent','package_id']});
         }else{
-            allSubscriptions = await distributor.getSubscriptions({attributes : ['id','name','price','duration']});
+            allSubscriptions = await distributor.getSubscriptions({attributes : ['id','type','cut_percent','package_id']});
         }
 
         allSubscriptions = allSubscriptions.map(subscription => subscription.dataValues);
@@ -74,9 +74,9 @@ async function disableSubscription(distributorId,id) {
             throw new NotAuthorizedError('distributor with that token/id does not exist'); 
         let subscription;
         if (distributor.isSuperuser)
-            subscription = await Subscription.findOne({where:{id},attributes : ['id','name','price','duration']});
+            subscription = await Subscription.findOne({where:{id},attributes : ['id','type','cut_percent','package_id']});
         else
-            subscription = await Subscription.findOne({where:{distributorId,id},attributes : ['id','name','price','duration']});
+            subscription = await Subscription.findOne({where:{distributorId,id},attributes : ['id','type','cut_percent','package_id']});
         if (!subscription)
             throw new NotFoundError('subscription');
 
@@ -109,8 +109,8 @@ async function updateSubscription(subscription) {
         subscription.distributorId = result.distributorId;
 
         result = await Subscription.update(subscription,{where:{id},returning:true,plain:true});
-        const { name, price, duration } = result[1].dataValues;
-        return {id, name, price, duration}
+        const { type, cutPercent, packageId } = result[1].dataValues;
+        return {id, type, cutPercent, packageId}
     }catch(err){
         throw await getError(err);
     }
