@@ -13,10 +13,6 @@ module.exports = {
           allowNull: false,
           field: 'registration_document'
       },
-      model: {
-          type: Sequelize.STRING,
-          allowNull: false
-      },
       licensePlate: {
           type: Sequelize.STRING,
           allowNull: false,
@@ -26,10 +22,6 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false,
           field: 'model_year',
-      },
-      company: {
-          type: Sequelize.STRING,
-          allowNull: false,
       },
       chassisNumber: {
           type: Sequelize.STRING,
