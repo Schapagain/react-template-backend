@@ -16,6 +16,16 @@ module.exports = {
           type: Sequelize.INTEGER,
           field: 'cut_percent'
       },
+      startsAt:{
+        type: Sequelize.DATE,
+        defaultValue: DataTypes.NOW,
+        field: 'starts_at'
+      },
+      expiresAt: {
+          type: Sequelize.DATE,
+          allowNull: false,
+          field: 'expires_at'
+      },
       createdAt: {
           type: Sequelize.DATE,
           field: 'created_at'
