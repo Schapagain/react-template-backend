@@ -11,9 +11,6 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             uinque: true,
         },
-        year: {
-            type: DataTypes.INTEGER,
-        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at'

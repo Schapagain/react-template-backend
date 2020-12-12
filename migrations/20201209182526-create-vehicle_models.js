@@ -13,9 +13,6 @@ module.exports = {
           allowNull: false,
           uinque: true,
       },
-      year: {
-          type: Sequelize.INTEGER,
-      },
       createdAt: {
           type: Sequelize.DATE,
           field: 'created_at'
