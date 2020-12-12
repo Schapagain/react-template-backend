@@ -44,6 +44,10 @@ app.use('/api/packages',require('./routes/api/packages'));
 app.use('/api/subscriptions',require('./routes/api/subscriptions'));
 
 
+app.use('/api/vehicle_brands',require('./routes/api/vehicleBrands'));
+app.use('/api/vehicle_models',require('./routes/api/vehicleModels'));
+
+
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
     const error = new Error('Page Not found');
