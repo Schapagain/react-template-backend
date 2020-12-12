@@ -94,7 +94,11 @@ async function getVehicles(distributorId) {
         if (distributor.isSuperuser){
             allVehicles = await Vehicle.findAll({include: Driver});
         }else{
+            const resellers = await distributor.getDistributors({include:Vehicle});
             allVehicles = await distributor.getVehicles({include: Driver});
+            if (resellers){
+                resellers.forEach(reseller => allVehicles.push(...reseller.Vehicle));
+            }
         }
 
         allVehicles = await Promise.all(allVehicles.map(async vehicle => {
