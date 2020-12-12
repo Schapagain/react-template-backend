@@ -1,4 +1,6 @@
-const { NotUniqueError, ValidationError, NotFoundError} = require('../utils/errors');
+
+const { validate } = require('uuid');
+const { ValidationError, NotFoundError} = require('../utils/errors');
 
 module.exports = function( sequelize, DataTypes){
     const Subscription = sequelize.define('Subscription', {
@@ -24,6 +26,11 @@ module.exports = function( sequelize, DataTypes){
                 }
             }
         },
+        distributorId:{
+            type: DataTypes.INTEGER,
+            foreignKey: true,
+            field: 'distributor_id'
+        },
         packageId:{
             type: DataTypes.STRING,
             field: 'package_id',
@@ -46,6 +53,22 @@ module.exports = function( sequelize, DataTypes){
                 }
             }
         },
+        startsAt:{
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: 'starts_at'
+        },
+        expiresAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            field: 'expires_at',
+            validate: {
+                expiresInFuture(expiry){
+                    if (expiry < this.startsAt)
+                        throw ValidationError('expiresAt','must be in the future')
+                }
+            }
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at'
@@ -65,6 +88,7 @@ module.exports = function( sequelize, DataTypes){
     )
 
     Subscription.associate = models => {
+        Subscription.belongsTo(models.Distributor,{foreignKey: 'distributor_id'});
         Subscription.belongsTo(models.Package,{foreignKey: 'package_id'});
         Subscription.hasOne(models.Driver,{foreignKey: 'subscription_id'});
     }
