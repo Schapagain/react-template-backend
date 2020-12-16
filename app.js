@@ -47,6 +47,7 @@ app.use('/api/subscriptions',require('./routes/api/subscriptions'));
 app.use('/api/vehicle_brands',require('./routes/api/vehicleBrands'));
 app.use('/api/vehicle_models',require('./routes/api/vehicleModels'));
 
+app.use(express.static('./client/public'))
 
 // Forward invalid routes to the error handler below
 app.use((req,res,next) => {
