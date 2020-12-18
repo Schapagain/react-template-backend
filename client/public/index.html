@@ -22,18 +22,19 @@
             function sendLocation() {
                 const x = Math.random() * 100;
                 const y = Math.random() * 100;
-                socket.emit('post-location',{x,y});
+                const timeStamp = new Date();
+                socket.emit('post-location',{x,y,timeStamp});
             }
-    
+
             const sendButton = document.getElementById('send');
             sendButton.addEventListener('click',sendLocation,false);
 
 
             // Receive location
-            socket.on('update-location',({driverName,licensePlate,x,y}) => {
+            socket.on('update-location',({driverName,licensePlate,timeStamp,x,y}) => {
                const driverLocation = document.getElementById('locations');
                const newLocation = document.createElement('li');
-               newLocation.innerText = x + ' ' + y + '  Driver: ' + driverName + ' ('+licensePlate+')';
+               newLocation.innerText = timeStamp.toString() + '   ' + x + ' ' + y + '  Driver: ' + driverName + ' ('+licensePlate+')';
                driverLocation.appendChild(newLocation);
             })
 
