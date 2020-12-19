@@ -57,7 +57,7 @@ async function getError(err){
             case 'SequelizeUniqueConstraintError':
                 return new NotUniqueError(err.errors[0].path);
             case 'SequelizeDatabaseError':
-                return new ServerError(err.message);
+                return new ValidationError('field',err.message) 
             case 'JwtParseError':
                 return new NotAuthorizedError('Invalid token')
             default:
