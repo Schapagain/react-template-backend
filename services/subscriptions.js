@@ -1,6 +1,7 @@
 
 const auth = require('../middlewares/auth');
 const { Subscription, Login, Driver, Distributor } = require('../models');
+const Package = require('../models/Package');
 const { getError, ValidationError,NotFoundError } = require('../utils/errors');
 
 async function postSubscription(subscription) {
@@ -10,6 +11,18 @@ async function postSubscription(subscription) {
         const distributor = await Distributor.findOne({where:{id:subscription.distributorId}});
         if (!distributor)
             throw new NotFoundError('distributor');
+
+
+        // Calculate expiry date for package subscriptions
+        if (!subscription.packageId) {
+            const package = await Package.findOne({where:{id:packageId}});
+            if (!package) throw new NotFoundError('package');
+            const duration = package.duration;
+            let expiresAt = package.startsAt || new Date();
+            expiresAt = new Date(expiresAt);
+            expiresAt.setDate(expiresAt.getDate() + duration);
+            subscription.expiresAt = expiresAt;
+        }
 
         subscription = await distributor.createSubscription(subscription);
         const { id, distributorId, type, cutPercent, packageId } = subscription;
