@@ -65,7 +65,7 @@ module.exports = function( sequelize, DataTypes){
             validate: {
                 expiresInFuture(expiry){
                     if (expiry < this.startsAt)
-                        throw ValidationError('expiresAt','must be in the future')
+                        throw new ValidationError('expiresAt','must be in the future')
                 }
             }
         },
