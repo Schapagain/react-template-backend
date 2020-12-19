@@ -18,7 +18,7 @@ module.exports = {
       },
       startsAt:{
         type: Sequelize.DATE,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.NOW,
         field: 'starts_at'
       },
       expiresAt: {
