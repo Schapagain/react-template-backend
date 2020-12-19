@@ -84,8 +84,8 @@ router.post('/backup',
     auth,
     async (req, res) => {
         try{
-            await backupDistributors();
-            res.status(201).json({msg: "Backup successfull"});
+            const result = await backupDistributors();
+            res.status(201).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({error: err.message});
         }
@@ -107,7 +107,8 @@ router.get('/backup',
     auth,
     async (req, res) => {
         try{
-            const result = await viewBackup();
+            const { limit, order, offset } = req.query;
+            const result = await viewBackup({limit,order,offset});
             res.status(200).json(result);
         }catch(err){
             res.status(err.httpCode || 500).json({error: err.message});
