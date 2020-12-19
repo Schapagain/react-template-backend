@@ -1,7 +1,6 @@
 
 const auth = require('../middlewares/auth');
-const { Subscription, Login, Driver, Distributor } = require('../models');
-const Package = require('../models/Package');
+const { Subscription, Login, Driver, Distributor, Package } = require('../models');
 const { getError, ValidationError,NotFoundError } = require('../utils/errors');
 
 async function postSubscription(subscription) {
@@ -14,8 +13,8 @@ async function postSubscription(subscription) {
 
 
         // Calculate expiry date for package subscriptions
-        if (!subscription.packageId) {
-            const package = await Package.findOne({where:{id:packageId}});
+        if (subscription.packageId) {
+            const package = await Package.findOne({where:{id:subscription.packageId}});
             if (!package) throw new NotFoundError('package');
             const duration = package.duration;
             let expiresAt = package.startsAt || new Date();
@@ -67,9 +66,9 @@ async function getSubscriptions(distributorId) {
             throw new NotAuthorizedError('distributor with that token does not exist');
         let allSubscriptions;        
         if (distributor.isSuperuser){
-            allSubscriptions = await Subscription.findAll({attributes : ['id','type','cut_percent','package_id']});
+            allSubscriptions = await Subscription.findAll({attributes : ['id','type','cut_percent','package_id','expires_at']});
         }else{
-            allSubscriptions = await distributor.getSubscriptions({attributes : ['id','type','cut_percent','package_id']});
+            allSubscriptions = await distributor.getSubscriptions({attributes : ['id','type','cut_percent','package_id','expires_at']});
         }
 
         allSubscriptions = allSubscriptions.map(subscription => subscription.dataValues);
