@@ -9,6 +9,8 @@ const { expectedFiles } = require('../utils');
 
 const axios = require('axios');
 
+let odooSession = null;
+
 async function postDistributor(distributor) {
 
     // Check if the given parentId exists
@@ -229,14 +231,39 @@ async function updateDistributor(distributor) {
 }
 
 async function backupDistributors() {
-    const distributors = await Distributor.findAll({attributes : ["id","name","email","phone"]});
+    const where = { 
+        backupAt: {
+            [Op.or] :  
+            {
+                [Op.lt]: sequelize.col('updated_at'), 
+                [Op.eq]: null
+            } 
+        }
+    };
+    const distributors = await Distributor.findAll({attributes : ["id","name","email","phone"], where});
     const method = 'create';
     const model = 'res.partner';
     const args = distributors.map(distributor => distributor.dataValues);
     const kwargs = {}
-    const requestObject = _getOdooRequestFormat(method,model,args,kwargs);
-    const endPoint = 'http://mobility.greatbear.tech/web/dataset/call_kw';
-    await axios.post(endPoint,requestObject);
+    const data = _getOdooRequestFormat(method,model,args,kwargs);
+    const sessionId = odooSession || await loginOdoo();
+    var config = {
+        method: 'gt',
+        url: 'http://mobility.greatbear.tech/web/dataset/call_kw',
+        headers: { 
+        'Content-Type': 'application/json', 
+        'Cookie': sessionId.toString(),
+        },
+        data
+    };
+    const result = await axios(config);
+
+    // Update backup date
+    const ids = distributors.map(distributor => distributor.dataValues.id);
+    console.log(ids);
+    await Distributor.update({backupAt:(new Date).toString()},{where:{id:ids}})
+
+    return {count: args.length,data:{total:args,success:result.data.result || []}}
 }
 
 async function loginOdoo(){
@@ -264,42 +291,47 @@ async function loginOdoo(){
 
     try{
         const result = await axios(config);
-
-        return result.data.result.session_id;
+        const session = result.headers['set-cookie'];
+        odooSession = session;
+        return session;
     }catch(err){
         throw await getError(err);
     }
     
 }
 
-async function viewBackup() {
+async function viewBackup({limit,order,offset}) {
 
-    const sessionId = await loginOdoo();
+    
+    try{
+        const sessionId = odooSession || await loginOdoo();
+        const method = 'search_read';
+        const model = 'res.partner';
+        const kwargs = {
+            "fields" : ["id","name","phone","email"],
+            limit : parseInt(limit),
+            order,
+            offset : parseInt(offset)
+        }
+        const args = [];
+        const data = _getOdooRequestFormat(method,model,args,kwargs);
 
-    const method = 'search_read';
-    const model = 'res.partner';
-    const kwargs = {
-        "fields" : ["id","name","phone","email"]
+        var config = {
+            method: 'get',
+            url: 'http://mobility.greatbear.tech/web/dataset/call_kw',
+            headers: { 
+            'Content-Type': 'application/json', 
+            'Cookie': sessionId.toString(),
+            },
+            data
+        };
+        const result = await axios(config);
+        return {count: result.data.result.length || 0, data: result.data.result};
+    }catch(err){
+        throw await getError(err)
     }
-    const args = [];
-    const data = _getOdooRequestFormat(method,model,args,kwargs);
-
-    var config = {
-        method: 'get',
-        url: 'http://mobility.greatbear.tech/web/dataset/call_kw',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Cookie': 'session_id=22d77fc7ce46be2c82fd28545e1b2cf2cae2e167'
-        },
-        data
-      };
-
-    const result = await axios(config);
-
-    console.log(config.headers.Cookie);
-    console.log(result.data);
-      console.log(process.env.ODOO_PASSWORD);
-    return result;
+    
+    
 }
 
 function _getOdooRequestFormat(method,model,args,kwargs){
@@ -309,7 +341,7 @@ function _getOdooRequestFormat(method,model,args,kwargs){
         "method" : "call",
         "params" : {
             kwargs,
-            args,
+            args : [args],
             method,
             model,
         },
