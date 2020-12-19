@@ -241,11 +241,8 @@ async function backupDistributors() {
         }
     };
     const distributors = await Distributor.findAll({attributes : ["id","name","email","phone"], where});
-    const method = 'create';
-    const model = 'res.partner';
     const args = distributors.map(distributor => distributor.dataValues);
-    const kwargs = {}
-    const data = _getOdooRequestFormat(method,model,args,kwargs);
+    const data = _getOdooRequestFormat({method:'create',model:'res.partner',args});
     const sessionId = odooSession || await loginOdoo();
     var config = {
         method: 'gt',
@@ -266,19 +263,17 @@ async function backupDistributors() {
     return {count: args.length,data:{total:args,success:result.data.result || []}}
 }
 
+//[TODO] clear localstorage if session expire error thrown by Odoo
 async function loginOdoo(){
-    
-    const data = JSON.stringify({
-        "jsonrpc" : "2.0", 
-        "method" : "call",
-        "params" : {
+    console.log('logging in to Odo..');
+    const data = _getOdooRequestFormat({
+        params:{
             "db" : "live",
             "login" : "admin",
             "password" : process.env.ODOO_PASSWORD,
             "context" : {}
         }
     });
-
     var config = {
         method: 'post',
         url: 'http://mobility.greatbear.tech/web/session/authenticate',
@@ -305,16 +300,13 @@ async function viewBackup({limit,order,offset}) {
     
     try{
         const sessionId = odooSession || await loginOdoo();
-        const method = 'search_read';
-        const model = 'res.partner';
         const kwargs = {
             "fields" : ["id","name","phone","email"],
             limit : parseInt(limit),
             order,
             offset : parseInt(offset)
         }
-        const args = [];
-        const data = _getOdooRequestFormat(method,model,args,kwargs);
+        const data = _getOdooRequestFormat({method:'search_read',model:'res.partner',kwargs});
 
         var config = {
             method: 'get',
@@ -334,14 +326,14 @@ async function viewBackup({limit,order,offset}) {
     
 }
 
-function _getOdooRequestFormat(method,model,args,kwargs){
+function _getOdooRequestFormat({method,model,args,kwargs,params}){
 
     return {
-        "jsonrpc": "2.0",
-        "method" : "call",
-        "params" : {
-            kwargs,
-            args : [args],
+        jsonrpc: "2.0",
+        method : "call",
+        params : params || {
+            kwargs : kwargs || {},
+            args : args? [args] : [],
             method,
             model,
         },
