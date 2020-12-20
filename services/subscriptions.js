@@ -25,7 +25,7 @@ async function postSubscription(subscription) {
 
         subscription = await distributor.createSubscription(subscription);
         const { id, distributorId, type, cutPercent, packageId } = subscription;
-        return { distributorId, id, type, cutPercent, packageId }
+        return { distributorId, id, type, cutPercent, packageId, expiresAt }
     }catch(err){
         throw await getError(err);
     }
