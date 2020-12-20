@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor } = require('../../services/distributors');
+const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor, backupDistributors, viewBackup} = require('../../services/distributors');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
@@ -69,6 +69,53 @@ router.post('/signup',
                 })
         }
     });
+
+/**
+ * Route to get backup distributors to Odoo
+ * @name    api/distributors/backup
+ * @method  POST
+ * @access  Admin
+ * @inner
+ * @param   {string} path
+ * @param   {callback} auth - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.post('/backup',
+    auth,
+    async (req, res) => {
+        try{
+            const result = await backupDistributors();
+            res.status(201).json(result);
+        }catch(err){
+            res.status(err.httpCode || 500).json({error: err.message});
+        }
+        
+    }
+)
+
+/**
+ * Route to get view distributor backups 
+ * @name    api/distributors/backup
+ * @method  GET
+ * @access  Admin
+ * @inner
+ * @param   {string} path
+ * @param   {callback} auth - Authenticate
+ * @param   {callback} middleware - Handle HTTP response
+*/
+router.get('/backup',
+    auth,
+    async (req, res) => {
+        try{
+            const { limit, order, offset } = req.query;
+            const result = await viewBackup({limit,order,offset});
+            res.status(200).json(result);
+        }catch(err){
+            res.status(err.httpCode || 500).json({error: err.message});
+        }
+        
+    }
+)
 
 /**
  * Route to get distributor info
@@ -275,5 +322,7 @@ router.post('/set_password/:id/:setPasswordCode',
         }
         
     });
+
+
 
 module.exports = router;

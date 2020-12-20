@@ -195,6 +195,13 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at'
         },
+        backupAt: {
+            type: DataTypes.DATE,
+            field: 'backup_at',
+            set(value) {
+                this.setDataValue('backup_at',DataTypes.NOW())
+            }
+        },
         website: DataTypes.STRING,
     };
 

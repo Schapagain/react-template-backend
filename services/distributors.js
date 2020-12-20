@@ -7,6 +7,10 @@ const { getError, NotFoundError, NotAuthorizedError } = require('../utils/errors
 const { Distributor, Login, Driver, sequelize, Op } = require('../models');
 const { expectedFiles } = require('../utils');
 
+const axios = require('axios');
+
+let odooSession = null;
+
 async function postDistributor(distributor) {
 
     // Check if the given parentId exists
@@ -226,4 +230,114 @@ async function updateDistributor(distributor) {
     
 }
 
-module.exports = { postDistributor, getDistributor, getDistributors, disableDistributor, deleteDistributor, updateDistributor };
+async function backupDistributors() {
+    const where = { 
+        backupAt: {
+            [Op.or] :  
+            {
+                [Op.lt]: sequelize.col('updated_at'), 
+                [Op.eq]: null
+            } 
+        }
+    };
+    const distributors = await Distributor.findAll({attributes : ["id","name","email","phone"], where});
+    const args = distributors.map(distributor => distributor.dataValues);
+    const data = _getOdooRequestFormat({method:'create',model:'res.partner',args});
+    const sessionId = odooSession || await loginOdoo();
+    var config = {
+        method: 'gt',
+        url: 'http://mobility.greatbear.tech/web/dataset/call_kw',
+        headers: { 
+        'Content-Type': 'application/json', 
+        'Cookie': sessionId.toString(),
+        },
+        data
+    };
+    const result = await axios(config);
+
+    // Update backup date
+    const ids = distributors.map(distributor => distributor.dataValues.id);
+    console.log(ids);
+    await Distributor.update({backupAt:(new Date).toString()},{where:{id:ids}})
+
+    return {count: args.length,data:{total:args,success:result.data.result || []}}
+}
+
+//[TODO] clear localstorage if session expire error thrown by Odoo
+async function loginOdoo(){
+    console.log('logging in to Odo..');
+    const data = _getOdooRequestFormat({
+        params:{
+            "db" : "live",
+            "login" : "admin",
+            "password" : process.env.ODOO_PASSWORD,
+            "context" : {}
+        }
+    });
+    var config = {
+        method: 'post',
+        url: 'http://mobility.greatbear.tech/web/session/authenticate',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        data,
+      };
+
+
+    try{
+        const result = await axios(config);
+        const session = result.headers['set-cookie'];
+        odooSession = session;
+        return session;
+    }catch(err){
+        throw await getError(err);
+    }
+    
+}
+
+async function viewBackup({limit,order,offset}) {
+
+    
+    try{
+        const sessionId = odooSession || await loginOdoo();
+        const kwargs = {
+            "fields" : ["id","name","phone","email"],
+            limit : parseInt(limit),
+            order,
+            offset : parseInt(offset)
+        }
+        const data = _getOdooRequestFormat({method:'search_read',model:'res.partner',kwargs});
+
+        var config = {
+            method: 'get',
+            url: 'http://mobility.greatbear.tech/web/dataset/call_kw',
+            headers: { 
+            'Content-Type': 'application/json', 
+            'Cookie': sessionId.toString(),
+            },
+            data
+        };
+        const result = await axios(config);
+        return {count: result.data.result.length || 0, data: result.data.result};
+    }catch(err){
+        throw await getError(err)
+    }
+    
+    
+}
+
+function _getOdooRequestFormat({method,model,args,kwargs,params}){
+
+    return {
+        jsonrpc: "2.0",
+        method : "call",
+        params : params || {
+            kwargs : kwargs || {},
+            args : args? [args] : [],
+            method,
+            model,
+        },
+    }
+}
+
+module.exports = { postDistributor, getDistributor, getDistributors, disableDistributor, deleteDistributor, updateDistributor, backupDistributors, viewBackup};

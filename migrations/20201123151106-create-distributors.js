@@ -95,6 +95,10 @@ module.exports = {
             type: Sequelize.DATE,
             field: 'created_at'
         },
+        backupAt: {
+            type:Sequelize.DATE,
+            field: 'backup_at',
+        },
         website: Sequelize.STRING,
   })
   },
