@@ -175,3 +175,39 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 
 
+### Packages handling
+> url prefix: /api/packages
+
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| / | View all packages | GET | Public | ----- | [ Package ]| ----- |
+| / | Add a package | POST | Distributor | name, price, duration | { distributorId, name, price, duration } | duration is in number of days - __for monthly packages, duration = 30__ |
+| /:id | View package info | GET | Public | ----- | Package | ----- |
+| /:id | Update contact info | PATCH | Distributor | ----- | { id, name, price, duration } | ----- |
+| /:id | Delete a package | DELETE | Distributor | ----- | { Package } | ----- |
+
+<br/>
+
+### Subcription handling
+> url prefix: /api/subscriptions
+
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| / | View all subscriptions | GET | Distributor | ----- | [ Subscription ]| ----- |
+| / | Add a subcription | POST | Distributor | type, packaeId, expiresAt, cutPercent | { distributorId, id, type, cutPercent, packageId, expiresAt } | expiresAt is __required if type is 'profit sharing'__ |
+| /:id | View subscription info | GET | Private | ----- | Subscription | ----- |
+| /:id | Update subscription info | PATCH | Distributor | ----- | { distributorId, id, type, cutPercent, packageId, expiresAt } | ----- |
+| /:id | Delete a subscription | DELETE | Distributor | ----- | { Subscription } | ----- |
+
+<br/>
+
+### Odoo Backups
+> url prefix: /api/userTypes/backup
+> userTypes is one of ['distributors']
+
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| / | View all backups | GET | Admin | Optional queries : limit, order, offset | [ User ]| ----- |
+| / | Backup users | POST | Distributor | ------ | [ User ] | only backups users that have been updated after last backup |
+
+<br/>
