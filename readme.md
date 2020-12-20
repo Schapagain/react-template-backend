@@ -207,7 +207,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| / | View all backups | GET | Admin | Optional queries : limit, order, offset | [ User ]| ----- |
+| / | View all backups | GET | Distributor | Optional queries : limit, order, offset | [ User ]| ----- |
 | / | Backup users | POST | Distributor | ------ | [ User ] | only backs up users that have been updated after last backup |
 
 <br/>
