@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.addColumn(
+    await queryInterface.addColumn(
       'packages',
       'distributor_id',
       {
@@ -18,7 +18,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn(
+    await queryInterface.removeColumn(
       'packages',
       'distributor_id'
     )

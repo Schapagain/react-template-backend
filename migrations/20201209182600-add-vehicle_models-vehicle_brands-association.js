@@ -24,7 +24,7 @@ module.exports = {
     return Promise.all(
       [
         queryInterface.removeColumn(
-          'vehicles_models',
+          'vehicle_models',
           'brand_id'
         )
       ]);

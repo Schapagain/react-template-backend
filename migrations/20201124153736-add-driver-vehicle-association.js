@@ -2,9 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return Promise.all(
-      [
-        queryInterface.addColumn(
+    await queryInterface.addColumn(
           'vehicles',
           'driver_id',
           {
@@ -16,8 +14,8 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'SET NULL',
           }
-        ),
-        queryInterface.addColumn(
+        );
+    await queryInterface.addColumn(
           'drivers',
           'vehicle_id',
           {
@@ -29,21 +27,17 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'SET NULL',
           }
-        )
-      ]);
+        );
   },
 
   down: async (queryInterface, Sequelize) => {
-    return Promise.all(
-      [
-        queryInterface.removeColumn(
+    await queryInterface.removeColumn(
           'vehicles',
           'driver_id'
-        ),
-        queryInterface.removeColumn(
+        );
+    await queryInterface.removeColumn(
           'drivers',
           'vehicle_id'
-        )
-      ]);
+        );
   }
 };
