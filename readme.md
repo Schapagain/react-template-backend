@@ -46,7 +46,6 @@
 
 * All migrations are located at ```/migrations``` at project root
 * To create all required tables and insert admin info, run these commands from the command line : <br/>
- ```npx sequelize db:migrate --to 20201123192233-add-login-distributor-association.js```<br/> 
  ```npx sequelize db:migrate```<br/>
  ```npx sequelize db:seed:all```
 
