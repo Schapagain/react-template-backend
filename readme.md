@@ -211,3 +211,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 | / | Backup users | POST | Distributor | ------ | [ User ] | only backs up users that have been updated after last backup |
 
 <br/>
+
+### Fare Calculation
+> url prefix: /api/trips
+
+|Endpoint|Desc|Method|Access|Payload|Return|Notes|
+|-----|-----|-----|-----|-----|-----|-----|
+| /calculate_fare | Calculate fare | POST | Public | appId, distance, waitTime | { fare, distance, waitTime } ]| ----- |
