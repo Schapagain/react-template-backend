@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { PGDATABASE, PGUSER, PGPASSWORD, PGHOST } = process.env;
+const { PGDATABASE, PGUSER, PGPASSWORD, PGHOST, PGPORT } = process.env;
 
 module.exports = {
     "development": {
@@ -8,6 +8,7 @@ module.exports = {
       "password": PGPASSWORD,
       "database": PGDATABASE,
       "host": PGHOST,
+      "port": PGPORT,
       "dialect": "postgres",
       "logging":false,
       pool: {
