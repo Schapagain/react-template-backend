@@ -222,6 +222,9 @@ async function updateDistributor(distributor) {
         // Retain the previous parentId
         distributor.parentId = result.parentId;
 
+        // Retain previous config keys
+        distributor.config = {...result.config,...distributor.config}
+
         result = await Distributor.update(distributor,{where:{id},returning:true,plain:true});
         return result[1].dataValues;
     }catch(err){
