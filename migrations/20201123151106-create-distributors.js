@@ -83,6 +83,7 @@ module.exports = {
             type: Sequelize.STRING,
             field: 'profile_picture',
         },
+        config: Sequelize.JSONB,
         deletedAt: {
             type: Sequelize.DATE,
             field: 'deleted_at'

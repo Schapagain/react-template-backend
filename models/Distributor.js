@@ -183,6 +183,14 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             field: 'profile_picture',
         },
+        config: {
+            type: DataTypes.JSONB,
+            defaultValue: {
+                minFare: 30,
+                farePerUnitDistance: 50,
+                farePerUnitWait: 20,
+            }
+        },
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at'
