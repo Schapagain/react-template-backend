@@ -1,4 +1,7 @@
 const { Distributor, Driver, User, Vehicle, Country, Package, Contact, Subscription } = require('../models');
+const njwt = require('njwt');
+require('dotenv').config();
+const signingKey = process.env.SECRET_KEY;
 
 /**
  * Return accepted token authorization methods
@@ -30,7 +33,18 @@ function getRoutePermissions() {
     return routePermissionsMap;
 }
 
+const getAuthToken = (id,role) => {
+    const claims = {
+      sub: id,
+      scope: role,
+    }
+    const token = njwt.create(claims,signingKey);
+    token.setExpiration(new Date().getTime() + (7*86400*1000));
+    return token.compact();
+}
+
 module.exports = {
     getValidAuthMethods,
     getRoutePermissions,
+    getAuthToken,
 }
