@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const formParser = require('../../middlewares/formParser');
 const router = express.Router();
-const { getAuthToken } = require('../../utils/auth');
+const { getAuthToken } = require('../../services/auth');
 const { ADMIN } = require('../../utils/roles');
 const { Login } = require('../../models');
 
