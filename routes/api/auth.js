@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { getAuthToken } = require('../../utils/auth');
+const { getAuthToken } = require('../../services/auth');
 const { getRoles } = require('../../utils');
 const { Login } = require('../../models');
 const formParser = require('../../middlewares/formParser');
