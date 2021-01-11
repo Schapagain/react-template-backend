@@ -1,25 +1,28 @@
 const { Distributor } = require("../database/models");
-const { ValidationError } = require("../utils/errors");
+const { ValidationError, NotFoundError } = require("../utils/errors");
 require('dotenv').config();
 const axios = require('axios');
 
-async function calculateFare({appId,distance,waitTime=0}) {
-    distance = parseFloat(distance);
+async function calculateFare({appId,origin,destination,waitTime=0}) {
     waitTime = parseFloat(waitTime);
-
-    if (!appId) throw new ValidationError('appId');
-    if (!distance) throw new ValidationError('distance');
 
     const config = (await Distributor.findOne({where:{appId},attributes:['config']})).dataValues.config;
     if (!config) throw new ValidationError('appId')
     
-    const fare = (config.minFare || 0) + (distance * config.farePerUnitDistance || 0) + (waitTime * config.farePerUnitWait || 0);
-    return {fare,distance,waitTime}
+    const distanceReponse = await calculateDistance({appId,origin,destination});
+    const distance = distanceReponse.distance.value;
+    if (!distance) throw new NotFoundError('path');
+
+    const fare = (config.minFare || 0) + (distance/1000 * config.farePerUnitDistance || 0) + (waitTime * config.farePerUnitWait || 0);
+    return {...distanceReponse,fare:{value:fare,waitTime}}
 }
 
 async function calculateDistance({appId,origin,destination}) {
 
     if (!appId) throw new ValidationError('appId');
+    const distributor = await Distributor.findOne({where:{appId}});
+    if (!distributor) throw new ValidationError('appId');
+
     if (!destination || !destination.length || destination.length !== 2) throw new ValidationError('destination');
     if (!origin || !origin.length || origin.length !== 2 ) throw new ValidationError('origin');
 
@@ -27,8 +30,8 @@ async function calculateDistance({appId,origin,destination}) {
     try {
         const dist = await useDistanceMatrixAPI(origin,destination)
         response = {
-            origin,
-            destination,
+            origin: dist.data.origin_addresses || origin,
+            destination: dist.data.destination_addresses || destination,
             distance : dist.data.rows[0].elements[0].distance || 'NO_PATH',
             duration: dist.data.rows[0].elements[0].duration || 'NO_PATH'
         }
