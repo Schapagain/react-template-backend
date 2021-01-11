@@ -1,5 +1,5 @@
 
-const { Municipality, State, Locality, District } = require('../models');
+const { Municipality, State, Locality, District } = require('../database/models');
 const { getError, ValidationError, NotFoundError } = require('../utils/errors');
 
 async function postMunicipality(municipality) {

@@ -1,4 +1,4 @@
-const { NotUniqueError, NotFoundError } = require('../utils/errors'); 
+const { NotUniqueError, NotFoundError } = require('../../utils/errors'); 
 
 module.exports = function(sequelize, DataTypes){
     const Vehicle = sequelize.define('Vehicle', {

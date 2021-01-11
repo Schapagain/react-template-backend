@@ -4,7 +4,7 @@ const { getRandomId, getRandomCode } = require('../utils');
 const { DISTRIBUTOR, DRIVER, ADMIN } = require('../utils/roles');
 const { getError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
 
-const { Distributor, Login, Driver, sequelize, Op } = require('../models');
+const { Distributor, Login, Driver, sequelize, Op } = require('../database/models');
 const { expectedFiles } = require('../utils');
 
 const axios = require('axios');

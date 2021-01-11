@@ -4,7 +4,7 @@ const { getRandomId, getRandomCode } = require('../utils');
 const { USER } = require('../utils/roles');
 const { getError } = require('../utils/errors');
 
-const { Distributor, Login, User, sequelize } = require('../models');
+const { Distributor, Login, User, sequelize } = require('../database/models');
 const { expectedFiles } = require('../utils');
 const { ValidationError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
 const { queryDatabase } = require('../database');

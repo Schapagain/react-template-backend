@@ -1,6 +1,6 @@
 
 const auth = require('../middlewares/auth');
-const { Package, Login, Driver, Distributor } = require('../models');
+const { Package, Login, Driver, Distributor } = require('../database/models');
 const { DRIVER } = require('../utils/roles');
 const { getError, ValidationError,NotFoundError } = require('../utils/errors');
 

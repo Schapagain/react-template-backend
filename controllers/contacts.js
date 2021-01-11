@@ -1,5 +1,5 @@
 
-const { Contact } = require('../models');
+const { Contact } = require('../database/models');
 const { getError, NotFoundError, ValidationError } = require('../utils/errors');
 
 async function postContact(contact) {

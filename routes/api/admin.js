@@ -4,7 +4,7 @@ const formParser = require('../../middlewares/formParser');
 const router = express.Router();
 const { getAuthToken } = require('../../controllers/auth');
 const { ADMIN } = require('../../utils/roles');
-const { Login } = require('../../models');
+const { Login } = require('../../database/models');
 
 /**
  * Route to authenticate admin

@@ -1,5 +1,5 @@
 
-const { District, State, Country} = require('../models');
+const { District, State, Country} = require('../database/models');
 const { getError, ValidationError, NotFoundError } = require('../utils/errors');
 
 async function postState(state) {

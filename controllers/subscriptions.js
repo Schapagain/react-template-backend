@@ -1,6 +1,6 @@
 
 const auth = require('../middlewares/auth');
-const { Subscription, Login, Driver, Distributor, Package } = require('../models');
+const { Subscription, Login, Driver, Distributor, Package } = require('../database/models');
 const { getError, ValidationError,NotFoundError } = require('../utils/errors');
 
 async function postSubscription(subscription) {

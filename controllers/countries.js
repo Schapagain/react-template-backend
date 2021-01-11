@@ -1,5 +1,5 @@
 
-const { Distributor, Country, State} = require('../models');
+const { Distributor, Country, State} = require('../database/models');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 
 async function postCountry(country) {

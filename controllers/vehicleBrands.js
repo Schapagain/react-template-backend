@@ -1,5 +1,5 @@
 
-const { VehicleBrand } = require('../models');
+const { VehicleBrand } = require('../database/models');
 const { getError, NotFoundError, ValidationError } = require('../utils/errors');
 
 async function postVehicleBrand(brand) {

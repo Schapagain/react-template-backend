@@ -1,5 +1,5 @@
 const app = require('./app');
-const { sequelize } = require('./models/index');
+const { sequelize } = require('./database/models');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 

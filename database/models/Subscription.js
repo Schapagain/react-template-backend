@@ -1,6 +1,5 @@
 
-const { validate } = require('uuid');
-const { ValidationError, NotFoundError} = require('../utils/errors');
+const { ValidationError, NotFoundError} = require('../../utils/errors');
 
 module.exports = function( sequelize, DataTypes){
     const Subscription = sequelize.define('Subscription', {

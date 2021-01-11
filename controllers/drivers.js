@@ -1,9 +1,8 @@
 
-const auth = require('../middlewares/auth');
 const path = require('path');
 const { getRandomId, getRandomCode } = require('../utils');
 const fs = require('fs');
-const { Login, Driver, Distributor, sequelize, Vehicle, Package, Subscription } = require('../models');
+const { Login, Driver, Distributor, sequelize, Vehicle, Package, Subscription } = require('../database/models');
 const { getError, NotAuthorizedError, ValidationError, NotFoundError } = require('../utils/errors');
 const { expectedFiles } = require('../utils');
 const distributors = require('./distributors');

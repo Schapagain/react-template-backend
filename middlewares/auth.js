@@ -4,7 +4,7 @@ const signingKey = process.env.SECRET_KEY;
 const { getError, ValidationError, NotAuthorizedError } = require('../utils/errors');
 
 const { ADMIN } = require('../utils/roles');
-const { getValidAuthMethods, getRoutePermissions } = require('../../controllers/auth');
+const { getValidAuthMethods, getRoutePermissions } = require('../controllers/auth');
 
 /**
  * Verify that the role and id associated with the token 

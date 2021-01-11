@@ -1,5 +1,5 @@
 
-const { VehicleModel } = require('../models');
+const { VehicleModel } = require('../database/models');
 const { getError, NotFoundError, ValidationError } = require('../utils/errors');
 
 async function postVehicleModel(model) {

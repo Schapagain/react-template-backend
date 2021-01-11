@@ -1,4 +1,4 @@
-const { Distributor, Driver, User, Vehicle, Country, Package, Contact, Subscription } = require('../models');
+const { Distributor, Driver, User, Vehicle, Country, Package, Contact, Subscription } = require('../database/models');
 const njwt = require('njwt');
 const { getError, NotAuthorizedError } = require('../utils/errors');
 const { USER,ADMIN,DISTRIBUTOR } = require('../utils/roles');

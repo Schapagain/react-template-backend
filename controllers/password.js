@@ -1,5 +1,5 @@
 const bcrypt =  require('bcrypt');
-const { Login, Distributor } = require('../models');
+const { Login, Distributor } = require('../database/models');
 const { getError, NotAuthorizedError, ValidationError, NotUniqueError, NotFoundError } = require('../utils/errors');
 const { getRandomCode } = require('../utils');
 
