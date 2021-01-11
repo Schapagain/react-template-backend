@@ -75,13 +75,18 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 <br/>
 
+### Authorization
+> All protected routes require a Bearer token in Authorization header
+
+<br/>
+
 ### Authentication
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /api/admin | Admin authentication | POST | Public | password | { token } | password: password77 |
-| /api/auth/get_code | Get an OPT code via text | POST | Public | phone | { message } | ----- |
-| /api/auth | User authentication | POST | Public | <ins>Either</ins>: email, password <br/> <ins>OR</ins>: phone, code | {{ id, email, role }}, token | ----- |
+| /api/admin | Admin authentication | POST | Public | password | token | password: password77 |
+| /api/auth/get_code | Get an OPT code via text | POST | Public | phone | message | ----- |
+| /api/auth | User authentication | POST | Public | <ins>Either</ins>: email, password <br/> <ins>OR</ins>: phone, code | { id, email, role }, token | ----- |
 
 <br/>
 
@@ -91,13 +96,13 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all distributors | GET | Admin/Distributor | ----- | [ Distributor ]| ----- |
-| / | Add a distributor | POST | Admin/Distributor | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { id, email, name } | A link is sent via email to set a new password <br/><br/> Admin can pass in an optional 'parentId' (defaults to 1) field to add resellers under specefic distributors |
-| /signup | Signup as an independent distributor | POST | Public | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | { id, email, name } | A link is sent via email to set a new password |
+| / | Add a distributor | POST | Admin/Distributor | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | id, email, name | A link is sent via email to set a new password <br/><br/> Admin can pass in an optional 'parentId' (defaults to 1) field to add resellers under specefic distributors |
+| /signup | Signup as an independent distributor | POST | Public | <ins>Required</ins>: (pan OR vat), name, country, language, email, phone, street, state, postal, licenseDocument <br/> <ins>Optional</ins>: district, municipality, ward, website, profilePicture | id, email, name | A link is sent via email to set a new password |
 | /:id | View distributor info | GET | Private | ----- | Distributor | ----- |
-| /:id | Update distributor info | PATCH | Private | ----- | { id, email, name } | ----- |
-| /:id | Delete a distributor | DELETE | Private | ----- | { id, email, name } | ----- |
-| /forget_password | Get a password reset link via email | POST | Public | email | { message } | ----- |
-| /set_password/:id/:code | Set/Reset password | POST | Public | password | { message } | ----- |
+| /:id | Update distributor info | PATCH | Private | ----- | id, email, name | ----- |
+| /:id | Delete a distributor | DELETE | Private | ----- | id, email, name | ----- |
+| /forget_password | Get a password reset link via email | POST | Public | email | message | ----- |
+| /set_password/:id/:code | Set/Reset password | POST | Public | password | message | ----- |
 
 <br/>
 
@@ -107,12 +112,12 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all drivers | GET | Distributor | ----- | [ Driver ]| ----- |
-| / | Add a driver | POST | Distributor | <ins>Required</ins>: subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
-| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: appId , subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | { id , name } | OTP is sent via text |
+| / | Add a driver | POST | Distributor | <ins>Required</ins>: subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | id , name | OTP is sent via text |
+| /signup | Signup as an independent driver | POST | Public | <ins>Required</ins>: appId , subscriptionType, (packageId OR cutPercent), phone, licenseDocument, name <br/> <ins>Optional</ins>: dob, address, profilePicture | id , name | OTP is sent via text |
 | /:id | View driver info | GET | Private | ----- | Driver | ----- |
 | /:id/vehicles | Get assigned vehicle info | GET | Private | ----- | Driver | ----- |
-| /:id | Update driver info | PATCH | Private | ----- | { id, name, phone } | ----- |
-| /:id | Delete a driver | DELETE | Private | ----- | { id, phone, name } | ----- |
+| /:id | Update driver info | PATCH | Private | ----- | id, name, phone | ----- |
+| /:id | Delete a driver | DELETE | Private | ----- | id, phone, name | ----- |
 
 <br/>
 
@@ -122,11 +127,11 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all vehicles | GET | Distributor | ----- | [ Vehicle ]| ----- |
-| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | { id, model, driverInfo } | ----- |
+| / | Add a vehicle | POST | Distributor | <ins>Required</ins>: company, registrationDocument, model, modelYear, licensePlate <br/> <ins>Optional</ins>: chassisNumber, seats, doors, color | id, model, driverInfo | ----- |
 | /:id | View vehicle info | GET | Distributor | ----- | Vehicle | ----- |
 | /:id/drivers | View assigned driver info | GET | Distributor | ----- | Vehicle | ----- |
-| /:id | Update vehicle info | PATCH | Distributor | ----- | { id, model, licensePlate, driver, driverInfo } | ----- |
-| /:id | Delete a vehicle | DELETE | Distributor | ----- | { id } | ----- |
+| /:id | Update vehicle info | PATCH | Distributor | ----- | id, model, licensePlate, driver, driverInfo | ----- |
+| /:id | Delete a vehicle | DELETE | Distributor | ----- | id | ----- |
 
 <br/>
 
@@ -136,11 +141,11 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | /| View all users | GET | Distributor | ----- | [ User ]| ----- |
-| / | Add a user | POST | Distributor | name, phone | { id, name, phone  } | OTP is sent via text |
-| /signup | Signup as a user | POST | Public | name, phone, appId | { id, name, phone  } | OTP is sent via text |
+| / | Add a user | POST | Distributor | name, phone | id, name, phone | OTP is sent via text |
+| /signup | Signup as a user | POST | Public | name, phone, appId | id, name, phone | OTP is sent via text |
 | /:id | View user info | GET | Private | ----- | User | ----- |
-| /:id | Update user info | PATCH | Private | ----- | { id, name, phone  } | ----- |
-| /:id | Delete a user | DELETE | Private | ----- | { id, name, phone } | ----- |
+| /:id | Update user info | PATCH | Private | ----- |id, name, phone | ----- |
+| /:id | Delete a user | DELETE | Private | ----- | id, name, phone | ----- |
 
 <br/>
 
@@ -150,10 +155,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all contacts | GET | Public | ----- | [ Contact ]| ----- |
-| / | Add a contact | POST | Distributor | <ins>Required</ins>: name <br/> <ins>Optional</ins>: jobPosition,title,email,phone,mobile | { id, name } | ----- |
+| / | Add a contact | POST | Distributor | <ins>Required</ins>: name <br/> <ins>Optional</ins>: jobPosition,title,email,phone,mobile | id, name | ----- |
 | /:id | View contact info | GET | Public | ----- | Contact | ----- |
-| /:id | Update contact info | PATCH | Distributor | ----- | { id, name } | ----- |
-| /:id | Delete a contact | DELETE | Distributor | ----- | { id, name } | ----- |
+| /:id | Update contact info | PATCH | Distributor | ----- | id, name | ----- |
+| /:id | Delete a contact | DELETE | Distributor | ----- | id, name | ----- |
 
 <br/>
 
@@ -167,7 +172,7 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all resources | GET | Public | ----- | [ Resource ]| ----- |
-| / | Add a resource | POST | Admin | name, parentResourceId | { id, name } | <ins>Example usagae</ins>: for api/localities payload would be: {```name```: 'locality1', ```municipalityId```: 2}<br/><ins>Exception</ins>: ```number``` instead of ```name``` for ward <br/><ins>Exception:</ins> No parentResourceId required for adding a country |
+| / | Add a resource | POST | Admin | name, parentResourceId | id, name | <ins>Example usagae</ins>: for api/localities payload would be: {```name```: 'locality1', ```municipalityId```: 2}<br/><ins>Exception</ins>: ```number``` instead of ```name``` for ward <br/><ins>Exception:</ins> No parentResourceId required for adding a country |
 | /:id | View resource info | GET | Public | ----- | Resource | ----- |
 | /:id/children | View all children of resource | GET | Public | ----- | Resource | <ins>Example usagae</ins>: api/states/1/districts to view all districts of state with id=1<br/><ins>Exception</ins>: Doesn't apply to wards |
 | /:id | Update resource info | PATCH | Admin | ----- | Resource | ----- |
@@ -181,10 +186,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all packages | GET | Public | ----- | [ Package ]| ----- |
-| / | Add a package | POST | Distributor | name, price, duration | { distributorId, name, price, duration } | duration is in number of days - __for monthly packages, duration = 30__ |
+| / | Add a package | POST | Distributor | name, price, duration | distributorId, name, price, duration | duration is in number of days - __for monthly packages, duration = 30__ |
 | /:id | View package info | GET | Public | ----- | Package | ----- |
-| /:id | Update contact info | PATCH | Distributor | ----- | { id, name, price, duration } | ----- |
-| /:id | Delete a package | DELETE | Distributor | ----- | { Package } | ----- |
+| /:id | Update contact info | PATCH | Distributor | ----- | id, name, price, duration | ----- |
+| /:id | Delete a package | DELETE | Distributor | ----- | Package | ----- |
 
 <br/>
 
@@ -194,10 +199,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
 | / | View all subscriptions | GET | Distributor | ----- | [ Subscription ]| ----- |
-| / | Add a subcription | POST | Distributor | type, packaeId, expiresAt, cutPercent | { distributorId, id, type, cutPercent, packageId, expiresAt } | expiresAt is __required if type is 'profit sharing'__ |
+| / | Add a subcription | POST | Distributor | type, packaeId, expiresAt, cutPercent | distributorId, id, type, cutPercent, packageId, expiresAt | expiresAt is __required if type is 'profit sharing'__ |
 | /:id | View subscription info | GET | Private | ----- | Subscription | ----- |
-| /:id | Update subscription info | PATCH | Distributor | ----- | { distributorId, id, type, cutPercent, packageId, expiresAt } | ----- |
-| /:id | Delete a subscription | DELETE | Distributor | ----- | { Subscription } | ----- |
+| /:id | Update subscription info | PATCH | Distributor | ----- | distributorId, id, type, cutPercent, packageId, expiresAt | ----- |
+| /:id | Delete a subscription | DELETE | Distributor | ----- | Subscription | ----- |
 
 <br/>
 
@@ -212,9 +217,10 @@ All responses are JSON objects. In cases of failure, an 'error' shall always exi
 
 <br/>
 
-### Fare Calculation
+### Trip Calculations
 > url prefix: /api/trips
 
 |Endpoint|Desc|Method|Access|Payload|Return|Notes|
 |-----|-----|-----|-----|-----|-----|-----|
-| /calculate_fare | Calculate fare | POST | Public | appId, distance, waitTime | { fare, distance, waitTime } ]| ----- |
+| /calculate_fare | Calculate fare | POST | Public | appId, distance, waitTime | fare, distance, waitTime | ----- |
+| /calculate_distance | Calculate distance | POST | Public | appId, origin, destination | origin, destination, distance, duration | origin and destination must both be formatted as [lat,long] |
