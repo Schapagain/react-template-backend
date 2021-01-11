@@ -17,8 +17,9 @@ async function calculateFare({appId,distance,waitTime=0}) {
     return {fare,distance,waitTime}
 }
 
-async function calculateDistance({origin,destination}) {
+async function calculateDistance({appId,origin,destination}) {
 
+    if (!appId) throw new ValidationError('appId');
     if (!destination || !destination.length || destination.length !== 2) throw new ValidationError('destination');
     if (!origin || !origin.length || origin.length !== 2 ) throw new ValidationError('origin');
 
