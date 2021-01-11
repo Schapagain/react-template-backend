@@ -2,12 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { getAuthToken } = require('../../services/auth');
+const { getAuthToken } = require('../../controllers/auth');
 const { getRoles } = require('../../utils');
 const { Login } = require('../../models');
 const formParser = require('../../middlewares/formParser');
 const { getError, NotAuthorizedError } = require('../../utils/errors');
-const { sendOTP } = require('../../services/password');
+const { sendOTP } = require('../../controllers/password');
 
 /**
  * Route to get login code using phone number
@@ -88,7 +88,7 @@ router.post('/',
             ({ id, role } = phone ? {...role.pop()} : {...role.shift()});
             ({ phone, email } = result);
             const user = { id , phone, email, role };
-            const token = getAuthToken(id, role);
+            const token = await getAuthToken(id, role);
             res.status(200).json({
                 token,
                 user,

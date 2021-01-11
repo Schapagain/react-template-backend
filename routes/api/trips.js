@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { calculateFare } = require('../../services/trips');
+const { calculateFare } = require('../../controllers/trips');
 
 /**
  * Route to add a new ward

@@ -7,6 +7,23 @@ const { getError } = require('../utils/errors');
 const { Distributor, Login, User, sequelize } = require('../models');
 const { expectedFiles } = require('../utils');
 const { ValidationError, NotFoundError, NotAuthorizedError } = require('../utils/errors');
+const { queryDatabase } = require('../database');
+/**
+ * Check if any login with the given parameters exists in the database
+ * , and return the first login found
+ * @param {object} query
+ * @param {String[]} attributes
+ */
+async function checkLoginPresence({query,attributes=['id']}) {
+    try{
+      const users = await queryDatabase({query});
+      if (!users || !users.length) throw new NotFoundError('login');
+      return users[0]
+    }catch(err){
+      throw await getError(err);
+    }
+    
+  }
 
 async function postUser(user) {
 
@@ -266,4 +283,4 @@ async function updateUser(user) {
     
 } 
 
-module.exports = { postUser, registerUser, getUsers, getUser, updateUser, disableUser, deleteUser };
+module.exports = { postUser, registerUser, getUsers, getUser, updateUser, disableUser, deleteUser, checkLoginPresence };

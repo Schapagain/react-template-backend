@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postSubscription, disableSubscription, getSubscription, updateSubscription, getSubscriptions } = require('../../services/subscriptions');
+const { postSubscription, disableSubscription, getSubscription, updateSubscription, getSubscriptions } = require('../../controllers/subscriptions');
 
 /**
  * Route to add a new subscription

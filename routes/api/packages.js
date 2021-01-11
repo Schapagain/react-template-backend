@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postPackage, getPackage, getPackages, updatePackage, disablePackage } = require('../../services/packages');
+const { postPackage, getPackage, getPackages, updatePackage, disablePackage } = require('../../controllers/packages');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 

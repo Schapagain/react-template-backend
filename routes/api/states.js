@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { getDistricts } = require('../../services/districts');
-const { postState, getStates, updateState, deleteState } = require('../../services/states');
+const { getDistricts } = require('../../controllers/districts');
+const { postState, getStates, updateState, deleteState } = require('../../controllers/states');
 
 /**
  * Route to add a new state

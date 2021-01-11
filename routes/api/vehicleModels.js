@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postModel, disableModel, getModel, updateModel, getModels } = require('../../services/vehicleModels');
+const { postModel, disableModel, getModel, updateModel, getModels } = require('../../controllers/vehicleModels');
 
 /**
  * Route to add a new model

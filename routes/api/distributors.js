@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor, backupDistributors, viewBackup} = require('../../services/distributors');
+const { postDistributor, getDistributor, getDistributors, disableDistributor, updateDistributor, backupDistributors, viewBackup} = require('../../controllers/distributors');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 const fs = require('fs');
 const { getError, ValidationError } = require('../../utils/errors');
-const { sendPasswordResetCode, updatePassword } = require('../../services/password');
+const { sendPasswordResetCode, updatePassword } = require('../../controllers/password');
 const validateNewPassword = require('../../middlewares/validateNewPassword');
 const { ADMIN } = require('../../utils/roles');
 /**

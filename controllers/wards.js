@@ -1,5 +1,5 @@
 
-const { Ward, Locality, Municipality} = require('../models');
+const { Ward, Locality, Municipality} = require('../database/models');
 const { getError, ValidationError, NotFoundError } = require('../utils/errors');
 
 async function postWard(ward) {

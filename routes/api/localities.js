@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postLocality,getLocalities, updateLocality, deleteLocality } = require('../../services/localities');
-const { getWards } = require('../../services/wards');
+const { postLocality,getLocalities, updateLocality, deleteLocality } = require('../../controllers/localities');
+const { getWards } = require('../../controllers/wards');
 /**
  * Route to add a new locality
  * @name    api/localities

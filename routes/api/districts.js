@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postDistrict,getDistricts, updateDistrict, deleteDistrict } = require('../../services/districts');
-const { getMunicipalities } = require('../../services/municipalities');
+const { postDistrict,getDistricts, updateDistrict, deleteDistrict } = require('../../controllers/districts');
+const { getMunicipalities } = require('../../controllers/municipalities');
 
 /**
  * Route to add a new district

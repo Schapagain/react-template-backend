@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postVehicle, getVehicle, getVehicles, updateVehicle, getAssignedDrivers, disableVehicle } = require('../../services/vehicles');
+const { postVehicle, getVehicle, getVehicles, updateVehicle, getAssignedDrivers, disableVehicle } = require('../../controllers/vehicles');
 const path = require('path');
 const { expectedFiles } = require('../../utils');
 

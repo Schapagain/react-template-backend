@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postWard,getWards, updateWard, deleteWard } = require('../../services/wards');
+const { postWard,getWards, updateWard, deleteWard } = require('../../controllers/wards');
 
 /**
  * Route to add a new ward

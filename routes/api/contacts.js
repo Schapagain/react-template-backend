@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middlewares/auth');
 const formParser = require('../../middlewares/formParser');
-const { postContact, disableContact, getContact, updateContact, getContacts } = require('../../services/contacts');
+const { postContact, disableContact, getContact, updateContact, getContacts } = require('../../controllers/contacts');
 const path = require('path');
 
 /**
