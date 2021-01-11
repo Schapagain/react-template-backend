@@ -30,8 +30,8 @@ async function calculateDistance({appId,origin,destination}) {
     try {
         const dist = await useDistanceMatrixAPI(origin,destination)
         response = {
-            origin: dist.data.origin_addresses || origin,
-            destination: dist.data.destination_addresses || destination,
+            origin: dist.data.origin_addresses[0] || origin,
+            destination: dist.data.destination_addresses[0] || destination,
             distance : dist.data.rows[0].elements[0].distance || 'NO_PATH',
             duration: dist.data.rows[0].elements[0].duration || 'NO_PATH'
         }
