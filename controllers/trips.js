@@ -14,7 +14,7 @@ async function calculateFare({appId,origin,destination,waitTime=0}) {
     if (!distance) throw new NotFoundError('path');
 
     const fare = (config.minFare || 0) + (distance/1000 * config.farePerUnitDistance || 0) + (waitTime * config.farePerUnitWait || 0);
-    return {...distanceReponse,fare:{value:fare,waitTime}}
+    return {...distanceReponse,fare:{value:fare,waitTime,distance,farePerUnitDistance,farePerUnitWait,minFare}}
 }
 
 async function calculateDistance({appId,origin,destination}) {
@@ -22,6 +22,9 @@ async function calculateDistance({appId,origin,destination}) {
     if (!appId) throw new ValidationError('appId');
     const distributor = await Distributor.findOne({where:{appId}});
     if (!distributor) throw new ValidationError('appId');
+
+    distributor.isWithinArea(origin);
+    distributor.isWithinArea(destination);
 
     if (!destination || !destination.length || destination.length !== 2) throw new ValidationError('destination');
     if (!origin || !origin.length || origin.length !== 2 ) throw new ValidationError('origin');
