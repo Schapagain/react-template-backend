@@ -1,4 +1,5 @@
 const { ValidationError } = require('../../utils/errors');
+const classifyPoint = require('robust-point-in-polygon');
 
 const validateCircle = circle => {
     const { radius, center } = circle;
@@ -232,46 +233,27 @@ module.exports = function(sequelize, DataTypes) {
     }
 
     Distributor.prototype.isWithinArea = function (location) {
+        const areaType = this.area.type;
+        const areaOptions = this.area.options;
+
         if (!location || !Array.isArray(location)) throw new ValidationError('location');
         const [lat,long] = location;
-        if (!this.area || this.area.type === "none") throw new ValidationError('area','has not been defined for this app');
-        console.log(this.area);
-        if (this.area.type === "circle") {
-            const {radius,center} = this.area.options;
+        if (!areaType || areaType === "none") throw new ValidationError('area','has not been defined for this app');
+        if (areaType === "circle") {
+            const {radius,center} = areaOptions;
             const dist = findEucledianDistance(center,{lat,long});
             if (radius < dist) throw new ValidationError('location','out of bounds for this app');
-        } else if (this.area.type === "rectangle") {
-            console.log('validationg rectangle',location);
-            const {bounds} = this.area.options;
+        } else if (areaType === "rectangle") {
+            const {bounds} = areaOptions;
             const {south,west,east,north} = bounds;
             if (long < west || long > east || lat < south || lat > north) throw new ValidationError('location','out of bounds for this app');
         } else {
-            if (!pointLiesWithinBounds({lat,long},this.area.options.paths)) throw new ValidationError('location','out of bounds for this app');
+
+            // convert lat,long objects to 2d arrays
+            const bounds = areaOptions.paths.map(path=>[path.lat,path.long]);
+            if (classifyPoint(bounds,[lat,long]) > 0) throw new ValidationError('location','out of bounds for this app');
         }
 
-    }
-
-    /**
-     * Check if the given point lies within the region defined by given bounds
-     * @param {{lat,long}} point 
-     * @param {[{lat,long}]} bounds 
-     */
-    function pointLiesWithinBounds(point,bounds) {
-
-        if (!point || !bounds || bounds.length < 3) throw new ValidationError('point or bounds');
-
-        bounds = [...bounds,bounds[0]];
-
-        let sumOfAngles = 0;
-        for (let i = 1; i < bounds.length; i++) {
-            let angle = findAngle(point,bounds[i],bounds[i-1]);
-            if (point.lat == bounds[i].lat && point.long == bounds[i].long) return true;
-            console.log(bounds[i],bounds[i-1],angle);
-            sumOfAngles += angle;
-        }
-
-        console.log(sumOfAngles);
-        return sumOfAngles == 2 * Math.PI;
     }
 
     /**
@@ -281,21 +263,6 @@ module.exports = function(sequelize, DataTypes) {
      */
     function findEucledianDistance(p1,p2) {
         return (((p2.lat-p1.lat)**2 + (p2.long-p1.long)**2)**0.5).toFixed(3);
-    }
-
-    /**
-     * Find the angle between p1-vertex-p2
-     * @param {{lat,long}} vertex 
-     * @param {{lat,long}} p1 
-     * @param {{lat,long}} p2 
-     */
-    function findAngle(vertex,p1,p2) {
-        if (!vertex || !p1 || !p2) throw new ValidationError('location');
-        return Math.acos(findDotProduct(p1,p2,vertex)/(findEucledianDistance(p1,vertex)*findEucledianDistance(p2,vertex)));
-    }
-
-    function findDotProduct(p1,p2,origin={lat:0,long:0}) {
-        return ((p1.lat-origin.lat) * (p2.lat-origin.lat) + (p1.long-origin.long) * (p2.long-origin.long)).toFixed(3);
     }
 
     return Distributor;
