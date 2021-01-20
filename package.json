@@ -28,6 +28,7 @@
     "njwt": "^1.0.0",
     "pg": "^8.4.1",
     "pg-hstore": "^2.3.3",
+    "robust-point-in-polygon": "^1.0.3",
     "sequelize": "^6.3.5",
     "socket.io": "^3.0.4",
     "uuid": "^8.3.1"
