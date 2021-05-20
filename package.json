@@ -1,7 +1,7 @@
 {
-  "name": "hello-taxi-backend",
+  "name": "react-template-backend",
   "version": "1.0.0",
-  "description": "Express server that provides restful APIs to be used by the hello-taxi frontend",
+  "description": "Backend for a template React project",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -19,7 +19,7 @@
   "author": "Sandesh Chapagain",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
