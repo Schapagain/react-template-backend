@@ -1,46 +1,36 @@
-'use strict';
+"use strict";
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('login',{
+    await queryInterface.createTable("login", {
       id: {
-          type: Sequelize.INTEGER,
-          autoIncrement: true,
-          primaryKey: true
-      },
-      email: Sequelize.STRING,
-      phone: Sequelize.STRING,
-      password: {
-          type: Sequelize.STRING,
-      },
-      active: {
-        type: Sequelize.BOOLEAN,
-        defaultValue : false,
-      },
-      otpCode: {
         type: Sequelize.INTEGER,
-        field: 'otp_code'
+        autoIncrement: true,
+        primaryKey: true,
       },
-      setPasswordCode: {
-          type: Sequelize.INTEGER,
-          field: 'set_password_code'
+      username: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      password: {
+        type: Sequelize.STRING,
       },
       createdAt: {
-          type: Sequelize.DATE,
-          field: 'created_at'
+        type: Sequelize.DATE,
+        field: "created_at",
       },
       updatedAt: {
-          type: Sequelize.DATE,
-          field: 'updated_at'
+        type: Sequelize.DATE,
+        field: "updated_at",
       },
       deletedAt: {
-          type: Sequelize.DATE,
-          field: 'deleted_at'
-      }
-    })
+        type: Sequelize.DATE,
+        field: "deleted_at",
+      },
+    });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('login');
-  }
+    await queryInterface.dropTable("login");
+  },
 };

@@ -2,35 +2,35 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("users", {
+    await queryInterface.createTable("images", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      name: {
+      src: {
         type: Sequelize.STRING,
+        allowNull: false,
       },
-      profilePicture: {
-        type: Sequelize.STRING,
-        field: "profile_picture",
-      },
-      deletedAt: {
+      width: Sequelize.INTEGER,
+      height: Sequelize.INTEGER,
+      placeholder: Sequelize.STRING,
+      createdAt: {
         type: Sequelize.DATE,
-        field: "deleted_at",
+        field: "created_at",
       },
       updatedAt: {
         type: Sequelize.DATE,
         field: "updated_at",
       },
-      createdAt: {
+      deletedAt: {
         type: Sequelize.DATE,
-        field: "created_at",
+        field: "deleted_at",
       },
     });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("users");
+    await queryInterface.dropTable("images");
   },
 };
