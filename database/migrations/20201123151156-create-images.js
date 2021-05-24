@@ -12,9 +12,12 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      secure_src: Sequelize.STRING,
       width: Sequelize.INTEGER,
       height: Sequelize.INTEGER,
       placeholder: Sequelize.STRING,
+      format: Sequelize.STRING,
+      size: Sequelize.INTEGER,
       createdAt: {
         type: Sequelize.DATE,
         field: "created_at",

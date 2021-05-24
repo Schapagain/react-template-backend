@@ -25,6 +25,9 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      story: {
+        type: DataTypes.STRING,
+      },
     },
     {
       tableName: "albums",
@@ -36,7 +39,7 @@ module.exports = function (sequelize, DataTypes) {
 
   Album.associate = (models) => {
     Album.belongsTo(models.User, { foreignKey: "user_id" });
-    Album.hasMany(models.Image, { foreignKey: "album_id" });
+    Album.hasMany(models.Image, { foreignKey: "album_id", as: "images" });
   };
 
   return Album;

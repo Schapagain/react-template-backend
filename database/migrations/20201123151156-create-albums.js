@@ -14,6 +14,9 @@ module.exports = {
           type: Sequelize.STRING,
           allowNull: false,
         },
+        story: {
+          type: Sequelize.STRING,
+        },
         createdAt: {
           type: Sequelize.DATE,
           field: "created_at",

@@ -30,6 +30,7 @@ const updatePassword = async (id, setPasswordCode, password) => {
 };
 
 const generatePasswordHash = async (passwordPlain) => {
+  console.log(passwordPlain);
   try {
     const saltRounds = 5;
     const passwordHash = await bcrypt.hash(passwordPlain, saltRounds);

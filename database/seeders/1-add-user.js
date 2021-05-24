@@ -15,7 +15,6 @@ module.exports = {
       ],
       { returning: true }
     );
-    console.log("users::", users);
     const logins = await queryInterface.bulkInsert(
       "login",
       [

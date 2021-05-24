@@ -37,9 +37,12 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      secureSrc: DataTypes.STRING,
       width: DataTypes.INTEGER,
       height: DataTypes.INTEGER,
       placeholder: DataTypes.STRING,
+      format: DataTypes.STRING,
+      size: DataTypes.INTEGER,
     },
     {
       tableName: "images",
@@ -51,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
 
   Image.associate = (models) => {
     Image.belongsTo(models.User, { foreignKey: "user_id" });
-    Image.belongsTo(models.Album, { foreignKey: "album_id" });
+    Image.belongsTo(models.Album, { foreignKey: "album_id", as: "album" });
   };
 
   return Image;
